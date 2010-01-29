@@ -1,0 +1,171 @@
+<html>
+
+<!--
+  pgn4web javascript chessboard
+  copyright (C) 2009 Paolo Casaschi
+  see README file and http://pgn4web.casaschi.net
+  for credits, license and more details
+-->
+
+<head>
+
+<title>pgn4web help</title>
+
+<style type="text/css">
+
+html,
+body {
+  font-family: sans-serif;
+  color: black;
+  background: white;
+  padding: 10px;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+</style>
+
+<link rel="shortcut icon" href="pawn.ico"></link>
+
+</head>
+
+<body>
+
+<script type="text/javascript">
+
+function print_menu( item, level, title ) {
+  menu  = '<table width=100% cellspacing=0 cellpadding=0><tr><td valign=top>';
+  menu += '<h' + level + '>' + title + '</a></h' + level + '>';
+  menu += '</td><td valign=top>';
+  menu += '<div style="font-size: 66%; text-align: right">';
+  menu += '<a name="' + item + '" href=#credits>credits&nbsp;&amp;&nbsp;license</a>';
+  menu += '&nbsp; &nbsp;<a href=#squares>shortcut&nbsp;squares</a>';
+  menu += '&nbsp; &nbsp;<a href=#keys>shortcut&nbsp;keys</a>';
+  menu += '</div>';
+  menu += '</td></tr></table>';
+  document.write(menu); 
+}
+
+function print_help_row (one, two) {
+  document.write("<tr><td style='text-align: left; vertical-align: top; padding-left:40'>" + one + "</td><td style='text-align: left; vertical-align: top; padding-left:10'>" + two + "</td></tr>");
+}
+
+if (opener && opener.pgn4web_version) {
+  displayVersion = 'v' + opener.pgn4web_version;
+} else {
+  displayVersion = '';
+}
+
+</script>
+
+<table name="top" width=100% cellspacing=0 cellpadding=0><tr>
+<td align=left valign=middle>
+<h1> pgn4web help</h1>
+</td><td align=right valign=middle>
+<img src=pawns.png border=0>
+</td></tr></table>
+
+<div style="height: 1em">&nbsp;</div>
+
+<script type="text/javascript">print_menu("credits", 2, "credits&nbsp;&amp;&nbsp;license");</script>
+
+Javascript modifications of <a href=mailto:pgn4web@casaschi.net target=_blank>Paolo Casaschi (pgn4web@casaschi.net)</a> on code from the http://ficsgames.com database, in turn likely based on code from the LT PGN viewer at http://www.lutanho.net/pgn/pgnviewer.html
+<p></p>
+PNG images from http://ixian.com/chess/jin-piece-sets (<a href=http://creativecommons.org/licenses/by-sa/3.0/>creative commons attribution-share alike 3.0 unported license</a>).
+<p></p>
+The figurine fonts are derived from the Liberation Sans font (released under GNU General Public License, see https://fedorahosted.org/liberation-fonts/) with the addition of chess pieces from freeware fonts: the alpha2 font (Peter Strickland), the good companion font (David L. Brown), the merida font (Armando H. Marroquin), the pirate font (Klaus Wolf) and the chess usual font (Armando H. Marroquin). The original chess fonts and more details are available at http://www.enpassant.dk/chess/fonteng.htm
+<p></p>
+Remaining pgn4web code is copyright (C) 2009 <a href=mailto:pgn4web@casaschi.net target=_blank>Paolo Casaschi (pgn4web@casaschi.net)</a> and licensed under the terms of the <a href=license-gpl-2.0.txt>GNU General Public License version 2</a> as published by the <a href=http://www.fsf.org target=_blank>Free Software Foundation</a>; either <a href=license-gpl-2.0.txt>version 2 of the License</a>, or (at your option) any later version.
+<p></p>
+<br>
+
+<script type="text/javascript">print_menu("squares", 2, "shortcut&nbsp;squares");</script>
+
+<script type="text/javascript">
+  document.write("<table style='padding:0;' border=0>");	
+  if (opener && opener.boardTitle) {
+  rowNumbers = "12345678";
+  colLetters = "ABCDEFGH";
+  for (r=7; r>=0; r--) {
+    rowDisplayed = false;
+    for (c=0; c<=7; c++) {
+      if (opener.boardTitle[c][r] !== "") {
+        print_help_row(colLetters.charAt(c) + rowNumbers.charAt(7-r), opener.boardTitle[c][r]);
+        rowDisplayed = true;
+      }
+    }
+    if (rowDisplayed) { print_help_row("&nbsp;", ""); }
+  }
+  document.write("</table>");	
+  document.write("<i>Squares always labeled as if white is at the bottom.</i>");
+} else {
+  print_help_row("could not find shortcut squares info from the parent window", "");
+  print_help_row("help.html should not be opened directly but from a pgn4web chessboard instead", "");
+  document.write("</table>");	
+}
+</script>
+
+<p></p>
+<br>
+
+<script type="text/javascript">print_menu("keys", 2, "shortcut&nbsp;keys");</script>
+
+<script type="text/javascript">
+document.write("<table style='padding:0;' border=0>");	
+print_help_row("h , l", "game start, end (also arrow up, down keys)");
+print_help_row("u, i", "find previous, next comment");
+print_help_row("j , k", "move backward, forward (also arrow left, right keys)");
+print_help_row("&nbsp;", "");
+print_help_row("a", "start autoplay");
+print_help_row("0", "stop autoplay");
+print_help_row("1, 2...", "autoplay 1 sec, 2 sec...");
+print_help_row("&nbsp;", "");
+print_help_row("v, m", "load first, last game");
+print_help_row("b, n", "load previous, next game");
+print_help_row("c, x", "load random game, random game at random ply");
+print_help_row("&nbsp;", "");
+print_help_row("s", "repeat last search (also enter key)");
+print_help_row("&nbsp;", "");
+print_help_row("r, y", "pause, restart live broadcast automatic refresh");
+print_help_row("t", "force games refresh during live broadcast");
+print_help_row("&nbsp;", "");
+print_help_row("p", "toggle comments");
+print_help_row("o", "toggle comments on separate lines");
+print_help_row("&nbsp;", "");
+print_help_row("g", "toggle highlighting");
+print_help_row("f, d", "flip board, white on bottom");
+print_help_row("&nbsp;", "");
+print_help_row("z", "go to pgn4web website");
+print_help_row("esc", "pgn4web help");
+print_help_row("&nbsp;", "");
+document.write("</table>");
+
+if (opener && opener.pgn4web_version) {
+  if (opener.shortcutKeysEnabled) {
+    ke_curr = "enabled";
+    ke_next = "disable";
+  } else {
+    ke_curr = "disabled";
+    ke_next = "enable";
+  }
+  document.write('<i>Shorcut keys currently ' + ke_curr + ', ' + ke_next + 
+                 ' in the chessboard with shift+escape or clicking square H7.\n');
+}
+</script>
+
+<p></p>
+
+<table width=100% cellspacing=0 cellpadding=0><tr>
+<td align=left valign=bottom>
+<script type="text/javascript">document.write("<b>pgn4web " + displayVersion + "</b>");</script>
+</td><td align=right valign=bottom>
+<img src=pawns.png border=0>
+</td></tr></table>
+
+</body>
+
+</html>
+
