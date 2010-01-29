@@ -48,4 +48,4 @@ Example:
 
 [/pgn]`
 
-
+You might look at an application example at [http://pgn4web-test-wp.casaschi.net](http://pgn4web-test-wp.casaschi.net)
