@@ -14,7 +14,7 @@ Embed Chessboard is a plugin that will let you embed a chessboard showing games 
 
 == Installation ==
 
-1. Download EmbedChessboard plugin [from the Wordpress plugin directory](http://downloads.wordpress.org/plugin/embed-chessboard.zip) or [from the pgn4web project site](http://code.google.com/p/pgn4web/downloads/list)
+1. Download EmbedChessboard plugin [from the Wordpress plugin directory](http://wordpress.org/extend/plugins/embed-chessboard/) or [from the pgn4web project site](http://code.google.com/p/pgn4web/downloads/list)
 1. Unzip
 1. Copy to your '/wp-content/plugins' directory
 1. Activate plugin
