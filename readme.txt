@@ -14,7 +14,7 @@ Embed Chessboard is a plugin that will let you embed a chessboard showing games 
 
 == Installation ==
 
-1. Download EmbedChessboard plugin [from the Wordpress plugin directory](http://wordpress.org/extend/plugins/embed-chessboard/) or [from the pgn4web project site](http://code.google.com/p/pgn4web/downloads/list)
+1. Download EmbedChessboard plugin [from the Wordpress plugin directory](http://downloads.wordpress.org/plugin/embed-chessboard.zip) or [from the pgn4web project site](http://code.google.com/p/pgn4web/downloads/list)
 1. Unzip
 1. Copy to your '/wp-content/plugins' directory
 1. Activate plugin
@@ -25,11 +25,11 @@ You can find full details of installing a plugin on the [plugin installation pag
 
 Use following tag to insert a chessboard:
 
-`[pgn height] ... chess game in PGN format [/pgn]`
+`[pgn height] ... chess game notation in PGN format ... [/pgn]`
 
-`height` is the height in pixels of the iframe used to embed the chessboard, if left blank defaults to 600. Enter your game, preview the post and then adjust height as necessary.
+The "height" parameter is the height in pixels of the iframe used to embed the chessboard, if left blank defaults to 600. Enter your chess game (in PGN notation), preview the post and then adjust height as necessary.
 
-Please note that HTML tags are stripped from the PGN data, removing all text between "<" and ">". Please make sure your PGN data does not contain "<" and ">" characters.
+Note that HTML tags are stripped from the PGN data, removing all text between "<" and ">". Please make sure your PGN data does not contain "<" and ">" characters.
 
 Example:
 
