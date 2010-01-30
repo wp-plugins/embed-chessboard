@@ -4,14 +4,15 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Allows the insertion of html/javascript code to display chess games. The tag to insert the code is: <code>[pgn] 1. e4 e6 2. d4 d5 [/pgn]</code>
-Version: 1.01
+Version: 1.02
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
-Based on work of deskera (http://deskera.com) John Godley (http://urbangiraffe.com)
+Based on the Embed Iframe plugin of Deskera (http://deskera.com)
 
 ChangeLog:
   1.00  - initial release, based on pgn4web version 1.88
   1.01  - minor modifications for hosting on wordpress.org/extend/plugins
+  1.02  - fixing the "Cannot modify header information" warning
 
 */
 
@@ -586,4 +587,3 @@ class EmbedChessboard extends EmbedChessboard_Plugin
 
 $embedchessboard = new EmbedChessboard;
 ?>
-	
