@@ -48,5 +48,7 @@ Example:
 
 [/pgn]`
 
+The colors of the chessboard plugin can be configured by the site administrator (in order to match the site template) from the Embed Chessboard submenu in the administrator settings.
+
 [http://pgn4web-test-wp.casaschi.net](http://pgn4web-test-wp.casaschi.net) shows an application example of the embed-chessboard plugin.
 
