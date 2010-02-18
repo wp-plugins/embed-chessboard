@@ -16,7 +16,8 @@ ChangeLog:
   1.03  - properly detecting wordpress address URI
   1.04  - minor fix
   1.05  - major rewrite simplyfying the plugin core (replacing the Embed Iframe template 
-          with a template from the bbcode plugin of Viper007Bond http://www.viper007bond.com/)
+	  with a template from the bbcode plugin of Viper007Bond http://www.viper007bond.com/)
+          added the option to configure chessboard colors (see settings submenu)
 */
 
 class pgnBBCode {
