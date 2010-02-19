@@ -177,7 +177,6 @@ function embedchessboard_settings_page() {
 <p>All color settings must be in hexadecimal format, like FF0000 for red.
 <br>
 Leave blank to reset to default values.</p>
-<p></p>
 
 <script type="text/javascript" src="<?php echo plugins_url('pgn4web/jscolor/jscolor.js', __FILE__) ?>"></script>
 
@@ -185,12 +184,14 @@ Leave blank to reset to default values.</p>
     <?php settings_fields( 'embedchessboard-settings-group' ); ?>
     <table class="form-table">
 
-		<tr valign="top">
+	<tr><td></td></tr>
+
+	<tr valign="top">
         <th scope="row">background color</th>
         <td><input class="color {required:false}" type="text" name="background_color" value="<?php echo get_option_with_default('background_color'); ?>" /></td>
         </tr>
         
-		<tr><td><hr></td></tr>
+	<tr><td></td></tr>
 		
         <tr valign="top">
         <th scope="row">light squares color</th>
@@ -212,7 +213,7 @@ Leave blank to reset to default values.</p>
         <td><input class="color {required:false}" type="text" name="square_highlight_color" value="<?php echo get_option_with_default('square_highlight_color'); ?>" /></td>
         </tr>
 		
-		<tr><td><hr></td></tr>
+	<tr><td></td></tr>
 		
         <tr valign="top">
         <th scope="row">buttons background color</th>
@@ -224,7 +225,7 @@ Leave blank to reset to default values.</p>
         <td><input class="color {required:false}" type="text" name="control_buttons_text_color" value="<?php echo get_option_with_default('control_buttons_text_color'); ?>" /></td>
         </tr>
 		
-		<tr><td><hr></td></tr>
+	<tr><td></td></tr>
 		
         <tr valign="top">
         <th scope="row">header text color</th>
@@ -241,12 +242,12 @@ Leave blank to reset to default values.</p>
         <td><input class="color {required:false}" type="text" name="move_highlight_color" value="<?php echo get_option_with_default('move_highlight_color'); ?>" /></td>
         </tr>
         
-		<tr valign="top">
+	<tr valign="top">
         <th scope="row">comments text color</th>
         <td><input class="color {required:false}" type="text" name="comments_text_color" value="<?php echo get_option_with_default('comments_text_color'); ?>" /></td>
         </tr>
 
-		<tr><td><hr></td></tr>
+	<tr><td></td></tr>
 		
 	</table>
     
