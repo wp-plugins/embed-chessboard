@@ -11,25 +11,6 @@ Allows for the insertion of a chessboard displaying chess games within wordpress
 == Description ==
 
 Embed Chessboard is a plugin that allows for the insertion of a chessboard displaying chess games within worpress articles.
-Chess games are inserted simply by providing the chess scoresheet in PGN format surrounded by [pgn] ... [/pgn] tags.
-
-== Installation ==
-
-Reccomended installation method is from the plugin section of the administration pages of your site, serching for the "Embed Chessboard" plugin.
-
-Alternative manual install option:
-1. Download EmbedChessboard plugin [from the Wordpress plugin directory](http://wordpress.org/extend/plugins/embed-chessboard/) or [from the pgn4web project site](http://code.google.com/p/pgn4web/downloads/list)
-1. Unzip
-1. Copy to your '/wp-content/plugins' directory
-1. Activate plugin
-
-You can find full details of installing a plugin on the [plugin installation page](http://codex.wordpress.org/Managing_Plugins).
-
-== Screenshots ==
-
-1. Embed Chessboard example (what a fantastic novelty from Kasparov here)
-
-== Usage ==
 
 Use following tag to insert a chessboard:
 
@@ -57,8 +38,21 @@ Example:
 
 [/pgn]`
 
-
 The colors of the chessboard plugin can be configured by the site administrator (in order to match the site template) from the Embed Chessboard submenu in the administrator settings menu.
 
-[http://pgn4web-test-wp.casaschi.net](http://pgn4web-test-wp.casaschi.net) shows an application example of the embed-chessboard plugin.
+== Installation ==
+
+Reccomended installation method is from the plugin section of the administration pages of your site, serching for the "Embed Chessboard" plugin.
+
+Alternative manual install option:
+1. Download EmbedChessboard plugin [from the Wordpress plugin directory](http://wordpress.org/extend/plugins/embed-chessboard/) or [from the pgn4web project site](http://code.google.com/p/pgn4web/downloads/list)
+1. Unzip
+1. Copy to your '/wp-content/plugins' directory
+1. Activate plugin
+
+You can find full details of installing a plugin on the [plugin installation page](http://codex.wordpress.org/Managing_Plugins).
+
+== Screenshots ==
+
+1. Embed Chessboard example (what a fantastic novelty from Kasparov here)
 
