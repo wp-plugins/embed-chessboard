@@ -1,5 +1,5 @@
 === Embed Chessboard ===
-Tags: chess, chessboard, pgn, pgn4web, embed, page, post, plugin
+Tags: chess, chessboard, pgn, pgn4web
 Contributors: pgn4web
 Donate link: http://pgn4web.casaschi.net
 Requires at least: 2.9
