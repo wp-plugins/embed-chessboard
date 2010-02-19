@@ -6,20 +6,28 @@ Requires at least: 2.9
 Tested up to: 2.9
 Stable tag: trunk
 
-Allows the insertion of code to display chess games within an iframe
+Allows for the insertion of a chessboard displaying chess games within wordpress articles.
 
 == Description ==
 
-Embed Chessboard is a plugin that will let you embed a chessboard showing games provided in PGN format.
+Embed Chessboard is a plugin that allows for the insertion of a chessboard displaying chess games within worpress articles.
+Chess games are inserted simply by providing the chess scoresheet in PGN format surrounded by [pgn] ... [/pgn] tags.
 
 == Installation ==
 
+Reccomended installation method is from the plugin section of the administration pages of your site, serching for the "Embed Chessboard" plugin.
+
+Alternative manual install option:
 1. Download EmbedChessboard plugin [from the Wordpress plugin directory](http://wordpress.org/extend/plugins/embed-chessboard/) or [from the pgn4web project site](http://code.google.com/p/pgn4web/downloads/list)
 1. Unzip
 1. Copy to your '/wp-content/plugins' directory
 1. Activate plugin
 
-You can find full details of installing a plugin on the [plugin installation page](http://codex.wordpress.org/Managing_Plugins)
+You can find full details of installing a plugin on the [plugin installation page](http://codex.wordpress.org/Managing_Plugins).
+
+== Screenshots ==
+
+1. Embed Chessboard example (what a fantastic novelty from Kasparov here)
 
 == Usage ==
 
