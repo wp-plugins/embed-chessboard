@@ -15,8 +15,8 @@ Embed Chessboard is a plugin that allows for the insertion of a chessboard displ
 Use following tag to insert a chessboard:
 
 `[pgn height] ... chess game notation in PGN format ... [/pgn]`
-- 
 
+ 
 The "height" parameter is the height in pixels of the iframe used to embed the chessboard, if left blank defaults to 600. Enter your chess game (in PGN notation), preview the post and then adjust height as necessary.
 
 Note that HTML tags are stripped from the PGN data, removing all text between "<" and ">". Please make sure your PGN data does not contain "<" and ">" characters.
@@ -41,8 +41,8 @@ Kg7 30.f3 Qxd6 31.fxg4 Qd4+ 32.Kh1 Nf6 33.Rf4 Ne4 34.Qxd3 Nf2+ 35.Rxf2
 Bxd3 36.Rfd2 Qe3 37.Rxd3 Rc1 38.Nb2 Qf2 39.Nd2 Rxd1+ 40.Nxd1 Re1+ 0-1
 
 [/pgn]`
-- 
 
+ 
 The colors of the chessboard plugin can be configured by the site administrator (in order to match the site template) from the Embed Chessboard submenu in the administrator settings menu.
 
 == Installation ==
