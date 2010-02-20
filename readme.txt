@@ -61,5 +61,5 @@ You can find full details of installing a plugin on the [plugin installation pag
 == Screenshots ==
 
 1. the chessboard detail
-2. full chessboard exmample with chess notation
+2. full chessboard example with chess notation
 
