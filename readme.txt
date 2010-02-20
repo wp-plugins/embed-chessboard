@@ -14,7 +14,7 @@ Embed Chessboard is a plugin that allows for the insertion of a chessboard displ
 
 Use following tag to insert a chessboard:
 
-`[pgn height] ... chess game notation in PGN format ... [/pgn]`
+`[pgn height] chess games in PGN format [/pgn]`
 
  
 The "height" parameter is the height in pixels of the iframe used to embed the chessboard, if left blank defaults to 600. Enter your chess game (in PGN notation), preview the post and then adjust height as necessary.
@@ -60,5 +60,6 @@ You can find full details of installing a plugin on the [plugin installation pag
 
 == Screenshots ==
 
-1. Embed Chessboard example: what a fantastic novelty from Kasparov here
+1. the chessboard detail
+2. full chessboard exmample with chess notation
 

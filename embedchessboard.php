@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Allows for the graphical display of chess games from the games score in PGN format (see settings submenu for administrator plugin settings). The basic tag is: <code>[pgn] 1. e4 e6 2. d4 d5 [/pgn]</code> Optionally you can add a parameter to the pgn tag, specifying the height of the chessboard widget (default is 600), for example: <code>[pgn 325] 1. e4 e6 2. d4 d5 [/pgn]</code>
-Version: 1.05
+Version: 1.06
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 
@@ -18,6 +18,7 @@ ChangeLog:
   1.05  - major rewrite simplyfying the plugin core (replacing the Embed Iframe template 
 	  with a template from the bbcode plugin of Viper007Bond http://www.viper007bond.com/)
           added the option to configure chessboard colors (see settings submenu)
+  1.06  - minor fix
 */
 
 class pgnBBCode {
