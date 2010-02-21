@@ -58,6 +58,12 @@ Alternative manual install option:
 
 You can find full details of installing a plugin on the [plugin installation page](http://codex.wordpress.org/Managing_Plugins).
 
+Caveats:
+
+- the plugin requires that the "wordpress address (URL)" and the "blog address (URL)" in the wordpress general settings belong to the exact same domain; for instance having the former as "http://www.example.com/wordpress_files" and the latter as "http://example.com/wordpress_blog" (without the "www.") would break the plugin; domains should be either both "www.example.com" or both "example.com" regardless of any redirection. 
+
+The plugin is based on the [pgn4web](http://pgn4web.casaschi.net) tool, for more informarion, please refer to [the tutorial at the pgn4web wiki](http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress).
+
 == Screenshots ==
 
 1. the chessboard detail
