@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Allows for the graphical display of chess games from the games score in PGN format (see settings submenu for administrator plugin settings). The basic tag is: <code>[pgn] 1. e4 e6 2. d4 d5 [/pgn]</code> Optionally you can add a parameter to the pgn tag, specifying the height of the chessboard widget (default is 600), for example: <code>[pgn 325] 1. e4 e6 2. d4 d5 [/pgn]</code>
-Version: 1.06
+Version: 1.07
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 
@@ -19,6 +19,7 @@ ChangeLog:
 	  with a template from the bbcode plugin of Viper007Bond http://www.viper007bond.com/)
           added the option to configure chessboard colors (see settings submenu)
   1.06  - minor fix
+  1.07  - changed settings names (you might need to enter your custom config again)
 */
 
 class pgnBBCode {
@@ -59,35 +60,35 @@ class pgnBBCode {
 		$pgnId = dechex(crc32($pgnText));
 
 		$replacement  = "<div class='chessboard-wrapper'> ";
-            $replacement .= "<textarea id='" . $pgnId . "' style='display:none;'> ";
-            $replacement .= $pgnText;
-            $replacement .= " </textarea> ";
-            $replacement .= " <iframe src=" . plugins_url('pgn4web/board.html', __FILE__) . "?";
-            $replacement .= "am=l&d=3000&ss=26&ps=d&pf=d";
-            $replacement .= "&lch=" . get_option_with_default('light_squares_color');
-            $replacement .= "&dch=" . get_option_with_default('dark_squares_color');
-            $replacement .= "&bbch=" . get_option_with_default('board_border_color');
-            $replacement .= "&hm=b";
-            $replacement .= "&hch=" . get_option_with_default('square_highlight_color');
-            $replacement .= "&bd=c";
-            $replacement .= "&cbch=" . get_option_with_default('control_buttons_background_color');
-            $replacement .= "&ctch=" . get_option_with_default('control_buttons_text_color');
-            $replacement .= "&hd=j&md=j&tm=13";
-            $replacement .= "&fhch=" . get_option_with_default('header_text_color');
-            $replacement .= "&fhs=80p";
-            $replacement .= "&fmch=" . get_option_with_default('moves_text_color');
-            $replacement .= "&fcch=" . get_option_with_default('comments_text_color');
-            $replacement .= "&hmch=" . get_option_with_default('move_highlight_color');
-            $replacement .= "&fms=80p&fcs=m&cd=i";
-            $replacement .= "&bch=" . get_option_with_default('background_color');
-            $replacement .= "&fp=13&hl=f";
-            $replacement .= "&fh=" . $height . "&fw=p";
-            $replacement .= "&pi=" . $pgnId . " ";
-            $replacement .= "frameborder='0' width='100%' height='" . $height . "' ";
-            $replacement .= "scrolling='no' marginheight='0' marginwidth='0'>";
-            $replacement .= "sorry, you'd need iframe support in your browser";
-            $replacement .= "</iframe>";
-            $replacement .= "</div>";
+		$replacement .= "<textarea id='" . $pgnId . "' style='display:none;'> ";
+		$replacement .= $pgnText;
+		$replacement .= " </textarea> ";
+		$replacement .= " <iframe src=" . plugins_url('pgn4web/board.html', __FILE__) . "?";
+		$replacement .= "am=l&d=3000&ss=26&ps=d&pf=d";
+		$replacement .= "&lch=" . get_option_with_default('embedchessboard_light_squares_color');
+		$replacement .= "&dch=" . get_option_with_default('embedchessboard_dark_squares_color');
+		$replacement .= "&bbch=" . get_option_with_default('embedchessboard_board_border_color');
+		$replacement .= "&hm=b";
+		$replacement .= "&hch=" . get_option_with_default('embedchessboard_square_highlight_color');
+		$replacement .= "&bd=c";
+		$replacement .= "&cbch=" . get_option_with_default('embedchessboard_control_buttons_background_color');
+		$replacement .= "&ctch=" . get_option_with_default('embedchessboard_control_buttons_text_color');
+		$replacement .= "&hd=j&md=j&tm=13";
+		$replacement .= "&fhch=" . get_option_with_default('embedchessboard_header_text_color');
+		$replacement .= "&fhs=80p";
+		$replacement .= "&fmch=" . get_option_with_default('embedchessboard_moves_text_color');
+		$replacement .= "&fcch=" . get_option_with_default('embedchessboard_comments_text_color');
+		$replacement .= "&hmch=" . get_option_with_default('embedchessboard_move_highlight_color');
+		$replacement .= "&fms=80p&fcs=m&cd=i";
+		$replacement .= "&bch=" . get_option_with_default('embedchessboard_background_color');
+		$replacement .= "&fp=13&hl=f";
+		$replacement .= "&fh=" . $height . "&fw=p";
+		$replacement .= "&pi=" . $pgnId . " ";
+		$replacement .= "frameborder='0' width='100%' height='" . $height . "' ";
+		$replacement .= "scrolling='no' marginheight='0' marginwidth='0'>";
+		$replacement .= "sorry, you'd need iframe support in your browser";
+		$replacement .= "</iframe>";
+		$replacement .= "</div>";
 
 		return $replacement;
 
@@ -111,17 +112,17 @@ function embedchessboard_create_menu() {
 
 function register_mysettings() {
 	//register our settings
-	register_setting( 'embedchessboard-settings-group', 'background_color' );
-	register_setting( 'embedchessboard-settings-group', 'light_squares_color' );
-	register_setting( 'embedchessboard-settings-group', 'dark_squares_color' );
-	register_setting( 'embedchessboard-settings-group', 'board_border_color' );
-	register_setting( 'embedchessboard-settings-group', 'square_highlight_color' );
-	register_setting( 'embedchessboard-settings-group', 'control_buttons_background_color' );
-	register_setting( 'embedchessboard-settings-group', 'control_buttons_text_color' );
-	register_setting( 'embedchessboard-settings-group', 'header_text_color' );
-	register_setting( 'embedchessboard-settings-group', 'moves_text_color' );
-	register_setting( 'embedchessboard-settings-group', 'move_highlight_color' );
-	register_setting( 'embedchessboard-settings-group', 'comments_text_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_background_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_light_squares_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_dark_squares_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_board_border_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_square_highlight_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_control_buttons_background_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_control_buttons_text_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_header_text_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_moves_text_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_move_highlight_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_comments_text_color' );
 }
 
 function get_option_with_default($optionName) {
@@ -129,37 +130,37 @@ function get_option_with_default($optionName) {
 	
 	if (strlen(trim($retVal)) == 0) {
 		switch ($optionName) {
-			case 'background_color':
+			case 'embedchessboard_background_color':
 				$retVal = 'FFFFFF';
 				break;
-			case 'light_squares_color':
+			case 'embedchessboard_light_squares_color':
 				$retVal = 'F6F6F6';
 				break;
-			case 'dark_squares_color':
+			case 'embedchessboard_dark_squares_color':
 				$retVal = 'E0E0E0';
 				break;
-			case 'board_border_color':
+			case 'embedchessboard_board_border_color':
 				$retVal = 'E0E0E0';
 				break;
-			case 'square_highlight_color':
+			case 'embedchessboard_square_highlight_color':
 				$retVal = 'ABABAB';
 				break;
-			case 'control_buttons_background_color':
+			case 'embedchessboard_control_buttons_background_color':
 				$retVal = 'F0F0F0';
 				break;
-			case 'control_buttons_text_color':
+			case 'embedchessboard_control_buttons_text_color':
 				$retVal = '696969';
 				break;
-			case 'header_text_color':
+			case 'embedchessboard_header_text_color':
 				$retVal = '000000';
 				break;
-			case 'moves_text_color':
+			case 'embedchessboard_moves_text_color':
 				$retVal = '000000';
 				break;
-			case 'move_highlight_color':
+			case 'embedchessboard_move_highlight_color':
 				$retVal = 'E0E0E0';
 				break;
-			case 'comments_text_color':
+			case 'embedchessboard_comments_text_color':
 				$retVal = '808080';
 				break;
 			default:
@@ -189,63 +190,63 @@ Leave blank to reset to default values.</p>
 
 	<tr valign="top">
         <th scope="row">background color</th>
-        <td><input class="color {required:false}" type="text" name="background_color" value="<?php echo get_option_with_default('background_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_background_color" value="<?php echo get_option_with_default('embedchessboard_background_color'); ?>" /></td>
         </tr>
         
 	<tr><td></td></tr>
 		
         <tr valign="top">
         <th scope="row">light squares color</th>
-        <td><input class="color {required:false}" type="text" name="light_squares_color" value="<?php echo get_option_with_default('light_squares_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_light_squares_color" value="<?php echo get_option_with_default('embedchessboard_light_squares_color'); ?>" /></td>
         </tr>
         
         <tr valign="top">
         <th scope="row">dark squares color</th>
-        <td><input class="color {required:false}" type="text" name="dark_squares_color" value="<?php echo get_option_with_default('dark_squares_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_dark_squares_color" value="<?php echo get_option_with_default('embedchessboard_dark_squares_color'); ?>" /></td>
         </tr>
         
         <tr valign="top">
         <th scope="row">board border color</th>
-        <td><input class="color {required:false}" type="text" name="board_border_color" value="<?php echo get_option_with_default('board_border_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_board_border_color" value="<?php echo get_option_with_default('embedchessboard_board_border_color'); ?>" /></td>
         </tr>
 		
         <tr valign="top">
         <th scope="row">square highlight color</th>
-        <td><input class="color {required:false}" type="text" name="square_highlight_color" value="<?php echo get_option_with_default('square_highlight_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_square_highlight_color" value="<?php echo get_option_with_default('embedchessboard_square_highlight_color'); ?>" /></td>
         </tr>
 		
 	<tr><td></td></tr>
 		
         <tr valign="top">
         <th scope="row">buttons background color</th>
-        <td><input class="color {required:false}" type="text" name="control_buttons_background_color" value="<?php echo get_option_with_default('control_buttons_background_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_control_buttons_background_color" value="<?php echo get_option_with_default('embedchessboard_control_buttons_background_color'); ?>" /></td>
         </tr>
 		
         <tr valign="top">
         <th scope="row">buttons text color</th>
-        <td><input class="color {required:false}" type="text" name="control_buttons_text_color" value="<?php echo get_option_with_default('control_buttons_text_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_control_buttons_text_color" value="<?php echo get_option_with_default('embedchessboard_control_buttons_text_color'); ?>" /></td>
         </tr>
 		
 	<tr><td></td></tr>
 		
         <tr valign="top">
         <th scope="row">header text color</th>
-        <td><input class="color {required:false}" type="text" name="header_text_color" value="<?php echo get_option_with_default('header_text_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_header_text_color" value="<?php echo get_option_with_default('embedchessboard_header_text_color'); ?>" /></td>
         </tr>
 		
         <tr valign="top">
         <th scope="row">moves text color</th>
-        <td><input class="color {required:false}" type="text" name="moves_text_color" value="<?php echo get_option_with_default('moves_text_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_moves_text_color" value="<?php echo get_option_with_default('embedchessboard_moves_text_color'); ?>" /></td>
         </tr>
 		
         <tr valign="top">
         <th scope="row">move highlight color</th>
-        <td><input class="color {required:false}" type="text" name="move_highlight_color" value="<?php echo get_option_with_default('move_highlight_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_move_highlight_color" value="<?php echo get_option_with_default('embedchessboard_move_highlight_color'); ?>" /></td>
         </tr>
         
 	<tr valign="top">
         <th scope="row">comments text color</th>
-        <td><input class="color {required:false}" type="text" name="comments_text_color" value="<?php echo get_option_with_default('comments_text_color'); ?>" /></td>
+        <td><input class="color {required:false}" type="text" name="embedchessboard_comments_text_color" value="<?php echo get_option_with_default('embedchessboard_comments_text_color'); ?>" /></td>
         </tr>
 
 	<tr><td></td></tr>
