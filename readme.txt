@@ -18,8 +18,6 @@ Use following tag to insert a chessboard:
 
 The "height" parameter is the height in pixels of the iframe used to embed the chessboard, if left blank defaults to 600. Enter your chess game (in PGN notation), preview the post and then adjust height as necessary.
 
-Note that HTML tags are stripped from the PGN data, removing all text between "<" and ">". Please make sure your PGN data does not contain "<" and ">" characters.
-
 Example:
 
 `[pgn 500]
@@ -42,6 +40,8 @@ Bxd3 36.Rfd2 Qe3 37.Rxd3 Rc1 38.Nb2 Qf2 39.Nd2 Rxd1+ 40.Nxd1 Re1+ 0-1
 [/pgn]`
 
 Any PGN header tag missing will not be displayed.
+
+Note that HTML tags are stripped from the PGN data, removing all text between "<" and ">". Please make sure your PGN data does not contain "<" and ">" characters.
 
 == Installation ==
 
