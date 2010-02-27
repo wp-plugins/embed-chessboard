@@ -43,8 +43,6 @@ Bxd3 36.Rfd2 Qe3 37.Rxd3 Rc1 38.Nb2 Qf2 39.Nd2 Rxd1+ 40.Nxd1 Re1+ 0-1
 
 Any PGN header tag missing will not be displayed.
 
-The colors of the chessboard plugin can be configured by the site administrator (in order to match the site template) from the Embed Chessboard submenu in the administrator settings menu.
-
 == Installation ==
 
 Reccomended installation method is from the plugins section of the administration pages of your site, serching for the "Embed Chessboard" plugin.
@@ -57,6 +55,8 @@ Alternative manual install option:
 1. Activate plugin
 
 You can find full details of installing a plugin on the [plugin installation page](http://codex.wordpress.org/Managing_Plugins).
+
+The chessboard plugin can be configured by the site administrator from the "Embed Chessboard" submenu in the administrator "Settings" menu; here the colors of the chessboard can be changed to match the site template and the autoplaymode can be set (whether the chess games should be autoplayed on page load).
 
 The plugin is based on the [pgn4web](http://pgn4web.casaschi.net) tool; for more information, including updated troubleshooting notes, please refer to [the plugin tutorial at the pgn4web wiki](http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress).
 

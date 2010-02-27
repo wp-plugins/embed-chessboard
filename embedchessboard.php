@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Allows for the graphical display of chess games from the games score in PGN format (see settings submenu for administrator plugin settings). The basic tag is: <code>[pgn] 1. e4 e6 2. d4 d5 [/pgn]</code> Optionally you can add a parameter to the pgn tag, specifying the height of the chessboard widget (default is 600), for example: <code>[pgn 325] 1. e4 e6 2. d4 d5 [/pgn]</code>
-Version: 1.07
+Version: 1.08
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 
@@ -20,6 +20,7 @@ ChangeLog:
           added the option to configure chessboard colors (see settings submenu)
   1.06  - minor fix
   1.07  - changed settings names (you might need to enter your custom config again)
+  1.08  - added option for controlling autoplay of games at load
 */
 
 class pgnBBCode {
@@ -64,7 +65,8 @@ class pgnBBCode {
 		$replacement .= $pgnText;
 		$replacement .= " </textarea> ";
 		$replacement .= " <iframe src=" . plugins_url('pgn4web/board.html', __FILE__) . "?";
-		$replacement .= "am=l&d=3000&ss=26&ps=d&pf=d";
+		$replacement .= "am=" . get_option_with_default('embedchessboard_autoplay_mode');
+		$replacement .= "&d=3000&ss=26&ps=d&pf=d";
 		$replacement .= "&lch=" . get_option_with_default('embedchessboard_light_squares_color');
 		$replacement .= "&dch=" . get_option_with_default('embedchessboard_dark_squares_color');
 		$replacement .= "&bbch=" . get_option_with_default('embedchessboard_board_border_color');
@@ -123,6 +125,7 @@ function register_mysettings() {
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_moves_text_color' );
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_move_highlight_color' );
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_comments_text_color' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_autoplay_mode' );
 }
 
 function get_option_with_default($optionName) {
@@ -163,6 +166,9 @@ function get_option_with_default($optionName) {
 			case 'embedchessboard_comments_text_color':
 				$retVal = '808080';
 				break;
+			case 'embedchessboard_autoplay_mode':
+				$retVal = 'l';
+				break;
 			default:
 				$retVal = '';
 				break;
@@ -175,10 +181,7 @@ function embedchessboard_settings_page() {
 ?>
 <div class="wrap">
 <h2>Embed Chessboard Plugin Settings</h2>
-
-<p>All color settings must be in hexadecimal format, like FF0000 for red.
-<br>
-Leave blank to reset to default values.</p>
+leave blank values to reset to defaults
 
 <script type="text/javascript" src="<?php echo plugins_url('pgn4web/jscolor/jscolor.js', __FILE__) ?>"></script>
 
@@ -186,7 +189,7 @@ Leave blank to reset to default values.</p>
     <?php settings_fields( 'embedchessboard-settings-group' ); ?>
     <table class="form-table">
 
-	<tr><td></td></tr>
+	<tr><td colspan=2><h3>Colors</h3></td></tr>
 
 	<tr valign="top">
         <th scope="row">background color</th>
@@ -248,6 +251,19 @@ Leave blank to reset to default values.</p>
         <th scope="row">comments text color</th>
         <td><input class="color {required:false}" type="text" name="embedchessboard_comments_text_color" value="<?php echo get_option_with_default('embedchessboard_comments_text_color'); ?>" /></td>
         </tr>
+
+	<tr><td colspan=2><h3>Autoplay Mode</h3></td></tr>
+
+	<tr valign="top">
+	<th scope="row">autoplay mode</th>
+	<td>
+	<select name="embedchessboard_autoplay_mode">
+	<option <?php if ("g" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="g">autoplay the initial game only</option>
+	<option <?php if ("l" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="l">autoplay all games in a loop</option>
+	<option <?php if ("n" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="n">do not autoplay games</option>
+	</select>
+	</td>
+	</tr>
 
 	<tr><td></td></tr>
 		
