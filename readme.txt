@@ -13,10 +13,12 @@ Allows for the insertion of a chessboard displaying chess games within wordpress
 Embed Chessboard is a plugin that allows for the insertion of a chessboard displaying chess games within worpress articles.
 
 Use following tag to insert a chessboard:
+
 `[pgn parameter=value ...] 
 ... chess games in PGN format ...
 [/pgn]`
-parameters:
+
+Tag parameters:
 
  * height='number' (height in pixel of the iframe embedding the chessboard, default 600 if moves are shown otherwise 370)
  * initialGame=first|last|random|'number' (initial game to load, default first)
@@ -25,6 +27,7 @@ parameters:
  * showMoves=justified|hidden (whether to show justified moves or to hide moves, default justified)
 
 Example:
+
 `[pgn height=500 initialHalfmove=16 autoplayMode=none]
 
 [Event "World Championship"]
@@ -43,6 +46,7 @@ Kg7 30.f3 Qxd6 31.fxg4 Qd4+ 32.Kh1 Nf6 33.Rf4 Ne4 34.Qxd3 Nf2+ 35.Rxf2
 Bxd3 36.Rfd2 Qe3 37.Rxd3 Rc1 38.Nb2 Qf2 39.Nd2 Rxd1+ 40.Nxd1 Re1+ 0-1
 
 [/pgn]`
+
 Any PGN header tag missing will not be displayed.
 
 Note that HTML tags are stripped from the PGN data, removing all text between "<" and ">". Please make sure your PGN data does not contain "<" and ">" characters.
