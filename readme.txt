@@ -23,7 +23,7 @@ Tag parameters:
  * height='number' (height in pixel of the iframe embedding the chessboard, default 600 if moves are shown otherwise 370)
  * initialGame=first|last|random|'number' (initial game to load, default first)
  * initialHalfmove=start|end|random|comment|'number' (initial halfmove to show, default start)
- * autoplayMode=game|loop|none (whether to autoplay the initial game, all games in a loop or none, default loop)
+ * autoplayMode=game|loop|none (whether to autoplay the initial game, all games in a loop or none, default set in plugin options)
  * showMoves=justified|hidden (whether to show justified moves or to hide moves, default justified)
 
 Example:
