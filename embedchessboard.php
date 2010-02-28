@@ -21,6 +21,7 @@ ChangeLog:
   1.06  - minor fix
   1.07  - changed settings names (you might need to enter your custom config again)
   1.08  - added option for controlling autoplay of games at load
+  1.09  - added options to the pgn tag [pgn parameter=value ...] ... [/pgn]
 */
 
 class pgnBBCode {
