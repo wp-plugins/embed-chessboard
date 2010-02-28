@@ -13,7 +13,9 @@ Allows for the insertion of a chessboard displaying chess games within wordpress
 Embed Chessboard is a plugin that allows for the insertion of a chessboard displaying chess games within worpress articles.
 
 Use following tag to insert a chessboard:
-`[pgn parameter=value ...] chess games in PGN format [/pgn]`
+`[pgn parameter=value ...] 
+... chess games in PGN format ...
+[/pgn]`
 parameters:
 
  * height='number' (height in pixel of the iframe embedding the chessboard, default 600 if moves are shown otherwise 370)
