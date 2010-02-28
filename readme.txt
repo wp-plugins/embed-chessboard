@@ -14,13 +14,19 @@ Embed Chessboard is a plugin that allows for the insertion of a chessboard displ
 
 Use following tag to insert a chessboard:
 
-`[pgn height] chess games in PGN format [/pgn]`
+`[pgn parameter=value ...] chess games in PGN format [/pgn]`
 
-The "height" parameter is the height in pixels of the iframe used to embed the chessboard, if left blank defaults to 600. Enter your chess game (in PGN notation), preview the post and then adjust height as necessary.
+parameters:
+
+ * height='number' (height in pixel of the iframe embedding the chessboard, default 600 if moves are shown otherwise 370)
+ * initialGame=first|last|random|'number' (initial game to load, default first)
+ * initialHalfmove=start|end|random|comment|'number' (initial halfmove to show, default start)
+ * autoplaymode=game|loop|none (whether to autoplay the initial game, all games in a loop or none, default loop)
+ * showMoves=justified|hidden (whether to show justified moves or to hide moves, default justified)
 
 Example:
 
-`[pgn 500]
+`[pgn height=500 initialHalfmove=16]
 
 [Event "World Championship"]
 [Site "Moscow RUS"]

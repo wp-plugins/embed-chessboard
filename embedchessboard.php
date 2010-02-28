@@ -34,30 +34,38 @@ class pgnBBCode {
 		add_shortcode( 'pgn' , array(&$this, 'shortcode_pgn') );
 	}
 
-	// No-name attribute fixing
-	function attributefix( $atts = array() ) {
-		if ( empty($atts[0]) ) return $atts;
-
-		if ( 0 !== preg_match( '#=("|\')(.*?)("|\')#', $atts[0], $match ) )
-			$atts[0] = $match[2];
-
-		return $atts;
-	}
-
 	// pgn shortcode
 	function shortcode_pgn( $atts = array(), $content = NULL ) {
 		if ( NULL === $content ) return '';
 
-		$atts = $this->attributefix( $atts );
+		// [pgn height=600 movesDisplay=justified initialGame=1 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
 
-		// [pgn height] e4 e6 d4 d5 [/pgn]
+		if ( isset($atts['initialgame']) ) { $initialGame = $atts['initialgame']; }
+		elseif ( isset($atts['ig']) ) { $initialGame = $atts['ig']; }
+		else { $initialGame = 'f'; }
 
-		if ( isset($atts[0]) ) {
-			$height = $atts[0];
-		} else {
-			$height = 600;
-		}
+		if ( isset($atts['initialhalfmove']) ) { $initialHalfmove = $atts['initialhalfmove']; }
+		elseif ( isset($atts['ih']) ) { $initialHalfmove = $atts['ih']; }
+		else { $initialHalfmove = 's'; }
+
+		if ( isset($atts['autoplaymode']) ) { $autoplayMode = $atts['autoplaymode']; }
+		elseif ( isset($atts['am']) ) { $autoplayMode = $atts['am']; }
+		else { $autoplayMode = get_option_with_default('embedchessboard_autoplay_mode'); }
+
+		if ( isset($atts['movesdisplay']) ) { $movesDisplay = $atts['movesdisplay']; }
+		elseif ( isset($atts['md']) ) { $movesDisplay = $atts['md']; }
+		else { $movesDisplay = 'j'; }
+
+		if ( isset($atts['height']) ) { $height = $atts['height']; }
+		elseif ( isset($atts['h']) ) { $height = $atts['height']; } 
+		elseif ( isset($atts[0]) ) { $height = $atts[0]; } // compatibility with v < 1.09
+		else { 
+			if (($movesDisplay == 'hidden') || ($movesDisplay == 'h')) $height = 370;
+			else $height = 600; 
+		} 
+
 		$pgnText = preg_replace("@<.*?>@", "", $content);
+
 		$pgnId = dechex(crc32($pgnText));
 
 		$replacement  = "<div class='chessboard-wrapper'> ";
@@ -65,8 +73,11 @@ class pgnBBCode {
 		$replacement .= $pgnText;
 		$replacement .= " </textarea> ";
 		$replacement .= " <iframe src=" . plugins_url('pgn4web/board.html', __FILE__) . "?";
-		$replacement .= "am=" . get_option_with_default('embedchessboard_autoplay_mode');
-		$replacement .= "&d=3000&ss=26&ps=d&pf=d";
+		$replacement .= "am=" . $autoplayMode;
+		$replacement .= "&d=3000";
+		$replacement .= "&ig=" . $initialGame;
+		$replacement .= "&ih=" . $initialHalfmove;
+		$replacement .= "&ss=26&ps=d&pf=d";
 		$replacement .= "&lch=" . get_option_with_default('embedchessboard_light_squares_color');
 		$replacement .= "&dch=" . get_option_with_default('embedchessboard_dark_squares_color');
 		$replacement .= "&bbch=" . get_option_with_default('embedchessboard_board_border_color');
@@ -75,7 +86,9 @@ class pgnBBCode {
 		$replacement .= "&bd=c";
 		$replacement .= "&cbch=" . get_option_with_default('embedchessboard_control_buttons_background_color');
 		$replacement .= "&ctch=" . get_option_with_default('embedchessboard_control_buttons_text_color');
-		$replacement .= "&hd=j&md=j&tm=13";
+		$replacement .= "&hd=j";
+		$replacement .= "&md=" . $movesDisplay;
+		$replacement .= "&tm=13";
 		$replacement .= "&fhch=" . get_option_with_default('embedchessboard_header_text_color');
 		$replacement .= "&fhs=80p";
 		$replacement .= "&fmch=" . get_option_with_default('embedchessboard_moves_text_color');
