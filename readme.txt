@@ -25,7 +25,7 @@ parameters:
  * showMoves=justified|hidden (whether to show justified moves or to hide moves, default justified)
 
 Example:
-`[pgn height=500 initialHalfmove=16]
+`[pgn height=500 initialHalfmove=16 autoplayMode=none]
 
 [Event "World Championship"]
 [Site "Moscow RUS"]
