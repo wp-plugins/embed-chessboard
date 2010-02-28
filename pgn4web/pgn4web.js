@@ -1,6 +1,6 @@
 /*
  *  pgn4web javascript chessboard
- *  copyright (C) 2009 Paolo Casaschi
+ *  copyright (C) 2009, 2010 Paolo Casaschi
  *  see README file and http://pgn4web.casaschi.net
  *  for credits, license and more details
  */
@@ -89,7 +89,7 @@
  * DONT CHANGE AFTER HERE 
  */
 
-var pgn4web_version = '1.88';
+var pgn4web_version = '1.89';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -3139,7 +3139,9 @@ function PrintHTML(){
         if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + tableSize + '; '; }
         text += 'font-family: monospace;" CLASS="selectControl" ' + 
                 'ONCHANGE="this.blur(); if(this.value >= 0) {currentGame=parseInt(this.value); ' +
-                'document.GameSel.GameSelSelect.value = -1; Init();}">' +
+                'document.GameSel.GameSelSelect.value = -1; Init();}" ' +
+                'ONFOCUS="disableShortcutKeysAndStoreStatus();" ONBLUR="restoreShortcutKeysStatus();" ' +
+                '> ' +
                 '<OPTION value=-1>';
 
         blanks = ''; for (ii=0; ii<32; ii++) { blanks += ' '; }
