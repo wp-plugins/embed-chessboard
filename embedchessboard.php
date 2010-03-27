@@ -196,6 +196,8 @@ function embedchessboard_settings_page() {
 ?>
 <div class="wrap">
 <h2>Embed Chessboard Plugin Settings</h2>
+read the <a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress" target="_blank">wiki instructions page</a> for more details about this plugin
+<br>
 leave blank values to reset to defaults
 
 <script type="text/javascript" src="<?php echo plugins_url('pgn4web/jscolor/jscolor.js', __FILE__) ?>"></script>
