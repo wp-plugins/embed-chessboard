@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Plugin to embed a javascript chessboard in wordpress articles for replaying chess games. Use plugin options (admin panel, settings, embed chessboard menu) to blend the chessboard with the site template; use tag parameters to customize each chessboard; go to http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress for a full tutorial. Insert chess games in PGN format into your joomla article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. Parameters: height='number' (height in pixel of the iframe embedding the chessboard, default 600 if moves are shown otherwise 370); initialGame=first|last|random|'number' (initial game to load, default first); initialHalfmove=start|end|random|comment|'number' (initial halfmove to show, default start); autoplayMode=game|loop|none (whether to autoplay the initial game, all games in a loop or none, default set in plugin options); showMoves=justified|hidden (whether to show justified moves or to hide moves, default justified).
-Version: 1.09
+Version: 1.10
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 
@@ -22,7 +22,8 @@ ChangeLog:
   1.07  - changed settings names (you might need to enter your custom config again)
   1.08  - added option for controlling autoplay of games at load
   1.09  - added options to the pgn tag [pgn parameter=value ...] ... [/pgn]
-          and upgraded pgn4web to 1.89
+	  and upgraded pgn4web to 1.89
+  1.10  - added tutorial info on the admin page
 */
 
 class pgnBBCode {
