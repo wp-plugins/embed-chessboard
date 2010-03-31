@@ -56,6 +56,7 @@ Note that HTML tags are stripped from the PGN data, removing all text between "<
 Reccomended installation method is from the plugins section of the administration pages of your site, serching for the "Embed Chessboard" plugin.
 
 Alternative manual install option:
+
 1. Download the Embed Chessboard plugin package [from the Wordpress plugin directory](http://wordpress.org/extend/plugins/embed-chessboard/) or [from the pgn4web project site](http://code.google.com/p/pgn4web/downloads/list)
 1. Unzip
 1. Copy to your '/wp-content/plugins' directory
