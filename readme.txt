@@ -20,11 +20,11 @@ Use following tag to insert a chessboard:
 
 Tag parameters:
 
- * height='number' (height in pixel of the iframe embedding the chessboard, default 600 if moves are shown otherwise 370)
- * initialGame=first|last|random|'number' (initial game to load, default first)
- * initialHalfmove=start|end|random|comment|'number' (initial halfmove to show, default start)
- * autoplayMode=game|loop|none (whether to autoplay the initial game, all games in a loop or none, default set in plugin options)
- * showMoves=justified|hidden (whether to show justified moves or to hide moves, default justified)
+ * height=*number*
+ * initialGame=first|last|random|*number*
+ * initialHalfmove=start|end|random|comment|*number*
+ * autoplayMode=game|loop|none
+ * showMoves=justified|hidden
 
 Example:
 
@@ -56,6 +56,7 @@ Note that HTML tags are stripped from the PGN data, removing all text between "<
 Reccomended installation method is from the plugins section of the administration pages of your site, serching for the "Embed Chessboard" plugin.
 
 Alternative manual install option:
+
 1. Download the Embed Chessboard plugin package [from the Wordpress plugin directory](http://wordpress.org/extend/plugins/embed-chessboard/) or [from the pgn4web project site](http://code.google.com/p/pgn4web/downloads/list)
 1. Unzip
 1. Copy to your '/wp-content/plugins' directory
