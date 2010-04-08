@@ -20,11 +20,12 @@ Use following tag to insert a chessboard:
 
 Tag parameters:
 
+ * display=horizontal|vertical
  * height=*number*
+ * showMoves=justified|hidden
  * initialGame=first|last|random|*number*
  * initialHalfmove=start|end|random|comment|*number*
  * autoplayMode=game|loop|none
- * showMoves=justified|hidden
 
 Example:
 
@@ -64,7 +65,7 @@ Alternative manual install option:
 
 You can find full details of installing a plugin on the [plugin installation page](http://codex.wordpress.org/Managing_Plugins).
 
-The chessboard plugin can be configured by the site administrator from the "Embed Chessboard" submenu in the administrator "Settings" menu; here the colors of the chessboard can be changed to match the site template and the autoplay mode can be set (whether the chess games should be autoplayed on page load).
+The chessboard plugin can be configured by the site administrator from the "Embed Chessboard" submenu in the administrator "Settings" menu; here the horizontal or vertical position of the header/moves text respect to the chessboard can be configured, the colors of the chessboard can be changed to match the site template and the autoplay mode can be set (whether the chess games should be autoplayed on page load).
 
 The plugin is based on the [pgn4web](http://pgn4web.casaschi.net) tool; for more information, including updated troubleshooting notes, please refer to [the plugin tutorial at the pgn4web wiki](http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress).
 
