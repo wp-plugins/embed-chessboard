@@ -61,9 +61,9 @@ class pgnBBCode {
 		elseif ( isset($atts['md']) ) { $movesDisplay = $atts['md']; }
 		else { $movesDisplay = 'j'; }
 
-		if ( isset($atts['height']) ) { $height = $atts['height']; }
-		elseif ( isset($atts['h']) ) { $height = $atts['h']; } 
-		elseif ( isset($atts[0]) ) { $height = $atts[0]; } // compatibility with v < 1.09
+		if ( isset($atts['height']) ) { $frameHeight = $height = $atts['height']; }
+		elseif ( isset($atts['h']) ) { $frameHeight = $height = $atts['h']; } 
+		elseif ( isset($atts[0]) ) { $frameHeight = $height = $atts[0]; } // compatibility with v < 1.09
 		else {
 			if ($horizontalLayout == "t") {
 				// guessing if one game or multiple games are supplied
