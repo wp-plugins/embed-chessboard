@@ -99,7 +99,7 @@ class pgnBBCode {
 		$replacement .= "<textarea id='" . $pgnId . "' style='display:none;'> ";
 		$replacement .= $pgnText;
 		$replacement .= " </textarea> ";
-		$replacement .= " <iframe src=" . plugins_url('pgn4web/board.html', __FILE__) . "?";
+		$replacement .= " <iframe src='" . plugins_url("pgn4web/board.html", __FILE__) . "?";
 		$replacement .= "am=" . $autoplayMode;
 		$replacement .= "&d=3000";
 		$replacement .= "&ig=" . $initialGame;
@@ -127,7 +127,7 @@ class pgnBBCode {
 		$replacement .= "&hl=" . $horizontalLayout;
 		$replacement .= "&fh=" . $frameHeight;
 		$replacement .= "&fw=p";
-		$replacement .= "&pi=" . $pgnId . " ";
+		$replacement .= "&pi=" . $pgnId . "' ";
 		$replacement .= "frameborder='0' width='100%' height='" . $height . "' ";
 		$replacement .= "scrolling='no' marginheight='0' marginwidth='0'>";
 		$replacement .= "sorry, you'd need iframe support in your browser";
