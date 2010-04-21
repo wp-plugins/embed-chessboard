@@ -89,7 +89,7 @@
  * DONT CHANGE AFTER HERE 
  */
 
-var pgn4web_version = '1.91';
+var pgn4web_version = '1.92';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -485,9 +485,9 @@ configBoardShrortcut("A8", "go to the pgn4web website", function(){ window.open(
 // B8
 configBoardShrortcut("B8", "", function(){});
 // C8
-configBoardShrortcut("C8", "", function(){});
+configBoardShrortcut("C8", "show this game PGN source data", function(){ displayPgnData(false); });
 // D8
-configBoardShrortcut("D8", "show PGN source data", function(){ displayPgnData(); });
+configBoardShrortcut("D8", "show full PGN source data", function(){ displayPgnData(true); });
 // E8
 configBoardShrortcut("E8", "debug info v" + pgn4web_version, function(){ displayDebugInfo(); });
 // F8
@@ -672,8 +672,9 @@ function displayDebugInfo() {
 }
 
 pgnWin = null;
-function displayPgnData() {
+function displayPgnData(allGames) {
 
+  if (allGames === null) { allGames = true; }
   if (pgnWin && !pgnWin.closed) { pgnWin.close(); }
   pgnWin = window.open("", "pgn_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
   if (pgnWin !== null) {
@@ -681,7 +682,8 @@ function displayPgnData() {
     pgnWin.document.write("<html>");
     pgnWin.document.write("<head><title>pgn4web PGN source</title><link rel='shortcut icon' href='pawn.ico'></link></head>");
     pgnWin.document.write("<body>\n<pre>\n");
-    for (ii = 0; ii < numberOfGames; ++ii) { pgnWin.document.write(pgnGame[ii]); }
+    if (allGames) { for (ii = 0; ii < numberOfGames; ++ii) { pgnWin.document.write(pgnGame[ii]); } }
+    else { pgnWin.document.write(pgnGame[currentGame]); }
     pgnWin.document.write("\n</pre>\n</body></html>");
     pgnWin.document.close();
     if (window.focus) { pgnWin.window.focus(); }
@@ -2574,11 +2576,17 @@ function ParsePGNGameString(gameString){
         }
         
         moveCount = Math.floor((StartPly+PlyNumber)/2)+1;
-        searchThis = moveCount+'.';
+        searchThis = moveCount.toString()+'.';
         if(ss.indexOf(searchThis,start)==start){
           start += searchThis.length;
           while ((ss.charAt(start) == '.') || (ss.charAt(start) == ' ')  || (ss.charAt(start) == '\n') || (ss.charAt(start) == '\r')){start++;}
-        }
+        } else {
+          searchThis = moveCount.toString()+String.fromCharCode(8230); // ellipsis ...
+          if(ss.indexOf(searchThis,start)==start){
+            start += searchThis.length;
+            while ((ss.charAt(start) == '.') || (ss.charAt(start) == ' ')  || (ss.charAt(start) == '\n') || (ss.charAt(start) == '\r')){start++;}
+          }
+	}
         end = ss.indexOf(' ',start);
         end2 = ss.indexOf('$',start); if ((end2 > 0) && (end2 < end)) { end = end2; }
         end2 = ss.indexOf('{',start); if ((end2 > 0) && (end2 < end)) { end = end2; } 
