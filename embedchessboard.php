@@ -49,7 +49,7 @@ class pgnBBCode {
 		$pgnText = preg_replace("@<.*?>@", "", $content);
 
 		if ( isset($atts['layout']) ) { $layout = $atts['layout']; }
-		if ( isset($atts['l']) ) { $layout = $atts['l']; }
+		elseif ( isset($atts['l']) ) { $layout = $atts['l']; }
 		if ( isset($atts['layout']) || isset($atts['l'])) {
 			if (($layout == "horizontal") || ($layout == "h")) { $horizontalLayout = "t"; }
 			elseif (($layout == "vertical") || ($layout == "v")) { $horizontalLayout = "f"; }
