@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Embeds a javascript chessboard in wordpress articles for replaying chess games. Use plugin options to blend the chessboard with the site template; use tag parameters to customize each chessboard. Insert chess games in PGN format into your wordpress article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. For more info on plugin options and tag parameters please <a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress">read the tutorial</a>.
-Version: 1.13
+Version: 1.14
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 
@@ -16,17 +16,18 @@ ChangeLog:
   1.03  - properly detecting wordpress address URI
   1.04  - minor fix
   1.05  - major rewrite simplyfying the plugin core (replacing the Embed Iframe template 
-	  with a template from the bbcode plugin of Viper007Bond http://www.viper007bond.com/)
+          with a template from the bbcode plugin of Viper007Bond http://www.viper007bond.com/)
           added the option to configure chessboard colors (see settings submenu)
   1.06  - minor fix
   1.07  - changed settings names (you might need to enter your custom config again)
   1.08  - added option for controlling autoplay of games at load
   1.09  - added options to the pgn tag [pgn parameter=value ...] ... [/pgn]
-	  and upgraded pgn4web to 1.89
+          and upgraded pgn4web to 1.89
   1.10  - added tutorial info on the admin page
   1.11  - added advanced option with the CSS style for the HTML DIV container of the plugin frame
   1.12  - added admin option and tag parameter to set horizontal/vertical layout
   1.13  - bug fixes and upgraded pgn4web to 1.92
+  1.14  - bug fixes
 */
 
 class pgnBBCode {
@@ -58,8 +59,8 @@ class pgnBBCode {
 			$horizontalLayout = get_option_with_default('embedchessboard_horizontal_layout');
 		}
 
-		if ( isset($atts['movesdisplay']) ) { $movesDisplay = $atts['movesdisplay']; }
-		elseif ( isset($atts['md']) ) { $movesDisplay = $atts['md']; }
+		if ( isset($atts['showmoves']) ) { $movesDisplay = $atts['showmoves']; }
+		elseif ( isset($atts['sm']) ) { $movesDisplay = $atts['sm']; }
 		else { $movesDisplay = 'j'; }
 
 		if ( isset($atts['height']) ) { $frameHeight = $height = $atts['height']; }
