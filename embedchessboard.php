@@ -45,7 +45,7 @@ class pgnBBCode {
 	function shortcode_pgn( $atts = array(), $content = NULL ) {
 		if ( NULL === $content ) return '';
 
-		// [pgn height=600 movesDisplay=justified initialGame=1 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
+		// [pgn height=600 showMoves=justified initialGame=1 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
 
 		$pgnText = preg_replace("@<.*?>@", "", $content);
 
