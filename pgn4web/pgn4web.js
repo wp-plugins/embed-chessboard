@@ -89,7 +89,7 @@
  * DONT CHANGE AFTER HERE 
  */
 
-var pgn4web_version = '1.93';
+var pgn4web_version = '1.94';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -222,7 +222,7 @@ function handlekey(e) {
       break;
 
     case 37:  // left arrow  
-    case 74:  // k
+    case 74:  // j
       MoveBackward(1);
       return stopKeyPropagation(e);
       break;
@@ -256,6 +256,10 @@ function handlekey(e) {
       break;
 
     case 83:  // s
+      searchPgnGamePrompt();
+      return stopKeyPropagation(e);
+      break;
+
     case 13:  // enter
       searchPgnGame(lastSearchPgnExpression);
       return stopKeyPropagation(e);
@@ -483,13 +487,13 @@ function configBoardShrortcut(square, title, functionPointer) {
 // A8
 configBoardShrortcut("A8", "go to the pgn4web website", function(){ window.open(pgn4web_project_url); });
 // B8
-configBoardShrortcut("B8", "", function(){});
+configBoardShrortcut("B8", "debug info v" + pgn4web_version, function(){ displayDebugInfo(); });
 // C8
 configBoardShrortcut("C8", "show this game PGN source data", function(){ displayPgnData(false); });
 // D8
 configBoardShrortcut("D8", "show full PGN source data", function(){ displayPgnData(true); });
 // E8
-configBoardShrortcut("E8", "debug info v" + pgn4web_version, function(){ displayDebugInfo(); });
+configBoardShrortcut("E8", "search help", function(){ displayHelp("search"); });
 // F8
 configBoardShrortcut("F8", "shortcut keys help", function(){ displayHelp("keys"); });
 // G8
@@ -529,9 +533,9 @@ configBoardShrortcut("G6", "", function(){});
 // H6
 configBoardShrortcut("H6", "force games refresh during live broadcast", function(){ refreshPgnSource(); });
 // A5
-configBoardShrortcut("A5", "", function(){});
+configBoardShrortcut("A5", "repeat last search", function(){ searchPgnGame(lastSearchPgnExpression); });
 // B5
-configBoardShrortcut("B5", "", function(){});
+configBoardShrortcut("B5", "search prompt", function(){ searchPgnGamePrompt(); });
 // C5
 configBoardShrortcut("C5", "", function(){});
 // D5
@@ -577,7 +581,7 @@ configBoardShrortcut("G3", "jump 50 games forward", function(){ if (numberOfGame
 // H3
 configBoardShrortcut("H3", "load last game", function(){ if (numberOfGames > 1) { currentGame = numberOfGames - 1; Init(); } });
 // A2
-configBoardShrortcut("A2", "stop autoplay", function(){ SetAutoPlay(false); });
+configBoardShrortcut("A2", "pause autoplay", function(){ SetAutoPlay(false); });
 // B2
 configBoardShrortcut("B2", "toggle autoplay", function(){ SwitchAutoPlay(); });
 // C2
@@ -3009,15 +3013,20 @@ function reset_after_click (ii, jj, originalClass, newClass) {
   clickedSquareInterval = null;
 }
 
+
 var lastSearchPgnExpression = "";
 function searchPgnGame(searchExpression) {
   lastSearchPgnExpression = searchExpression;
-  if (searchExpression === "") { return; }
+  if ((searchExpression === "") || (! searchExpression)) { return; }
   if (numberOfGames < 2) { return; }
+  // when searching we replace newline characters with spaces, 
+  // so that we can use the "." special regexp characters on the whole game as a single line
+  newlinesRegExp = new RegExp("[\n\r]", "gm");
+  searchExpressionRegExp = new RegExp(searchExpression, "im");
   for (checkGame=(currentGame+1) % numberOfGames; 
        checkGame != currentGame; 
        checkGame = (checkGame + 1) % numberOfGames) { 
-    if (pgnGame[checkGame].match(searchExpression)) {
+    if (pgnGame[checkGame].replace(newlinesRegExp, " ").match(searchExpressionRegExp)) {
       break;
     }
   }
@@ -3025,6 +3034,20 @@ function searchPgnGame(searchExpression) {
     currentGame = checkGame;
     Init();
   }
+}
+
+function searchPgnGamePrompt() {
+  if (numberOfGames < 2) { 
+    alert("Search disabled: PGN data with less than 2 games."); 
+    return;
+  }
+  searchExpression = prompt("Please enter search pattern for PGN games:", lastSearchPgnExpression);
+  if (! searchExpression) { return; }
+  theObject = document.getElementById('searchPgnExpression');
+  if (theObject) {
+    theObject.value = searchExpression;
+  }
+  searchPgnGame(searchExpression);
 }
 
 
@@ -3083,7 +3106,7 @@ function PrintHTML(){
           '<TD>' +
           '<INPUT ID="startButton" TYPE="BUTTON" VALUE="&#124;&lt;" STYLE="';
   if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + ';'; }
-  text += '"; CLASS="buttonControl" ' +
+  text += '"; CLASS="buttonControl" TITLE="go to game start" ' +
           ' ID="btnGoToStart" onClick="javascript:GoToMove(StartPly)" ONFOCUS="this.blur()">' +
           '</TD>' +
           '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
@@ -3091,7 +3114,7 @@ function PrintHTML(){
           '<TD>' +
           '<INPUT ID="backButton" TYPE="BUTTON" VALUE="&lt;" STYLE="';
   if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + ';'; }
-  text += '"; CLASS="buttonControl" ' +
+  text += '"; CLASS="buttonControl" TITLE="move backward" ' +
           ' ID="btnMoveBackward1" onClick="javascript:MoveBackward(1)" ONFOCUS="this.blur()">' +
           '</TD>' +
           '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
@@ -3099,7 +3122,7 @@ function PrintHTML(){
           '<TD>' +
           '<INPUT ID="autoplayButton" TYPE="BUTTON" VALUE="play" STYLE="';
   if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + ';'; }
-  text += '"; CLASS="buttonControlStop" ' +
+  text += '"; CLASS="buttonControlStop" TITLE="toggle autoplay" ' +
           ' ID="btnPlay" NAME="AutoPlay" onClick="javascript:SwitchAutoPlay()" ONFOCUS="this.blur()">' +
           '</TD>' +
           '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
@@ -3107,7 +3130,7 @@ function PrintHTML(){
           '<TD>' +
           '<INPUT ID="forwardButton" TYPE="BUTTON" VALUE="&gt;" STYLE="';
   if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + ';'; }
-  text += '"; CLASS="buttonControl" ' +
+  text += '"; CLASS="buttonControl" TITLE="move forward" ' +
           ' ID="btnMoveForward1" onClick="javascript:MoveForward(1)" ONFOCUS="this.blur()">' +
           '</TD>' +
           '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
@@ -3115,7 +3138,7 @@ function PrintHTML(){
           '<TD>' +
           '<INPUT ID="endButton" TYPE="BUTTON" VALUE="&gt;&#124;" STYLE="';
   if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + ';'; }
-  text += '"; CLASS="buttonControl" ' +
+  text += '"; CLASS="buttonControl" TITLE="go to game end" ' +
           ' ID="btnGoToEnd" onClick="javascript:GoToMove(StartPly + PlyNumber)" ONFOCUS="this.blur()">' +
           '</TD>' +
           '</TR>' + 
@@ -3145,7 +3168,7 @@ function PrintHTML(){
         text = '<FORM NAME="GameSel" STYLE="display:inline;"> ' +
                '<SELECT ID="GameSelSelect" NAME="GameSelSelect" STYLE="';
         if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + tableSize + '; '; }
-        text += 'font-family: monospace;" CLASS="selectControl" ' + 
+        text += 'font-family: monospace;" CLASS="selectControl" TITLE="Select a game" ' +
                 'ONCHANGE="this.blur(); if(this.value >= 0) {currentGame=parseInt(this.value); ' +
                 'document.GameSel.GameSelSelect.value = -1; Init();}" ' +
                 'ONFOCUS="disableShortcutKeysAndStoreStatus();" ONBLUR="restoreShortcutKeysStatus();" ' +
@@ -3342,9 +3365,10 @@ function PrintHTML(){
              'ACTION="javascript:searchPgnGame(document.getElementById(\'searchPgnExpression\').value);">';
       text += '<INPUT ID="searchPgnButton" CLASS="searchPgnButton" STYLE="display: inline; ';
       if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + tableSize/4 + '; '; }
-      text += '" TYPE="submit" VALUE="search">';
+      text += '" TITLE="find games matching the search string (or regular expression), click square E8 for more help" ';
+      text += 'TYPE="submit" VALUE="search">';
       text += '<INPUT ID="searchPgnExpression" CLASS="searchPgnExpression" ' +
-              'TITLE="find games matching the search string (or regular expression) in the PGN data" ' + 
+              'TITLE="find games matching the search string (or regular expression), click square E8 for more help" ' + 
               'TYPE="input" VALUE="' + lastSearchPgnExpression + '" STYLE="display: inline; ';
       if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + 3*tableSize/4 + '; '; }
       text += '" ONFOCUS="disableShortcutKeysAndStoreStatus();" ONBLUR="restoreShortcutKeysStatus();">'; 
