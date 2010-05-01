@@ -29,7 +29,7 @@ ChangeLog:
   1.13  - bug fixes and upgraded pgn4web to 1.92
   1.14  - bug fixes
   1.15  - more bug fixes and upgraded pgn4web to 1.93
-  1.16  - upgrade pgn4web to v1.94 with search tool addition 
+  1.16  - upgraded pgn4web to 1.94 with search tool addition 
 */
 
 class pgnBBCode {
