@@ -30,7 +30,7 @@ ChangeLog:
   1.14  - bug fixes
   1.15  - more bug fixes and upgraded pgn4web to 1.93
   1.16  - upgraded pgn4web to 1.94 with search tool addition 
-  1.17  - minor bug fix 
+  1.17  - minor bug fix
 */
 
 class pgnBBCode {
