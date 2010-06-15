@@ -89,7 +89,7 @@
  * DONT CHANGE AFTER HERE
  */
 
-var pgn4web_version = '1.96';
+var pgn4web_version = '1.97';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -1868,6 +1868,7 @@ function InitFEN(startingFEN){
   StartPly  = 0;
   MoveCount = StartPly;
   MoveColor = StartPly % 2;
+  StartMove = 0;
 
   var newEnPassant = false;
   var newEnPassantCol;
@@ -1927,7 +1928,7 @@ function InitFEN(startingFEN){
       { if (cc=="/")
         { if (ii!=8)
           { myAlert("Invalid FEN [1]: char "+ll+" in "+FenString);
-            Init('standard');
+            InitFEN();
             return;
           }
           ii=0;
@@ -1935,13 +1936,14 @@ function InitFEN(startingFEN){
         }
         if (ii==8) 
         { myAlert("Invalid FEN [2]: char "+ll+" in "+FenString);
-          Init('standard');
+          InitFEN();
           return;
         }
         if (! isNaN(cc))
         { ii+=parseInt(cc, 10);
           if ((ii<0)||(ii>8))
           { myAlert("Invalid FEN [3]: char "+ll+" in "+FenString);
+            InitFEN();
             return;
           }
         }
@@ -1949,6 +1951,7 @@ function InitFEN(startingFEN){
         if (cc.charCodeAt(0)==PieceName.toUpperCase().charCodeAt(0))
         { if (PieceType[0][0]!=-1)
           { myAlert("Invalid FEN [4]: char "+ll+" in "+FenString);
+            InitFEN();
             return;
           }     
           PieceType[0][0]=1;
@@ -1959,6 +1962,7 @@ function InitFEN(startingFEN){
         if (cc.charCodeAt(0)==PieceName.toLowerCase().charCodeAt(0))
         { if (PieceType[1][0]!=-1)
           { myAlert("Invalid FEN [5]: char "+ll+" in "+FenString);
+            InitFEN();
             return;
           }  
           PieceType[1][0]=1;
@@ -1970,6 +1974,7 @@ function InitFEN(startingFEN){
         { if (cc.charCodeAt(0)==PieceName.toUpperCase().charCodeAt(kk))
           { if (nn==16)
             { myAlert("Invalid FEN [6]: char "+ll+" in "+FenString);
+              InitFEN();
               return;
             }          
             PieceType[0][nn]=kk+1;
@@ -1981,6 +1986,7 @@ function InitFEN(startingFEN){
           if (cc.charCodeAt(0)==PieceName.toLowerCase().charCodeAt(kk))
           { if (mm==16)
             { myAlert("Invalid FEN [7]: char "+ll+" in "+FenString);
+              InitFEN();
               return;
             }  
             PieceType[1][mm]=kk+1;
@@ -1995,10 +2001,12 @@ function InitFEN(startingFEN){
       }
       if ((ii!=8)||(jj!==0))
       { myAlert("Invalid FEN [8]: char "+ll+" in "+FenString);
+        InitFEN();
         return;
       }
       if ((PieceType[0][0]==-1)||(PieceType[1][0]==-1))
       { myAlert("Invalid FEN [9]: char "+ll+" missing king");
+        InitFEN();
         return;
       }
       if (ll==FenString.length)
@@ -2012,9 +2020,7 @@ function InitFEN(startingFEN){
       }
       cc=FenString.charAt(ll++);
       if ((cc=="w")||(cc=="b"))
-      { if (cc=="w") { 
-          StartMove=0;
-        }else{ 
+      { if (cc=="b") { 
           StartMove=1;
           StartPly += 1;
           MoveColor = 1;
@@ -2022,14 +2028,12 @@ function InitFEN(startingFEN){
       }
       else
       { myAlert("Invalid FEN [11]: char "+ll+" invalid active color");
-        Init('standard');
         return;
       }
 
       ll++;
       if (ll>=FenString.length)
       { myAlert("Invalid FEN [12]: char "+ll+" missing castling availability");
-        Init('standard');
         return;
       }
       CastlingShort[0]=0; CastlingLong[0]=0; CastlingShort[1]=0; CastlingLong[1]=0;
@@ -2074,7 +2078,6 @@ function InitFEN(startingFEN){
           
       if (ll==FenString.length)
       { myAlert("Invalid FEN [13]: char "+ll+" missing en passant target square");
-        Init('standard');
         return;
       }
       cc=FenString.charAt(ll++);
