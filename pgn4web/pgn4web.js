@@ -6,90 +6,11 @@
  */
 
 /*
- *   HOW TO USE pgn4web.js
- *
- *   add a SCRIPT instance at the top of your HTML file:
- *
- *      <script src="pgn4web-server-config.js" type="text/javascript"></script>
- *      <script src="pgn4web.js" type="text/javascript"></script>
- *
- *   The JS file pgn4web-server-config.js contains some customization variable
- *   depending on your web server configuration. Default values should be ok
- *   for most purposes.
- *   Then add another SCRIPT instance with at least the call to SetPgnUrl("http://yoursite/yourpath/yourfile.pgn")
- *   and optionally any of the other calls listed below.  
- *   Example:
- *
- *      <script type="text/javascript>
- *        SetPgnUrl("http://yoursite/yourpath/yourfile.pgn");  // if set, this has precedence over the inline PGN in the HTML file
- *        SetImagePath(""); // use "" path if images are in the same folder as this javascript file
- *        SetImageType("png");
- *        SetHighlightOption(true); // true or false
- *        SetGameSelectorOptions(head, num, chEvent, chSite, chRound, chWhite, chBlack, chResult, chDate); // default: (" ...", false, 0, 0, 0, 15, 15, 0, 10)
- *        SetCommentsIntoMoveText(false);
- *        SetCommentsOnSeparateLines(false);
- *        SetAutoplayDelay(1000); // milliseconds
- *        SetAutostartAutoplay(false);
- *        SetAutoplayNextGame(false); // if set, move to the next game at the end of the current game during autoplay
- *        SetInitialGame(1); // number of game to be shown at load, from 1 (default); values (keep the quotes) of "first", "last", "random" are also acceptted
- *        SetInitialHalfmove(0,false); // halfmove number to be shown at load, 0 (default) for start position; values (keep the quotes) of "start", "end", "random" and "comment" (go to first comment) are also accepted. Second parameter if true applies the setting to every selected game instead of startup only (default)
- *        SetShortcutKeysEnabled(false);
- *
- *        SetLiveBroadcast(0.25, true, true); // set live broadcast; parameters are delay (refresh delay in minutes, 0 means no broadcast, default 0) alertFlag (if true, displays debug error messages, default false) demoFlag (if true starts broadcast demo mode, default false)
- *      </script>
- * 
- *   Then the script will automagically add content into your HTML file 
- *   to any <div> or <span> containers with the following IDs:
- *
- *      <div id="GameSelector"></div>
- *      <div id="GameSearch"></div>
- *      <div id="GameLastMove"></div>
- *      <div id="GameNextMove"></div>
- *      <div id="GameSideToMove"></div>
- *      <div id="GameLastComment"></div>
- *      <div id="GameBoard"></div>
- *      <div id="GameButtons"></div>
- *      <div id="GameEvent"></div>
- *      <div id="GameRound"></div>
- *      <div id="GameSite"></div>
- *      <div id="GameDate"></div>
- *      <div id="GameWhite"></div>
- *      <div id="GameBlack"></div>
- *      <div id="GameResult"></div>
- *      <div id="GameText"></div>
- *
- *      <div id="GameWhiteClock"></div>
- *      <div id="GameBlackClock"></div>
- *      <div id="GameLiveStatus"></div>
- *
- *   The file template.css shows a list of customization style options.
- *
- *   See template.html file for an example.
- *   See mini.html for an example of embedding the PGN within the HTML file.
+ *   See README.txt file for instructions HOW TO USE pgn4web.js
+ *   Alternatively, check the project wiki at http://pgn4web.casaschi.net
  */
 
-// SetPgnUrl("");  // if set, this has precedence over the inline PGN in the HTML file
-// SetImagePath(""); // use "" path if images are in the same folder as this javascript file
-// SetImageType("png");
-// SetHighlightOption(true); // true or false
-// SetGameSelectorOptions(head, num, chEvent, chSite, chRound, chWhite, chBlack, chResult, chDate); // default: (" ...", false, 0, 0, 0, 15, 15, 0, 10)
-// SetCommentsIntoMoveText(true);
-// SetCommentsOnSeparateLines(true);
-// SetAutoplayDelay(1000); // milliseconds
-// SetAutostartAutoplay(false);
-// SetAutoplayNextGame(false); // if set, move to the next game at the end of the current game during autoplay
-// SetInitialGame(1); // number of game to be shown at load, from 1 (default); values (keep the quotes) of "first", "last", "random" are also accepted
-// SetInitialHalfmove(0,false); // halfmove number to be shown at load, 0 (default) for start position; values (keep the quotes) of "start", "end", "random" and "comment" (go to first comment) are also accepted. Second parameter if true applies the setting to every selected game instead of startup only (default).
-// SetShortcutKeysEnabled(false);
-
-
-/*********************************************************************/
-
-/* 
- * DONT CHANGE AFTER HERE
- */
-
-var pgn4web_version = '1.97';
+var pgn4web_version = '1.98';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -111,17 +32,11 @@ function displayHelp(section){
 }
 
 
-/******************************************************************************
- *                                                                            *
- * function customFunctionOnPgnTextLoad() {}                                  *
- * function customFunctionOnPgnGameLoad() {}                                  *
- * function customFunctionOnMove()        {}                                  *
- *                                                                            *
- * Custom functions executed each time a PGN text is loaded and each time a   *
- * PGN game is loaded. They are intentionally empty here so that can be       *
- * customized in the HTML file by redefining them AFTER loading pgn4web.js    *
- *                                                                            *
- ******************************************************************************/
+/*
+ * Custom functions executed each time a PGN text is loaded and each time a 
+ * PGN game is loaded. They are intentionally empty here so that can be 
+ * customized in the HTML file by redefining them AFTER loading pgn4web.js
+ */
 
 function customFunctionOnPgnTextLoad() {}
 function customFunctionOnPgnGameLoad() {}
@@ -519,10 +434,12 @@ function configBoardShrortcut(square, title, functionPointer) {
   boardOnClick[col][row] = functionPointer;
 }
 
+// PLEASE NOTE: the 'square' parameter of 'configBoardShrortcut' is ALWAYS ASSUMING WHITE ON BOTTOM
+
 // A8
-configBoardShrortcut("A8", "go to the pgn4web website", function(){ window.open(pgn4web_project_url); });
+configBoardShrortcut("A8", "debug info v" + pgn4web_version, function(){ displayDebugInfo(); });
 // B8
-configBoardShrortcut("B8", "debug info v" + pgn4web_version, function(){ displayDebugInfo(); });
+configBoardShrortcut("B8", "show this position FEN string", function(){ displayFenData(); });
 // C8
 configBoardShrortcut("C8", "show this game PGN source data", function(){ displayPgnData(false); });
 // D8
@@ -536,19 +453,19 @@ configBoardShrortcut("G8", "shortcut squares help", function(){ displayHelp("squ
 // H8
 configBoardShrortcut("H8", "pgn4web help", function(){ displayHelp(); });
 // A7
-configBoardShrortcut("A7", "toggle show comments in game text", function(){ SetCommentsIntoMoveText(!commentsIntoMoveText); thisPly = CurrentPly; Init(); GoToMove(thisPly); });
+configBoardShrortcut("A7", "go to the pgn4web website", function(){ window.open(pgn4web_project_url); });
 // B7
-configBoardShrortcut("B7", "toggle show comments on separate lines in game text", function(){ SetCommentsOnSeparateLines(!commentsOnSeparateLines); thisPly = CurrentPly; Init(); GoToMove(thisPly); });
+configBoardShrortcut("B7", "toggle show comments in game text", function(){ SetCommentsIntoMoveText(!commentsIntoMoveText); thisPly = CurrentPly; Init(); GoToMove(thisPly); });
 // C7
-configBoardShrortcut("C7", "toggle highlight last move", function(){ SetHighlight(!highlightOption); });
+configBoardShrortcut("C7", "toggle show comments on separate lines in game text", function(){ SetCommentsOnSeparateLines(!commentsOnSeparateLines); thisPly = CurrentPly; Init(); GoToMove(thisPly); });
 // D7
-configBoardShrortcut("D7", "flip board", function(){ FlipBoard(); });
+configBoardShrortcut("D7", "toggle highlight last move", function(){ SetHighlight(!highlightOption); });
 // E7
-configBoardShrortcut("E7", "show white on bottom", function(){ if (IsRotated) { FlipBoard(); } });
+configBoardShrortcut("E7", "flip board", function(){ FlipBoard(); });
 // F7
-configBoardShrortcut("F7", "toggle autoplay next game", function(){ SetAutoplayNextGame(!autoplayNextGame); });
+configBoardShrortcut("F7", "show white on bottom", function(){ if (IsRotated) { FlipBoard(); } });
 // G7
-configBoardShrortcut("G7", "", function(){});
+configBoardShrortcut("G7", "toggle autoplay next game", function(){ SetAutoplayNextGame(!autoplayNextGame); });
 // H7
 configBoardShrortcut("H7", "toggle enabling shortcut keys", function(){ SetShortcutKeysEnabled(!shortcutKeysEnabled); });
 // A6
@@ -729,6 +646,142 @@ function displayPgnData(allGames) {
   }
 }
 
+function CurrentFEN() {
+
+  currentFEN = "";
+
+  emptyCounterFen = 0;
+  for (row=7; row>=0; row--) {
+    for (col=0; col<=7; col++) {
+      if (Board[col][row] === 0) {
+        emptyCounterFen++;
+      } else {
+        if (emptyCounterFen > 0) {
+          currentFEN += "" + emptyCounterFen;
+          emptyCounterFen = 0;
+        }
+        if (Board[col][row] > 0) { currentFEN += FenPieceName.toUpperCase().charAt(Board[col][row]-1); }
+        else if (Board[col][row] < 0) { currentFEN += FenPieceName.toLowerCase().charAt(-Board[col][row]-1); }
+      }
+    }
+    if (emptyCounterFen > 0) {
+      currentFEN += "" + emptyCounterFen;
+      emptyCounterFen = 0;
+    }
+    if (row>0) { currentFEN += "/"; }
+  }
+ 
+  // Active color
+  if (CurrentPly%2 === 0) { currentFEN += " w"; }
+  else { currentFEN += " b"; }
+
+  // Castling availability (only standard chess supported, not any FischerRandom extensions
+  CastlingShortFEN = new Array(2);
+  CastlingShortFEN[0] = CastlingShort[0];
+  CastlingShortFEN[1] = CastlingShort[1];
+  CastlingLongFEN = new Array(2);
+  CastlingLongFEN[0] = CastlingLong[0];
+  CastlingLongFEN[1] = CastlingLong[1];
+  for (thisPly = StartPly; thisPly < CurrentPly; thisPly++) {
+    SideToMoveFEN = thisPly%2;
+    BackrowSideToMoveFEN = SideToMoveFEN * 7;
+    if (HistType[0][thisPly] == 1) { CastlingShortFEN[SideToMoveFEN] = CastlingLongFEN[SideToMoveFEN] = 0; }
+    if ((HistCol[0][thisPly] === 7) && (HistRow[0][thisPly] == BackrowSideToMoveFEN)) { CastlingShortFEN[SideToMoveFEN] = 0; }
+    if ((HistCol[0][thisPly] === 0) && (HistRow[0][thisPly] == BackrowSideToMoveFEN)) { CastlingLongFEN[SideToMoveFEN] = 0; }
+  }
+
+  CastlingFEN = "";
+  if (CastlingShortFEN[0] !== 0) { CastlingFEN += FenPieceName.toUpperCase().charAt(0); }
+  if (CastlingLongFEN[0] !== 0) { CastlingFEN += FenPieceName.toUpperCase().charAt(1); }
+  if (CastlingShortFEN[1] !== 0) { CastlingFEN += FenPieceName.toLowerCase().charAt(0); }
+  if (CastlingLongFEN[1] !== 0) { CastlingFEN += FenPieceName.toLowerCase().charAt(1); }
+  if (CastlingFEN === "") { CastlingFEN = "-"; }
+  currentFEN += " " + CastlingFEN;
+ 
+  // En passant target square
+  if (HistEnPassant[CurrentPly-1]) {
+    currentFEN += " " + String.fromCharCode(HistEnPassantCol[CurrentPly-1] + 97);
+    if (CurrentPly%2 === 0) { currentFEN += "6"; }
+    else { currentFEN += "3"; }
+  } else {
+    currentFEN += " -";
+  }
+
+  // Halfmove clock
+  HalfMoveClock = InitialHalfMoveClock;  
+  for (thisPly = StartPly; thisPly < CurrentPly; thisPly++) {
+    if ((HistType[0][thisPly] == 6) || (HistPieceId[1][thisPly] >= 16)) { HalfMoveClock = 0; }
+    else { HalfMoveClock++; } 
+  }
+  currentFEN += " " + HalfMoveClock;
+
+  // Fullmove number
+  currentFEN += " " + (Math.floor(CurrentPly/2)+1);
+
+  return currentFEN;
+}
+
+fenWin = null;
+function displayFenData() {
+  if (fenWin && !fenWin.closed) { fenWin.close(); }
+
+  currentFEN = CurrentFEN();
+
+  currentMovesString = "";
+  lastLineStart = 0;
+  for(thisPly = CurrentPly; thisPly <= StartPly + PlyNumber; thisPly++) {
+    addToMovesString = "";
+    if (thisPly == StartPly + PlyNumber) {
+      if ((gameResult[currentGame]) && (gameResult[currentGame] != "*")) {
+        addToMovesString = gameResult[currentGame];
+      }
+    } else {
+      if ((thisPly%2) === 0) { addToMovesString = (Math.floor(thisPly/2)+1) + ". "; }
+      else if (thisPly == CurrentPly) {
+        addToMovesString = (Math.floor(thisPly/2)+1) + "... ";
+      }
+      addToMovesString += Moves[thisPly];
+    }
+    if (currentMovesString.length + addToMovesString.length + 1 > lastLineStart + 80) {
+      lastLineStart = currentMovesString.length;
+      currentMovesString += "\n" + addToMovesString;
+    } else {
+      if (currentMovesString.length > 0) { currentMovesString += " "; }
+      currentMovesString += addToMovesString;
+    }
+  }
+
+  fenWin = window.open("", "fen_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
+  if (fenWin !== null) {
+    fenWin.document.open("text/html", "replace");
+    fenWin.document.write("<html>");
+    fenWin.document.write("<head><title>pgn4web FEN string</title><link rel='shortcut icon' href='pawn.ico'></link></head>");
+    fenWin.document.write("<body>\n");
+    fenWin.document.write("<b><pre>\n\n" + currentFEN + "\n\n</pre></b>\n<hr>\n");
+    fenWin.document.write("<pre>\n\n");
+    if (gameEvent[currentGame]) { fenWin.document.write("[Event \"" + gameEvent[currentGame] + "\"]\n"); }
+    else { fenWin.document.write("[Event \"?\"]\n"); }
+    if (gameSite[currentGame]) { fenWin.document.write("[Site \"" + gameSite[currentGame] + "\"]\n"); }
+    else { fenWin.document.write("[Site \"?\"]\n"); }
+    if (gameDate[currentGame]) { fenWin.document.write("[Date \"" + gameDate[currentGame] + "\"]\n"); }
+    else { fenWin.document.write("[Date \"????.??.??\"]\n"); }
+    if (gameRound[currentGame]) { fenWin.document.write("[Round \"" + gameRound[currentGame] + "\"]\n"); }
+    else { fenWin.document.write("[Round \"?\"]\n"); }
+    if (gameWhite[currentGame]) { fenWin.document.write("[White \"" + gameWhite[currentGame] + "\"]\n"); }
+    else { fenWin.document.write("[White \"?\"]\n"); }
+    if (gameBlack[currentGame]) { fenWin.document.write("[Black \"" + gameBlack[currentGame] + "\"]\n"); }
+    else { fenWin.document.write("[Black \"?\"]\n"); }
+    if (gameResult[currentGame]) { fenWin.document.write("[Result \"" + gameResult[currentGame] + "\"]\n"); }
+    else { fenWin.document.write("[Result \"*\"]\n"); }
+    fenWin.document.write("[SetUp \"1\"]\n");
+    fenWin.document.write("[FEN \"" + CurrentFEN() + "\"]\n\n");
+    fenWin.document.write(currentMovesString);
+    fenWin.document.write("\n</pre>\n</body></html>");
+    fenWin.document.close();
+    if (window.focus) { fenWin.window.focus(); }
+  }
+}
+
 
 var pgnGame = new Array();
 var numberOfGames = -1; 
@@ -746,6 +799,7 @@ var gameEvent = new Array();
 var gameSite = new Array();
 var gameRound = new Array();
 var gameResult = new Array();
+var gameSetUp = new Array();
 var gameFEN = new Array();
 var gameInitialWhiteClock = new Array();
 var gameInitialBlackClock = new Array();
@@ -844,8 +898,9 @@ PieceCode[3] = "B";
 PieceCode[4] = "N";
 PieceCode[5] = "P";
 
-var FenString   = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-var ImageOffset = -1; 
+var FenPieceName = "KQRBNP";
+var FenString    = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+var ImageOffset  = -1; 
                                                 
 var ImagePath = '';                                                 
 var ImagePathOld;
@@ -1792,7 +1847,9 @@ function Init(){
     }
   }
 
-  InitFEN(gameFEN[currentGame]);
+  if ((gameSetUp[currentGame] != undefined) && (gameSetUp[currentGame] != "1")) { InitFEN(); }
+  else { InitFEN(gameFEN[currentGame]); }
+  
   OpenGame(currentGame);
   
   /*
@@ -1877,7 +1934,8 @@ function InitFEN(startingFEN){
     CastlingLong[ii]  = 1;
     CastlingShort[ii] = 1;
   }
-  HalfMove=0;
+  
+  InitialHalfMoveClock=0;
 
   if (FenString == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"){
     for (color = 0; color < 2; ++color){
@@ -1947,8 +2005,7 @@ function InitFEN(startingFEN){
             return;
           }
         }
-        var PieceName = "KQRBNP";
-        if (cc.charCodeAt(0)==PieceName.toUpperCase().charCodeAt(0))
+        if (cc.charCodeAt(0)==FenPieceName.toUpperCase().charCodeAt(0))
         { if (PieceType[0][0]!=-1)
           { myAlert("Invalid FEN [4]: char "+ll+" in "+FenString);
             InitFEN();
@@ -1959,7 +2016,7 @@ function InitFEN(startingFEN){
           PieceRow[0][0]=jj;
           ii++;
         }
-        if (cc.charCodeAt(0)==PieceName.toLowerCase().charCodeAt(0))
+        if (cc.charCodeAt(0)==FenPieceName.toLowerCase().charCodeAt(0))
         { if (PieceType[1][0]!=-1)
           { myAlert("Invalid FEN [5]: char "+ll+" in "+FenString);
             InitFEN();
@@ -1971,7 +2028,7 @@ function InitFEN(startingFEN){
           ii++;
         }
         for (kk=1; kk<6; kk++)
-        { if (cc.charCodeAt(0)==PieceName.toUpperCase().charCodeAt(kk))
+        { if (cc.charCodeAt(0)==FenPieceName.toUpperCase().charCodeAt(kk))
           { if (nn==16)
             { myAlert("Invalid FEN [6]: char "+ll+" in "+FenString);
               InitFEN();
@@ -1983,7 +2040,7 @@ function InitFEN(startingFEN){
             nn++;
             ii++;
           }
-          if (cc.charCodeAt(0)==PieceName.toLowerCase().charCodeAt(kk))
+          if (cc.charCodeAt(0)==FenPieceName.toLowerCase().charCodeAt(kk))
           { if (mm==16)
             { myAlert("Invalid FEN [7]: char "+ll+" in "+FenString);
               InitFEN();
@@ -2011,10 +2068,10 @@ function InitFEN(startingFEN){
       }
       if (ll==FenString.length)
       { FenString+=" w ";
-        FenString+=PieceName.toUpperCase().charAt(0);
-        FenString+=PieceName.toUpperCase().charAt(1);
-        FenString+=PieceName.toLowerCase().charAt(0);
-        FenString+=PieceName.toLowerCase().charAt(1);      
+        FenString+=FenPieceName.toUpperCase().charAt(0);
+        FenString+=FenPieceName.toUpperCase().charAt(1);
+        FenString+=FenPieceName.toLowerCase().charAt(0);
+        FenString+=FenPieceName.toLowerCase().charAt(1);      
         FenString+=" - 0 1";
         ll++;
       }
@@ -2039,13 +2096,13 @@ function InitFEN(startingFEN){
       CastlingShort[0]=0; CastlingLong[0]=0; CastlingShort[1]=0; CastlingLong[1]=0;
       cc=FenString.charAt(ll++);
       while (cc!=" ")
-      { if (cc.charCodeAt(0)==PieceName.toUpperCase().charCodeAt(0))
+      { if (cc.charCodeAt(0)==FenPieceName.toUpperCase().charCodeAt(0))
         { CastlingShort[0]=1; }
-        if (cc.charCodeAt(0)==PieceName.toUpperCase().charCodeAt(1))
+        if (cc.charCodeAt(0)==FenPieceName.toUpperCase().charCodeAt(1))
         { CastlingLong[0]=1; }
-        if (cc.charCodeAt(0)==PieceName.toLowerCase().charCodeAt(0))
+        if (cc.charCodeAt(0)==FenPieceName.toLowerCase().charCodeAt(0))
         { CastlingShort[1]=1; }
-        if (cc.charCodeAt(0)==PieceName.toLowerCase().charCodeAt(1))
+        if (cc.charCodeAt(0)==FenPieceName.toLowerCase().charCodeAt(1))
         { CastlingLong[1]=1; }
         if ((cc=="E")||(cc=="F")||(cc=="G")||(cc=="H")) //for Chess960
         { CastlingShort[0]=1; }
@@ -2093,14 +2150,14 @@ function InitFEN(startingFEN){
       { myAlert("Invalid FEN [14]: char "+ll+" missing halfmove clock");
         return;
       }
-      HalfMove=0;
+      InitialHalfMoveClock=0;
       cc=FenString.charAt(ll++);
       while (cc!=" ")
       { if (isNaN(cc))
         { myAlert("Invalid FEN [15]: char "+ll+" invalid halfmove clock");
           return;
         }
-        HalfMove=HalfMove*10+parseInt(cc, 10);
+        InitialHalfMoveClock=InitialHalfMoveClock*10+parseInt(cc, 10);
         if (ll<FenString.length) { cc=FenString.charAt(ll++); }
         else { cc=" "; }
       }
@@ -2240,6 +2297,7 @@ function LoadGameHeaders(){
   gameDate.length = 0; 
   gameWhite.length = 0;
   gameBlack.length = 0;
+  gameSetUp.length = 0;
   gameFEN.length = 0;
   gameEvent.length = 0;
   gameSite.length = 0;
@@ -2278,6 +2336,8 @@ function LoadGameHeaders(){
 	gameWhite[ii]  = parse[2];
       } else if  (parse[1] == 'Black'){
 	gameBlack[ii]  = parse[2];
+      } else if  (parse[1] == 'SetUp'){
+	gameSetUp[ii]  = parse[2];
       } else if  (parse[1] == 'FEN'){
 	gameFEN[ii]  = parse[2];
       } else if  (parse[1] == 'Result'){
@@ -2479,12 +2539,7 @@ function ParsePGNGameString(gameString){
    * Get rid of the PGN tags and remove the result at the end. 
    */
   ss = ss.replace(pgnHeaderTagRegExpGlobal, ''); 
-// ss = ss.replace(/\s+/g, ' ');
   ss = ss.replace(/^\s/, '');
-//  ss = ss.replace(/1-0/, '');
-//  ss = ss.replace(/0-1/, '');
-//  ss = ss.replace(/1\/2-1\/2/, '');
-//  ss = ss.replace(/\*/, '');
   ss = ss.replace(/\s$/, '');
   
   PlyNumber = 0;
@@ -3124,8 +3179,12 @@ function PrintHTML(){
       } else{
 	text += '<TD CLASS="blackSquare" ID="' + squareId + '" BGCOLOR="lightgray" ALIGN="center" VALIGN="middle" ONCLICK="clickedSquare(' + ii + ',' + jj + ')">';
       } 
+      if (IsRotated) { squareCoord = String.fromCharCode(72-jj,49+ii); }
+      else { squareCoord = String.fromCharCode(jj+65,56-ii); }
+      if (boardTitle[jj][ii] !== '') { squareTitle = squareCoord + ': ' + boardTitle[jj][ii]; }
+      else { squareTitle = squareCoord; }
       text += '<A HREF="javascript:boardOnClick[' + jj + '][' + ii + ']()" ' + 
-              'TITLE="' + boardTitle[jj][ii] + '" ' +
+              'TITLE="' + squareTitle + '"' +
               'STYLE="text-decoration: none; outline: none;"' +
               'ONFOCUS="this.blur()">' + 
               '<IMG CLASS="pieceImage" ID="' + imageId + '" ' + 
@@ -3171,11 +3230,19 @@ function PrintHTML(){
           '</TD>' +
           '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
           '</TD>' +
-          '<TD>' +
-          '<INPUT ID="autoplayButton" TYPE="BUTTON" VALUE="+" STYLE="';
+          '<TD>';
+  if (isAutoPlayOn) {
+    text += '<INPUT ID="autoplayButton" TYPE="BUTTON" VALUE="=" STYLE="';
+  } else {
+    text += '<INPUT ID="autoplayButton" TYPE="BUTTON" VALUE="+" STYLE="';
+  }
   if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + ';'; }
-  text += '"; CLASS="buttonControlStop" TITLE="toggle autoplay (start)" ' +
-          ' ID="btnPlay" NAME="AutoPlay" onClick="javascript:SwitchAutoPlay()" ONFOCUS="this.blur()">' +
+  if (isAutoPlayOn) { 
+    text += '"; CLASS="buttonControlStop" TITLE="toggle autoplay (stop)" ';
+  } else {
+    text += '"; CLASS="buttonControlPlay" TITLE="toggle autoplay (start)" ';
+  }  
+  text += ' ID="btnPlay" NAME="AutoPlay" onClick="javascript:SwitchAutoPlay()" ONFOCUS="this.blur()">' +
           '</TD>' +
           '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
           '</TD>' +
@@ -3419,10 +3486,10 @@ function PrintHTML(){
              'ACTION="javascript:searchPgnGame(document.getElementById(\'searchPgnExpression\').value);">';
       text += '<INPUT ID="searchPgnButton" CLASS="searchPgnButton" STYLE="display: inline; ';
       if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + tableSize/4 + '; '; }
-      text += '" TITLE="find games matching the search string (or regular expression), click square E8 for more help" ';
+      text += '" TITLE="find games matching the search string (or regular expression)" ';
       text += 'TYPE="submit" VALUE="?">';
       text += '<INPUT ID="searchPgnExpression" CLASS="searchPgnExpression" ' +
-              'TITLE="find games matching the search string (or regular expression), click square E8 for more help" ' + 
+              'TITLE="find games matching the search string (or regular expression)" ' + 
               'TYPE="input" VALUE="' + lastSearchPgnExpression + '" STYLE="display: inline; ';
       if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + 3*tableSize/4 + '; '; }
       text += '" ONFOCUS="disableShortcutKeysAndStoreStatus();" ONBLUR="restoreShortcutKeysStatus();">'; 
@@ -3437,6 +3504,7 @@ function FlipBoard(){
   tmpHighlightOption = highlightOption;
   if (tmpHighlightOption) { SetHighlight(false); }
   IsRotated = !IsRotated;
+  PrintHTML();
   RefreshBoard();
   if (tmpHighlightOption) { SetHighlight(true); }
 }

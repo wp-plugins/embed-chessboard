@@ -34,6 +34,7 @@ ChangeLog:
   1.18  - upgraded pgn4web to 1.95 and minor bug fix
   1.19  - upgraded pgn4web to 1.96 and minor bug fix
   1.20  - upgraded pgn4web to 1.97
+  1.21  - upgraded pgn4web to 1.98
 */
 
 class pgnBBCode {
