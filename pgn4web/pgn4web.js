@@ -10,7 +10,7 @@
  *   Alternatively, check the project wiki at http://pgn4web.casaschi.net
  */
 
-var pgn4web_version = '1.98';
+var pgn4web_version = '2.02';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -33,14 +33,15 @@ function displayHelp(section){
 
 
 /*
- * Custom functions executed each time a PGN text is loaded and each time a 
- * PGN game is loaded. They are intentionally empty here so that can be 
- * customized in the HTML file by redefining them AFTER loading pgn4web.js
+ * Custom functions executed at the given moments.
+ * Here intentionally empty, to be redefined in 
+ * the HTML file AFTER loading pgn4web.js
  */
 
 function customFunctionOnPgnTextLoad() {}
 function customFunctionOnPgnGameLoad() {}
 function customFunctionOnMove()        {}
+function customFunctionOnAlert(msg)    {}
 
 
 window.onload = start_pgn4web;
@@ -48,21 +49,88 @@ window.onload = start_pgn4web;
 document.onkeydown = handlekey;
 
 function start_pgn4web() {
+  resetAlert();
   createBoard();
   if (LiveBroadcastDelay > 0) { restartLiveBroadcastTimeout(); }
 }
 
-function myAlert(msg) {
-  if ((LiveBroadcastDelay === 0) || (LiveBroadcastAlert === true)) {
-    alert(msg);
-  }
+var alertLog;
+var alertLast;
+var alertNum;
+var alertPromptInterval = null;
+var alertPromptOn = false;
+
+function resetAlert() {
+  alertLog = new Array(5);
+  alertLast = alertLog.length - 1;
+  alertNum = 0;
+  stopAlertPrompt();
+  configBoardShrortcut(debugShortcutSquare, "pgn4web v" + pgn4web_version + " debug info", "keep");
 }
 
-function myConfirm(msg) {
+function myAlert(msg) {
+  alertNum++;
+  alertLast = (alertLast + 1) % alertLog.length;
+  alertLog[alertLast] = msg;
+  if (alertNum > 1) { alertPlural = "s"; }
+  else { alertPlural = ""; }
+  configBoardShrortcut(debugShortcutSquare, "pgn4web v" + pgn4web_version + " debug info, " + alertNum + " alert" + alertPlural, "keep"); 
+
   if ((LiveBroadcastDelay === 0) || (LiveBroadcastAlert === true)) {
-    return confirm(msg);
-  } else { return false; }
+    startAlertPrompt();
+  }
+  customFunctionOnAlert(msg);
 }
+
+function startAlertPrompt() {
+  if (alertPromptOn) { return; } // if flashing already dont start a new flashing
+  if (alertPromptInterval) { clearTimeout(alertPromptInterval); }
+  alertPromptInterval = setTimeout("alertPromptTick(true);", 500);
+}
+
+function stopAlertPrompt() {
+  if (alertPromptInterval) { 
+    clearTimeout(alertPromptInterval); 
+    alertPromptInterval = null;
+  }
+  // need to restore the chessboard to the correct colors
+  if (alertPromptOn) { alertPromptTick(false); }
+}
+
+function alertPromptTick(restart) {
+  if (alertPromptInterval) { 
+    clearTimeout(alertPromptInterval); 
+    alertPromptInterval = null;
+  }
+  if(document.getElementById('tcol0trow0')) {
+    for (ii=0; ii<8; ii++) {
+      for (jj=0; jj<8; jj++) {
+        squareId = 'tcol' + jj + 'trow' + ii;
+        theObject = document.getElementById(squareId);
+        if (((alertPromptOn) && ((ii+jj)%2 === 0)) || (!(alertPromptOn) && !((ii+jj)%2 === 0))) {
+          if (theObject.className.match('highlight')) {
+            theObject.className = 'highlightWhiteSquare';
+          } else {
+            theObject.className = 'whiteSquare';
+          }
+        } else {
+          if (theObject.className.match('highlight')) {
+            theObject.className = 'highlightBlackSquare';
+          } else {
+            theObject.className = 'blackSquare';
+          }
+        }
+      }
+    }
+    alertPromptOn = !alertPromptOn;
+    if (alertPromptOn) { alertPromptDelay = 500; }
+    else { alertPromptDelay = 10000; }
+  } else {
+    alertPromptDelay = 1500;
+  }
+  if (restart) { alertPromptInterval = setTimeout("alertPromptTick(true);", alertPromptDelay); }
+}
+
 
 function stopKeyPropagation(e) {
   e.cancelBubble = true;
@@ -72,7 +140,6 @@ function stopKeyPropagation(e) {
 }
 
 // to be used as onFocus and onBlur actions on textboxes, in order to allow typing text
-
 var shortcutKeysWereEnabled = false;
 function disableShortcutKeysAndStoreStatus() {
   if ((shortcutKeysWereEnabled = shortcutKeysEnabled) === true) {
@@ -103,7 +170,6 @@ function handlekey(e) {
   if (!e) { e = window.event; }
 
   keycode = e.keyCode;
-  //myAlert(keycode);
 
   if (e.altKey || e.ctrlKey || e.metaKey) { return true; }
 
@@ -133,8 +199,8 @@ function handlekey(e) {
       if (e.shiftKey) {
         // shift key + escape (27) toogle the usage of shortcut keys 
         SetShortcutKeysEnabled(!shortcutKeysEnabled);
-        if (shortcutKeysEnabled) { alert ("pgn4web shortcut keys now enabled"); }
-        else { alert("pgn4web shortcut keys now disabled"); }
+        if (shortcutKeysEnabled) { alert("info: pgn4web shortcut keys now enabled"); }
+        else { alert("info: pgn4web shortcut keys now disabled"); }
       } else {
         displayHelp();
       }
@@ -142,7 +208,8 @@ function handlekey(e) {
       break;
 
     case 90: // z
-      window.open(pgn4web_project_url); 
+      if (e.shiftKey) { window.open(pgn4web_project_url); }
+      else { displayDebugInfo(); }
       return stopKeyPropagation(e);
       break;
 
@@ -425,19 +492,27 @@ for (col=0; col<8; col++) {
 }
 
 function configBoardShrortcut(square, title, functionPointer) {
-  if (square.charCodeAt === null) { myAlert("error: invalid square in configBoardShrortcut()"); return; }
+  if (square.charCodeAt === null) { return; }
   var col = square.charCodeAt(0) - 65; // 65 is "A"
-  if ((col < 0) || (col > 7)) { myAlert ("error: invalid column in configBoardShrortcut()"); return; }
+  if ((col < 0) || (col > 7)) { return; }
   var row = 56 - square.charCodeAt(1); // 56 is "8"
-  if ((row < 0) || (row > 7)) { myAlert ("error: invalid row in configBoardShrortcut()"); return; }
+  if ((row < 0) || (row > 7)) { return; }
   boardTitle[col][row] = title;
-  boardOnClick[col][row] = functionPointer;
+  if (functionPointer != "keep") { boardOnClick[col][row] = functionPointer; }
+  theObject = document.getElementById('link_tcol' + col + 'trow' + row);
+  if (theObject) {
+    if (IsRotated) { square = String.fromCharCode(72-col,49+row); }
+    if (boardTitle[col][row] !== '') { squareTitle = square + ': ' + boardTitle[col][row]; }
+    else { squareTitle = square; } 
+    theObject.title = squareTitle;
+  }
 }
 
 // PLEASE NOTE: the 'square' parameter of 'configBoardShrortcut' is ALWAYS ASSUMING WHITE ON BOTTOM
 
+debugShortcutSquare = "A8";
 // A8
-configBoardShrortcut("A8", "debug info v" + pgn4web_version, function(){ displayDebugInfo(); });
+configBoardShrortcut("A8", "pgn4web v" + pgn4web_version + " debug info", function(){ displayDebugInfo(); });
 // B8
 configBoardShrortcut("B8", "show this position FEN string", function(){ displayFenData(); });
 // C8
@@ -453,7 +528,7 @@ configBoardShrortcut("G8", "shortcut squares help", function(){ displayHelp("squ
 // H8
 configBoardShrortcut("H8", "pgn4web help", function(){ displayHelp(); });
 // A7
-configBoardShrortcut("A7", "go to the pgn4web website", function(){ window.open(pgn4web_project_url); });
+configBoardShrortcut("A7", "pgn4web website", function(){ window.open(pgn4web_project_url); });
 // B7
 configBoardShrortcut("B7", "toggle show comments in game text", function(){ SetCommentsIntoMoveText(!commentsIntoMoveText); thisPly = CurrentPly; Init(); GoToMove(thisPly); });
 // C7
@@ -577,12 +652,10 @@ function detectJavascriptLocation() {
   return jspath;
 }
 
-
 function detectHelpLocation() {
   helpfile = "help.html";
   return detectJavascriptLocation().replace(/(pgn4web|pgn4web-compacted)\.js/, helpfile); 
 }
-
 
 function detectBaseLocation() {
   base = "";
@@ -595,48 +668,60 @@ function detectBaseLocation() {
   return base;
 }
 
-
 function displayDebugInfo() {
-  debugInfo = 'pgn4web v' + pgn4web_version + '\n\n' +
-              'HTML URL: ' + location.href + '\n\n' +
-              'base URL: ' + detectBaseLocation() + '\n\n' +
-              'javascript URL: ' + detectJavascriptLocation() + '\n\n';
-  if (pgnUrl !== "") { debugInfo += 'PGN URL: ' + pgnUrl + '\n\n'; }
-  else { debugInfo += 'PGN URL: none' + '\n\n'; }
+  debugInfo = 'pgn4web v' + pgn4web_version + '\n\n';
+  debugInfo += 'HTML URL (' + location.href.length + '): ';
+  if (location.href.length < 100) { debugInfo += location.href + '\n'; }
+  else { debugInfo += location.href.substring(0,99) + ' ...\n'; }
+  debugInfo += 'BASE URL: ' + detectBaseLocation() + '\n' +
+               'JS URL: ' + detectJavascriptLocation() + '\n\n';
+  debugInfo += 'PGN URL: ';
+  if (pgnUrl !== "") { debugInfo += pgnUrl; }
+  debugInfo += '\n';
+  debugInfo += 'PGN TEXT: ';
   if (document.getElementById("pgnText") !== null) { 
     if (document.getElementById("pgnText").tagName.toLowerCase() == "textarea") {
-      debugInfo += 'PGN text: ' + document.getElementById("pgnText").value.length; 
+      debugInfo += document.getElementById("pgnText").value.length; 
     } else { // backward compatibility with pgn4web older than 1.77 when the <span> technique was used for pgnText
-      debugInfo += 'PGN text: ' + document.getElementById("pgnText").innerHTML.length;
+      debugInfo += document.getElementById("pgnText").innerHTML.length;
     }
-      debugInfo += ' (' + document.getElementById("pgnText").tagName.toLowerCase() + ')\n\n';
-  } else {
-    debugInfo += 'PGN text: none' + '\n\n';
+      debugInfo += ' (' + document.getElementById("pgnText").tagName.toLowerCase() + ')';
   }
-  debugInfo += 'games: current=' + currentGame + ' number=' + numberOfGames + '\n\n' +
-               'ply: start=' + StartPly + ' current=' + CurrentPly + ' number=' + PlyNumber;
-  if (isAutoPlayOn) { debugInfo += ' autoplay=' + Delay + 'ms' + ' autoplaynext=' + autoplayNextGame + '\n\n'; }
-  else { debugInfo += ' autoplay=off' + '\n\n'; }
-  if (LiveBroadcastDelay > 0) { debugInfo += 'live broadcast: delay=' + LiveBroadcastDelay + 'm' + 
+  debugInfo += '\n\n';
+  debugInfo += 'GAMES: current=' + currentGame + ' number=' + numberOfGames + '\n' +
+               'PLY: start=' + StartPly + ' current=' + CurrentPly + ' number=' + PlyNumber + '\n';
+  debugInfo += 'AUTOPLAY: ';
+  if (isAutoPlayOn) { debugInfo += 'delay=' + Delay + 'ms' + ' autoplaynext=' + autoplayNextGame; }
+  else { debugInfo += 'off'; }
+  debugInfo += '\n\n';
+  debugInfo += 'LIVE BROADCAST: '; 
+  if (LiveBroadcastDelay > 0) { debugInfo += ' delay=' + LiveBroadcastDelay + 'm' + 
                                              ' started=' + LiveBroadcastStarted +
                                              ' ended=' + LiveBroadcastEnded +
                                              ' paused=' + LiveBroadcastPaused +
                                              ' demo=' + LiveBroadcastDemo +
                                              ' alert=' + LiveBroadcastAlert + '\n\n'; }
-  else { debugInfo += 'live broadcast: off' + '\n\n'; }
+  else { debugInfo += 'off'; }
+  debugInfo += '\n\n';
+  debugInfo += 'ALERT LOG (' + Math.min(alertNum, alertLog.length) + '/' + alertNum + '):\n--';
+  if (alertNum > 0) {
+    for (ii = 0; ii<alertLog.length; ii++) {
+      if (alertLog[(alertNum - 1 - ii) % alertLog.length] === undefined) { break; }
+      else { debugInfo += "\n" + alertLog[(alertNum - 1 - ii) % alertLog.length] + "\n--"; }
+    }
+  }
   alert(debugInfo);
 }
 
 pgnWin = null;
 function displayPgnData(allGames) {
-
   if (allGames === null) { allGames = true; }
   if (pgnWin && !pgnWin.closed) { pgnWin.close(); }
   pgnWin = window.open("", "pgn_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
   if (pgnWin !== null) {
     pgnWin.document.open("text/html", "replace");
     pgnWin.document.write("<html>");
-    pgnWin.document.write("<head><title>pgn4web PGN source</title><link rel='shortcut icon' href='pawn.ico'></link></head>");
+    pgnWin.document.write("<head><title>pgn4web PGN source</title><link rel='shortcut icon' href='pawn.ico' /></head>");
     pgnWin.document.write("<body>\n<pre>\n");
     if (allGames) { for (ii = 0; ii < numberOfGames; ++ii) { pgnWin.document.write(pgnGame[ii]); } }
     else { pgnWin.document.write(pgnGame[currentGame]); }
@@ -647,7 +732,6 @@ function displayPgnData(allGames) {
 }
 
 function CurrentFEN() {
-
   currentFEN = "";
 
   emptyCounterFen = 0;
@@ -755,7 +839,7 @@ function displayFenData() {
   if (fenWin !== null) {
     fenWin.document.open("text/html", "replace");
     fenWin.document.write("<html>");
-    fenWin.document.write("<head><title>pgn4web FEN string</title><link rel='shortcut icon' href='pawn.ico'></link></head>");
+    fenWin.document.write("<head><title>pgn4web FEN string</title><link rel='shortcut icon' href='pawn.ico' /></head>");
     fenWin.document.write("<body>\n");
     fenWin.document.write("<b><pre>\n\n" + currentFEN + "\n\n</pre></b>\n<hr>\n");
     fenWin.document.write("<pre>\n\n");
@@ -899,7 +983,7 @@ PieceCode[4] = "N";
 PieceCode[5] = "P";
 
 var FenPieceName = "KQRBNP";
-var FenString    = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+var FenStringStart = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 var ImageOffset  = -1; 
                                                 
 var ImagePath = '';                                                 
@@ -938,6 +1022,7 @@ var pgnHeaderTagRegExpGlobal = /\[\s*(\w+)\s*"([^"]*)"\s*\]/g;
 var dummyPgnHeader = '[x""]';
 var emptyPgnHeader = '[White ""]\n[Black ""]\n[Result ""]\n[Date ""]\n[Event ""]\n[Site ""]\n[Round ""]\n\n';
 var templatePgnHeader = '[White "?"]\n[Black "?"]\n[Result "?"]\n[Date "?"]\n[Event "?"]\n[Site "?"]\n[Round "?"]\n';
+var alertPgnHeader = '[White ""]\n[Black ""]\n[Result ""]\n[Date ""]\n[Event ""]\n[Site ""]\n[Round ""]\n\n{error: click on the top left chessboard square for debug info}';
 
 var gameSelectorHead      = ' ...';
 var gameSelectorMono      = true;
@@ -985,11 +1070,11 @@ function CheckLegality(what, plyCount){
   /*
    * Some checks common to all pieces:
    *
-   * o If it is not a capture the square has to be empty.
-   * o If it is a capture the TO square has to be occupied by a piece of the
-   *   opposite color, with the exception of the en-passant capture.
-   * o If the moved piece and the piece in the TO square are different then 
-   *   the moved piece has to be a pawn promoting.
+   * If it is not a capture the square has to be empty.
+   * If it is a capture the TO square has to be occupied by a piece of the
+   * opposite color, with the exception of the en-passant capture.
+   * If the moved piece and the piece in the TO square are different then 
+   * the moved piece has to be a pawn promoting.
    *
    */
   if (!mvCapture){
@@ -1512,7 +1597,11 @@ function highlightSquare(col, row, on) {
 
 function pgnGameFromPgnText(pgnText){
 
-  lines=pgnText.split("\n");
+  // replace < and > with html entities to avoid html injection form the PGN data
+  pgnText = pgnText.replace(/</g, "&lt;");
+  pgnText = pgnText.replace(/>/g, "&gt;");
+
+  lines = pgnText.split("\n");
   inGameHeader = false;
   inGameBody = false;
   gameIndex = -1;
@@ -1548,12 +1637,6 @@ function pgnGameFromPgnText(pgnText){
 
 function loadPgnFromPgnUrl(pgnUrl){
   
-  var XMLrequest_error_debug_message = 'DEBUG information for web site developers\n\n' + 
-    'Failed retrieving the PGN file at the URL:\n' + pgnUrl + '\n\n' + 
-    '1) Make sure that the PGN URL is correct, that the PGN file is available and supported by the web host. Some web hosts do not allow files with arbitary extensions; in that case try renaming your .pgn file as .txt or another extension supported by your web host. You can check for all the above by typing the PGN URL in your web browser, if the browser does not download the file, some of the above issues are likely to apply.\n\n' +
-    '2) Make sure that your PGN file is on the same server/domain as your HTML file since javascript cannot load files from a different server/domain.\n\n' +
-    '3) If you are testing your HTML pages from your local computer and you are using Internet Explorer 7 (or above) please make sure the "Enable native XMLHTTP support" option is NOT enabled (see Control Panel, Internet Options, Advanced). A "feature" of IE7, when this option is enabled, stops javascript from loading local files.';
-
   var http_request = false;
     if (window.XMLHttpRequest) { // Mozilla, Safari, ...
       http_request = new XMLHttpRequest();
@@ -1570,7 +1653,7 @@ function loadPgnFromPgnUrl(pgnUrl){
       }
     }
   if (!http_request){
-    myAlert('Error with XMLHttpRequest for reading PGN file from URL');
+    myAlert('error: XMLHttpRequest failed for PGN URL\n' + pgnUrl);
     return false; 
   }
 
@@ -1588,18 +1671,17 @@ function loadPgnFromPgnUrl(pgnUrl){
     }
     http_request.send(null);
   } catch(e) {
-      var answer = myConfirm("Error with request for PGN URL:\n" + pgnUrl + "\n\nPress OK for web developer DEBUG information.");
-      if (answer) { myAlert(XMLrequest_error_debug_message); }
+      myAlert('error: request failed for PGN URL\n' + pgnUrl);
       return false;
 }
 
   if((http_request.readyState == 4) && ((http_request.status == 200) || (http_request.status === 0))){
     if (! pgnGameFromPgnText(http_request.responseText)) {
-      myAlert('Error: no games found in PGN file');
+      myAlert('error: no games found in PGN file\n' + pgnUrl);
       return false;
     }
   }else{ 
-    myAlert('Error reading PGN file from URL:\n' + pgnUrl);
+    myAlert('error: failed reading PGN from URL\n' + pgnUrl);
     return false;
   }
 
@@ -1747,18 +1829,13 @@ function refreshPgnSource() {
 
 }
 
-
 function createBoard(){
-
-  if ((! pgnUrl) && (! document.getElementById("pgnText"))) {
-    myAlert('Error: missing PGN URL location or pgnText.\n\nIn your HTML file, either use in a SCRIPT statement:\n\n  SetPgnUrl("http://yoursite/yourpath/yourfile.pgn")\n\nor embed the PGN text as hidden element with id=pgnText, such as a TEXTAREA element with style display:none\n');
-    return; 
-  }
 
   theObject = document.getElementById("GameBoard");
   if (theObject !== null) {
-    theObject.innerHTML = '<SPAN STYLE="font-style: italic;">' +
-                          'Please wait while loading PGN data...</SPAN>'; 
+    theObject.innerHTML = '<DIV STYLE="font-size: small; font-family: sans-serif; ' +
+                          'padding: 10px; text-align: center;">' + 
+                          '...loading PGN data<br />please wait...</DIV>';
   }
 
   if (pgnUrl) {
@@ -1770,12 +1847,10 @@ function createBoard(){
       return;
     } else {
       if (LiveBroadcastDelay === 0) {
-        theObject = document.getElementById("GameBoard");
-        if (theObject !== null) {
-          theObject.innerHTML = '<SPAN STYLE="font-style: italic;">' + 
-                                'Failed loading games from PGN file<br>' + 
-                                pgnUrl + '</SPAN>';
-        }
+        pgnGameFromPgnText(alertPgnHeader);
+        Init();
+        customFunctionOnPgnTextLoad();
+        myAlert('error: failed loading games from PGN URL\n' + pgnUrl);
         return;
       } else { // live broadcast case, wait for live show to start
         LiveBroadcastStarted = false;
@@ -1786,9 +1861,7 @@ function createBoard(){
         return;
       }
     }
-  } 
-  
-  if ( document.getElementById("pgnText") ) {
+  } else if ( document.getElementById("pgnText") ) {
     if (document.getElementById("pgnText").tagName.toLowerCase() == "textarea") {
       tmpText = document.getElementById("pgnText").value;
     } else { // backward compatibility with pgn4web older than 1.77 when the <span> technique was used for pgnText
@@ -1798,6 +1871,7 @@ function createBoard(){
       // fixes issue with some browser replacing quotes with &quot; such as the blackberry browser
       if (tmpText.indexOf('"') < 0) { tmpText = tmpText.replace(/(&quot;)/g, '"'); }
     }
+
     // if no html header is present, add emptyPgnHeader at the top
     if (pgnHeaderTagRegExp.test(tmpText) === false) { tmpText = emptyPgnHeader + tmpText; }
 
@@ -1805,15 +1879,18 @@ function createBoard(){
       Init(); 
       customFunctionOnPgnTextLoad();
     } else {
-      myAlert('Error: no games found in PGN text');
-      return;
+      pgnGameFromPgnText(alertPgnHeader);
+      Init();
+      customFunctionOnPgnTextLoad();
+      myAlert('error: no games found in PGN text');
     }   
     return;
-  } 
-
-  if (theObject !== null) {
-    theObject.innerHTML = '<SPAN STYLE="font-style: italic;">' + 
-                          'Missing PGN data</SPAN>';
+  } else {
+    pgnGameFromPgnText(alertPgnHeader);
+    Init();
+    customFunctionOnPgnTextLoad();
+    myAlert('error: missing PGN URL location or pgnText in the HTML file');
+    return;
   }
 }
 
@@ -1907,7 +1984,7 @@ function InitFEN(startingFEN){
   if (startingFEN != undefined){
     FenString = startingFEN;
   }else{
-    FenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    FenString = FenStringStart;
   }
   /*
    * Reset the board;
@@ -1968,7 +2045,6 @@ function InitFEN(startingFEN){
         var col = PieceCol[color][ii];
         var row = PieceRow[color][ii];
         Board[col][row] = (1-2*color)*PieceType[color][ii];
-        // myAlert("Standard FEN: Setting "+(1-2*color)*PieceType[color][ii]+ " at "+col+" / "+row);
       }
     }
   } else{
@@ -1985,7 +2061,7 @@ function InitFEN(startingFEN){
       while (cc!=" ")
       { if (cc=="/")
         { if (ii!=8)
-          { myAlert("Invalid FEN [1]: char "+ll+" in "+FenString);
+          { myAlert("error: invalid FEN [1] char "+ll+" '" + cc + "' in game "+(currentGame+1)+"\n"+FenString);
             InitFEN();
             return;
           }
@@ -1993,21 +2069,21 @@ function InitFEN(startingFEN){
           jj--;
         }
         if (ii==8) 
-        { myAlert("Invalid FEN [2]: char "+ll+" in "+FenString);
+        { myAlert("error: invalid FEN [2] char "+ll+" '" + cc + "' in game "+(currentGame+1)+"\n"+FenString);
           InitFEN();
           return;
         }
         if (! isNaN(cc))
         { ii+=parseInt(cc, 10);
           if ((ii<0)||(ii>8))
-          { myAlert("Invalid FEN [3]: char "+ll+" in "+FenString);
+          { myAlert("error: invalid FEN [3] char "+ll+" '" + cc + "' in game "+(currentGame+1)+"\n"+FenString);
             InitFEN();
             return;
           }
         }
         if (cc.charCodeAt(0)==FenPieceName.toUpperCase().charCodeAt(0))
         { if (PieceType[0][0]!=-1)
-          { myAlert("Invalid FEN [4]: char "+ll+" in "+FenString);
+          { myAlert("error: invalid FEN [4] char "+ll+" '" + cc + "' in game "+(currentGame+1)+"\n"+FenString);
             InitFEN();
             return;
           }     
@@ -2018,7 +2094,7 @@ function InitFEN(startingFEN){
         }
         if (cc.charCodeAt(0)==FenPieceName.toLowerCase().charCodeAt(0))
         { if (PieceType[1][0]!=-1)
-          { myAlert("Invalid FEN [5]: char "+ll+" in "+FenString);
+          { myAlert("error: invalid FEN [5] char "+ll+" '" + cc + "' in game "+(currentGame+1)+"\n"+FenString);
             InitFEN();
             return;
           }  
@@ -2030,7 +2106,7 @@ function InitFEN(startingFEN){
         for (kk=1; kk<6; kk++)
         { if (cc.charCodeAt(0)==FenPieceName.toUpperCase().charCodeAt(kk))
           { if (nn==16)
-            { myAlert("Invalid FEN [6]: char "+ll+" in "+FenString);
+            { myAlert("error: invalid FEN [6] char "+ll+" '" + cc + "' in game "+(currentGame+1)+"\n"+FenString);
               InitFEN();
               return;
             }          
@@ -2042,7 +2118,7 @@ function InitFEN(startingFEN){
           }
           if (cc.charCodeAt(0)==FenPieceName.toLowerCase().charCodeAt(kk))
           { if (mm==16)
-            { myAlert("Invalid FEN [7]: char "+ll+" in "+FenString);
+            { myAlert("error: invalid FEN [7] char "+ll+" '" + cc + "' in game "+(currentGame+1)+"\n"+FenString);
               InitFEN();
               return;
             }  
@@ -2057,12 +2133,12 @@ function InitFEN(startingFEN){
         else { cc=" "; }
       }
       if ((ii!=8)||(jj!==0))
-      { myAlert("Invalid FEN [8]: char "+ll+" in "+FenString);
+      { myAlert("error: invalid FEN [8] char "+ll+" in game "+(currentGame+1)+"\n"+FenString);
         InitFEN();
         return;
       }
       if ((PieceType[0][0]==-1)||(PieceType[1][0]==-1))
-      { myAlert("Invalid FEN [9]: char "+ll+" missing king");
+      { myAlert("error: invalid FEN [9]: missing king in game "+(currentGame+1)+"\n"+FenString);
         InitFEN();
         return;
       }
@@ -2084,13 +2160,13 @@ function InitFEN(startingFEN){
         }
       }
       else
-      { myAlert("Invalid FEN [11]: char "+ll+" invalid active color");
+      { myAlert("error: invalid FEN [11]: char "+ll+" '" + cc + "' invalid active color in game "+(currentGame+1)+"\n"+FenString);
         return;
       }
 
       ll++;
       if (ll>=FenString.length)
-      { myAlert("Invalid FEN [12]: char "+ll+" missing castling availability");
+      { myAlert("error: invalid FEN [12]: char "+ll+" missing castling availability in game "+(currentGame+1)+"\n"+FenString);
         return;
       }
       CastlingShort[0]=0; CastlingLong[0]=0; CastlingShort[1]=0; CastlingLong[1]=0;
@@ -2127,14 +2203,13 @@ function InitFEN(startingFEN){
           if (PieceType[color][ii]!=-1){
    	     col = PieceCol[color][ii];
 	     row = PieceRow[color][ii];
-	     // myAlert("given FEN: Setting "+(1-2*color)*(PieceType[color][ii])+ " at "+col+" / "+row);
 	     Board[col][row] = (1-2*color)*(PieceType[color][ii]);
 	  }
        }
       }
           
-      if (ll==FenString.length)
-      { myAlert("Invalid FEN [13]: char "+ll+" missing en passant target square");
+      if (ll>=FenString.length)
+      { myAlert("error: invalid FEN [13]: char "+ll+" missing en passant target square in game "+(currentGame+1)+"\n"+FenString);
         return;
       }
       cc=FenString.charAt(ll++);
@@ -2146,32 +2221,32 @@ function InitFEN(startingFEN){
         if (ll<FenString.length) { cc=FenString.charAt(ll++); }
         else { cc=" "; }
       }
-      if (ll==FenString.length)
-      { myAlert("Invalid FEN [14]: char "+ll+" missing halfmove clock");
+      if (ll>=FenString.length)
+      { myAlert("error: invalid FEN [14]: char "+ll+" missing halfmove clock in game "+(currentGame+1)+"\n"+FenString);
         return;
       }
       InitialHalfMoveClock=0;
       cc=FenString.charAt(ll++);
       while (cc!=" ")
       { if (isNaN(cc))
-        { myAlert("Invalid FEN [15]: char "+ll+" invalid halfmove clock");
+        { myAlert("error: invalid FEN [15]: char "+ll+" '" + cc + "' invalid halfmove clock in game "+(currentGame+1)+"\n"+FenString);
           return;
         }
         InitialHalfMoveClock=InitialHalfMoveClock*10+parseInt(cc, 10);
         if (ll<FenString.length) { cc=FenString.charAt(ll++); }
         else { cc=" "; }
       }
-      if (ll==FenString.length)
-      { myAlert("Invalid FEN [16]: char "+ll+" missing fullmove number");
+      if (ll>=FenString.length)
+      { myAlert("error: invalid FEN [16]: char "+ll+" missing fullmove number in game "+(currentGame+1)+"\n"+FenString);
         return;
       }
       cc=FenString.substring(ll++);
       if (isNaN(cc))
-      { myAlert("Invalid FEN [17]: char "+ll+" invalid fullmove number");
+      { myAlert("error: invalid FEN [17]: char "+ll+" '" + cc + "' invalid fullmove number in game "+(currentGame+1)+"\n"+FenString);
         return;
       }
       if (cc<=0)
-      { myAlert("Invalid FEN [18]: char "+ll+" invalid fullmove number");
+      { myAlert("error: invalid FEN [18]: char "+ll+" '" + cc + "' invalid fullmove number in game "+(currentGame+1)+"\n"+FenString);
         return;
       }
       StartPly+=2*(parseInt(cc, 10)-1);
@@ -2460,7 +2535,7 @@ function MoveForward(diff){
     if (!parse) {
       if ((thisPly % 2) === 0) { text = (Math.floor(thisPly / 2) + 1) + '. '; }
       else { text = (Math.floor(thisPly / 2) + 1) + '... '; }
-      myAlert('Error on ply ' + text + move);
+      myAlert('error: invalid ply ' + text + move + ' in game ' + (currentGame+1));
       break;
     }
     MoveColor = 1-MoveColor; 
@@ -2588,7 +2663,7 @@ function ParsePGNGameString(gameString){
           MoveComments[StartPly+PlyNumber] += ss.substring(commentStart, commentEnd); 
           start = commentEnd;
         }else{
-          myAlert('Error parsing PGN: missing end comment char }');
+          myAlert('error: missing end comment char } while parsing game ' + (currentGame+1));
           return;
         }
         break;
@@ -2622,7 +2697,7 @@ function ParsePGNGameString(gameString){
           nextOpen = ss.indexOf('(', variationEnd);
           nextClosed = ss.indexOf(')', variationEnd);
           if (nextClosed < 0) {
-            myAlert('Error parsing PGN: missing end variation char )');
+            myAlert('error: missing end variation char ) while parsing game ' + (currentGame+1));
             return;
           }
           if ((nextOpen >= 0) && (nextOpen < nextClosed)) {
@@ -3106,8 +3181,8 @@ function clickedSquare(ii, jj) {
   squareId = 'tcol' + jj + 'trow' + ii;
   theObject = document.getElementById(squareId);
   originalClass = theObject.className;
-  if ((ii+jj)%2 === 0){ newClass = "blackSquare";
-  } else { newClass = "whiteSquare"; }
+  if ((ii+jj)%2 === 0){ newClass = "blackSquare"; }
+  else { newClass = "whiteSquare"; }
   theObject.className = newClass;
   clickedSquareInterval = setTimeout("reset_after_click(" + ii + "," + jj + ",'" + originalClass + "','" + newClass + "')", 66);
 }
@@ -3145,7 +3220,7 @@ function searchPgnGame(searchExpression) {
 
 function searchPgnGamePrompt() {
   if (numberOfGames < 2) { 
-    alert("Search disabled: PGN data with less than 2 games."); 
+    alert("info: search prompt disabled with less than 2 games"); 
     return;
   }
   searchExpression = prompt("Please enter search pattern for PGN games:", lastSearchPgnExpression);
@@ -3174,6 +3249,7 @@ function PrintHTML(){
     for (jj = 0; jj < 8; ++jj){
       squareId = 'tcol' + jj + 'trow' + ii;
       imageId = 'img_' + squareId;
+      linkId = 'link_' + squareId;
       if ((ii+jj)%2 === 0){
 	text += '<TD CLASS="whiteSquare" ID="' + squareId + '" BGCOLOR="white" ALIGN="center" VALIGN="middle" ONCLICK="clickedSquare(' + ii + ',' + jj + ')">';
       } else{
@@ -3183,9 +3259,10 @@ function PrintHTML(){
       else { squareCoord = String.fromCharCode(jj+65,56-ii); }
       if (boardTitle[jj][ii] !== '') { squareTitle = squareCoord + ': ' + boardTitle[jj][ii]; }
       else { squareTitle = squareCoord; }
-      text += '<A HREF="javascript:boardOnClick[' + jj + '][' + ii + ']()" ' + 
-              'TITLE="' + squareTitle + '"' +
-              'STYLE="text-decoration: none; outline: none;"' +
+      text += '<A HREF="javascript:boardOnClick[' + jj + '][' + ii + ']()" ' +
+              'ID="' + linkId + '" ' + 
+              'TITLE="' + squareTitle + '" ' +
+              'STYLE="text-decoration: none; outline: none;" ' +
               'ONFOCUS="this.blur()">' + 
               '<IMG CLASS="pieceImage" ID="' + imageId + '" ' + 
               ' SRC="'+ImagePath+'clear.'+imageType+'" BORDER=0></A></TD>';
@@ -3300,8 +3377,7 @@ function PrintHTML(){
         } else { 
           gameSelectorHeadDisplay = gameSelectorHead; 
         }
-        // replace spaces with &nbsp; (ascii code 160)
-        // text += gameSelectorHeadDisplay.replace(/ /g,String.fromCharCode(160)); 
+        // replace spaces with &nbsp; 
         text += gameSelectorHeadDisplay.replace(/ /g, '&nbsp;'); 
 
         for (ii=0; ii<numberOfGames; ii++){
@@ -3355,8 +3431,7 @@ function PrintHTML(){
             if (howManyBlanks > 0) { textSO += blanks.substring(0, howManyBlanks); }
             textSO += ' ';
           }
-          // replace spaces with &nbsp; (ascii code 160)
-          // textSelectOptions += textSO.replace(/ /g,String.fromCharCode(160));
+          // replace spaces with &nbsp; 
           textSelectOptions += textSO.replace(/ /g, '&nbsp;');
         }
       text += textSelectOptions + '</SELECT></FORM>';

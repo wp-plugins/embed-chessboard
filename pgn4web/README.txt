@@ -70,6 +70,16 @@ pgn4web fails parsing correctly.
 Enjoy!
 
 
+DEBUGGING
+
+Errors alert messages are logged by pgn4web, such as failure to load PGN
+data, incorrect PGN games or incorrect FEN strings. 
+When an error is encountered, the chessboard will flash at regular
+intervals to signal the exception. 
+The error alert log can be reviewed clicking on square A8 (assuming White
+on bottom, H1 otherwise).
+
+
 HOW TO USE pgn4we.js
 
 add a SCRIPT instance at the top of your HTML file:
@@ -158,7 +168,7 @@ pgn4web allows displaying chess moves text using the supplied figurine fonts:
 the Liberation Sans font, see credits section for more details.
 To enable figurine display of chess moves text, make sure you include the
 fonts/pgn4web-fonts.css file into your HTML file:
-  <link href="fonts/pgn4web-fonts.css" type="text/css" rel="stylesheet"></link> 
+  <link href="fonts/pgn4web-fonts.css" type="text/css" rel="stylesheet" /> 
 or into your CSS file:
   @import url("fonts/pgn4web-fonts.css");
 Then set the font-family for the .move class to the chess font of your choice.
@@ -246,9 +256,10 @@ CUSTOMIZATION FUNCTIONS
 
 The following functions, if defined in the HTML file after loading pgn4web.js,
 allow for execution of custom commands at given points:
-- customFunctionOnPgnTextLoad(): executed when loading a new PGN file
-- customFunctionOnPgnGameLoad(): executed when loading a new game
-- customFunctionOnMove(): executed when a  move is made
+- customFunctionOnPgnTextLoad(): when loading a new PGN file
+- customFunctionOnPgnGameLoad(): when loading a new game
+- customFunctionOnMove(): when a  move is made
+- customFunctionOnAlert(message_string): when an error alert is raised
 Please note the order these functions are executed; for example, when loading 
 a new PGN file at the end of the first game, first customFunctionOnMove() is 
 executed, then (when the game has been loaded and the move positioning 
@@ -273,6 +284,12 @@ Safari) on a variety of platforms (Linux/Debian, MacOS, Windows). Not every
 browser version and every combination of browser/platform has been tested. 
 If you have any issue with using pgn4web on your platform, please email 
 pgn4web@casaschi.net
+
+Note about Google Chrome: you might experience problems when testing HTML
+pages from your local computer while developing your site. This is a
+limitation of the browser with respect to loading local files. There is no
+workaround other than testing with a different browser. Browsing pgn4web
+websites with Google Chrome should work properly.
 
 Note about Internet Explorer v7 and above: under some circumstances you might
 experience problems when testing HTML pages from your local computer while 
