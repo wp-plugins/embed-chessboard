@@ -10,7 +10,7 @@
  *   Alternatively, check the project wiki at http://pgn4web.casaschi.net
  */
 
-var pgn4web_version = '2.02';
+var pgn4web_version = '2.03';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -49,7 +49,10 @@ window.onload = start_pgn4web;
 document.onkeydown = handlekey;
 
 function start_pgn4web() {
-  resetAlert();
+  // first time pgn4web is started allow for alert log messages preceding start_pgn4web
+  // if start_pgn4web is later reloaded then reset alert log
+  if (alertFirstResetLoadingPgn) { alertFirstResetLoadingPgn = false; }
+  else { resetAlert(); } 
   createBoard();
   if (LiveBroadcastDelay > 0) { restartLiveBroadcastTimeout(); }
 }
@@ -59,13 +62,18 @@ var alertLast;
 var alertNum;
 var alertPromptInterval = null;
 var alertPromptOn = false;
+var alertFirstResetLoadingPgn = true;
+
+resetAlert();
 
 function resetAlert() {
   alertLog = new Array(5);
   alertLast = alertLog.length - 1;
   alertNum = 0;
   stopAlertPrompt();
-  configBoardShrortcut(debugShortcutSquare, "pgn4web v" + pgn4web_version + " debug info", "keep");
+  if (!alertFirstResetLoadingPgn) {
+    configBoardShrortcut(debugShortcutSquare, "pgn4web v" + pgn4web_version + " debug info", "keep");
+  }
 }
 
 function myAlert(msg) {
@@ -1316,6 +1324,7 @@ function ClearMove(move){
   while(ii < ss){
     cc = move.charCodeAt(ii);
     if ((cc == 45) || ((cc >= 48) && (cc <= 57)) || (cc == 61) ||
+//        (cc == 35) || (cc == 43) || // patch this to pass through '+' and '#' signs
 	((cc >= 65) && (cc <= 90)) || ((cc >=97) && (cc <= 122))){
 	  mm += move.charAt(ii);
     }
@@ -2950,6 +2959,7 @@ function translateNAGs(comment){
 
 
 function ParseMove(move, plyCount){
+//  move = move.replace(/[\+#]/g, ""); // patch this to pass through '+' and '#' signs
   var ii, ll;
   var remainder;
   var toRowMarker = -1;
