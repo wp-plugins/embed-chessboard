@@ -141,7 +141,7 @@ class pgnBBCode {
 		$replacement .= "&amp;pi=" . $pgnId . "' ";
 		$replacement .= "frameborder='0' width='100%' height='" . $height . "' ";
 		$replacement .= "scrolling='no' marginheight='0' marginwidth='0'>";
-		$replacement .= "sorry, you'd need iframe support in your browser";
+		$replacement .= "your web browser and/or your host do not support iframes as required to display the chessboard";
 		$replacement .= "</iframe>";
 		$replacement .= "</div>";
 
