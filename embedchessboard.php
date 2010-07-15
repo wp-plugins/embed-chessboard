@@ -143,7 +143,7 @@ class pgnBBCode {
 		$replacement .= "&amp;pi=" . $pgnId . "' ";
 		$replacement .= "frameborder='0' width='100%' height='" . $height . "' ";
 		$replacement .= "scrolling='no' marginheight='0' marginwidth='0'>";
-		$replacement .= "your web browser and/or your host do not support iframes as required to display the chessboard";
+		$replacement .= "your web browser and/or your host do not support iframes as required to display the chessboard; alternatively your wordpress theme might suppress the html iframe tag from articles or excerpts";
 		$replacement .= "</iframe>";
 		$replacement .= "</div>";
 
