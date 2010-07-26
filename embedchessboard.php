@@ -39,6 +39,7 @@ ChangeLog:
   1.23  - upgraded pgn4web to 2.03
   1.24  - upgraded pgn4web to 2.04
   1.25  - minor bug fix
+  1.26  - added rawurlencode() to url parameters
 */
 
 class pgnBBCode {
