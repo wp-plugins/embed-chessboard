@@ -11,6 +11,12 @@
 
 <title>pgn4web chessboard</title>
 
+<!-- use the base tag to host board.html on a different server than pgn4web.js
+
+<base href="http://pgn4web.casaschi.net">
+
+-->
+
 <style type="text/css"> 
 
 @import url("fonts/pgn4web-fonts.css");
@@ -30,34 +36,28 @@ body {
   border-width: 3px;
 }
 
-.pieceImage {
-}
-
-.whiteSquare {
-}
-
-.blackSquare {
-}
-
-.highlightWhiteSquare {
-}
-
+.pieceImage,
+.whiteSquare,
+.blackSquare,
+.highlightWhiteSquare,
 .highlightBlackSquare {
 }
 
-.selectControl {}
-.buttonControlPlay {}
-.buttonControlStop {}
-.buttonControl {}
-.buttonControlSpace {}
+.selectControl,
+.buttonControlPlay,
+.buttonControlStop,
+.buttonControl,
+.buttonControlSpace {
 /* a "width" attribute here must use the !important flag to override default settings */
-
-.header {
-color: black;
-font-weight: bold;
 }
 
-.move {
+.header {
+  color: black;
+  font-weight: bold;
+}
+
+.move,
+.moveOn {
   color: black;
   font-family: 'pgn4web ChessSansPiratf', 'pgn4web Liberation Sans', sans-serif;
   line-height: 1.3em;
@@ -65,19 +65,10 @@ font-weight: bold;
 }
 
 .moveOn {
-  color: black;
-  font-family: 'pgn4web ChessSansPiratf', 'pgn4web Liberation Sans', sans-serif;
-  line-height: 1.3em;
-  text-decoration: none;   
   background: #DAF4D7;
 }
 
-.comment
-{
-  color: gray;
-  line-height: 1.3em;
-}
-
+.comment,
 .nag {
   color: gray;
   line-height: 1.3em;
@@ -103,241 +94,8 @@ font-weight: bold;
 
 <script type="text/javascript">
 
-function new_start_pgn4web() {
 
-  document.body.style.background = backgroundColor;
-  document.body.style.padding = framePadding;
-  
-  rule = getCSSRule('.pieceImage');
-  rule.style.width = pieceSize;
-  rule.style.height = pieceSize;
-
-  if (highlightMode == 'border') {
-    rule = getCSSRule('.whiteSquare');
-    rule.style.width = (squareSize - 2 * borderSize) + 'px';	
-    rule.style.height = (squareSize - 2 * borderSize) + 'px';
-    rule.style.background = lightColor;
-    rule.style.borderStyle = 'solid';
-    rule.style.borderWidth = borderSize + 'px';
-    rule.style.borderColor = lightColor; 
-    rule = getCSSRule('.blackSquare');
-    rule.style.width = (squareSize - 2 * borderSize) + 'px';	
-    rule.style.height = (squareSize - 2 * borderSize) + 'px';
-    rule.style.background = darkColor;
-    rule.style.borderStyle = 'solid';
-    rule.style.borderWidth = borderSize + 'px';
-    rule.style.borderColor = darkColor; 
-    rule = getCSSRule('.highlightWhiteSquare');
-    rule.style.width = (squareSize - 2 * borderSize) + 'px';	
-    rule.style.height = (squareSize - 2 * borderSize) + 'px';
-    rule.style.background = lightColor;
-    rule.style.borderStyle = 'solid';
-    rule.style.borderWidth = borderSize + 'px';
-    rule.style.borderColor = highlightLightColor;
-    rule = getCSSRule('.highlightBlackSquare');
-    rule.style.width = (squareSize - 2 * borderSize) + 'px';	
-    rule.style.height = (squareSize - 2 * borderSize) + 'px';
-    rule.style.background = darkColor;
-    rule.style.borderStyle = 'solid';
-    rule.style.borderWidth = borderSize + 'px';
-    rule.style.borderColor = highlightDarkColor;
-  } else {
-    rule = getCSSRule('.whiteSquare');
-    rule.style.width = squareSize + 'px';	
-    rule.style.height = squareSize + 'px';
-    rule.style.background = lightColor;
-    rule = getCSSRule('.blackSquare');
-    rule.style.width = squareSize + 'px';	
-    rule.style.height = squareSize + 'px';
-    rule.style.background = darkColor;
-    rule = getCSSRule('.highlightWhiteSquare');
-    rule.style.width = squareSize + 'px';	
-    rule.style.height = squareSize + 'px';
-    rule.style.background = highlightLightColor;
-    rule = getCSSRule('.highlightBlackSquare');
-    rule.style.width = squareSize + 'px';	
-    rule.style.height = squareSize + 'px';
-    rule.style.background = highlightDarkColor;
-  }
-
-  rule = getCSSRule('.boardTable');
-  rule.style.borderColor = boardBorderColor;
-  
-  rule = getCSSRule('.move');
-  rule.style.color = fontMovesColor;
-  if (!fontMovesSize.match(/[^0-9]/)) { fontMovesSize += 'px'; }
-  rule.style.fontSize = fontMovesSize;
-
-  rule = getCSSRule('.moveOn');
-  rule.style.background = highlightMoveColor == 'none' ? backgroundColor : highlightMoveColor;
-  rule.style.color = fontMovesColor;
-  if (!fontMovesSize.match(/[^0-9]/)) { fontMovesSize += 'px'; }
-  rule.style.fontSize = fontMovesSize;
-
-  rule = getCSSRule('.header');
-  rule.style.color = fontHeaderColor;
-  if (!fontHeaderSize.match(/[^0-9]/)) { fontHeaderSize += 'px'; }
-  rule.style.fontSize = fontHeaderSize;
-
-  rule = getCSSRule('.comment');
-  rule.style.color = fontCommentsColor;
-  if (!fontCommentsSize.match(/[^0-9]/)) { fontCommentsSize += 'px'; }
-  rule.style.fontSize = fontCommentsSize == 'moves' ? fontMovesSize : fontCommentsSize;
-
-  rule = getCSSRule('.nag');
-  rule.style.color = fontCommentsColor;
-//  rule.style.fontSize = fontCommentsSize; // the nag is always embedded in the comment
-
-  paddingControlHeight = Math.floor(squareSize / 2.5);
-  if ((paddingControlWidth = squareSize - textMargin) < 0) { paddingControlWidth = 0; }
-  theObject = document.getElementById("GameButtons");
-  if (theObject) { theObject.style.paddingTop = paddingControlHeight; }
-  if ((controlBackgroundColor != 'default') && (controlBackgroundColor != '#default')) { 
-    rule1 = getCSSRule('.buttonControl');
-    rule2 = getCSSRule('.buttonControlPlay');
-    rule3 = getCSSRule('.buttonControlStop');
-    rule1.style.borderStyle = rule2.style.borderStyle = rule3.style.borderStyle = 'solid';
-    rule1.style.borderWidth = rule2.style.borderWidth = rule3.style.borderWidth = '0px';
-    rule1.style.borderColor = rule2.style.borderColor = rule3.style.borderColor = backgroundColor;
-    rule1.style.backgroundColor = rule2.style.backgroundColor = rule3.style.backgroundColor = controlBackgroundColor;
-    rule1.style.color = rule2.style.color = rule3.style.color = controlTextColor;
-    controlFontSize = Math.floor(squareSize / 2.5);
-    rule1.style.fontSize = rule2.style.fontSize = rule3.style.fontSize = controlFontSize + 'px';
-  }
-
-  if ((controlBackgroundColor != 'default') && (controlBackgroundColor != '#default')) {
-    rule = getCSSRule('.selectControl');
-    rule.style.borderStyle = 'solid';
-    rule.style.padding = '3px';
-    rule.style.borderWidth = '1px';
-    rule.style.borderColor = backgroundColor;
-    rule.style.backgroundColor = controlBackgroundColor;
-    rule.style.color = controlTextColor;
-    rule.style.fontSize = controlFontSize + 'px';
-  }
-
-  theObject = document.getElementById("headerMovesPadding");
-  if (theObject) { 
-    if (horizontalLayout === true) { theObject.width = paddingControlWidth + 'px'; }
-    else { theObject.style.minHeight = paddingControlHeight; }
-  }
-
-  start_pgn4web();
-
-  theObject = document.getElementById("GameSelector");
-  if (theObject) { if (theObject.innerHTML !== "") { theObject.style.paddingBottom = paddingControlHeight; } }
-
-  boardHeight = document.getElementById("boardTable").offsetHeight;
-  document.getElementById("boardTable").style.width = boardHeight;
-  boardWidth = document.getElementById("boardTable").offsetWidth;
-  if (buttonsDisplay != "hidden") { boardHeight += document.getElementById("GameButtons").offsetHeight; }
-  if ((buttonsDisplay != "hidden") && (numberOfGames > 1)) { boardHeight += document.getElementById("GameSelector").offsetHeight; }
-
-  if (horizontalLayout === true) {
-    document.getElementById("extendedBoard").width = boardWidth;
-  }
-
-  if (fixFrameWidthToBoard) { frameWidth = boardWidth + 2 * framePadding; }
-  if (fixFrameHeightToBoard) { frameHeight = boardHeight + 2 * framePadding; }
-
-  theObject = document.getElementById("headerMoves");
-  if (theObject !== null) {
-    if (horizontalLayout === true) {
-      if (frameWidth === "") { document.getElementById("headerMoves").style.width = textWidth; }
-      else { document.getElementById("outerFrame").style.width = frameWidth - 2 * framePadding; }
-      document.getElementById("headerMoves").style.height = frameHeight === "" ? textHeight : frameHeight - 2 * framePadding;
-    } else {
-      document.getElementById("headerMoves").style.width = frameWidth === "" ? textWidth : frameWidth - 2 * framePadding;
-      if (frameHeight === "") { document.getElementById("headerMoves").style.height = textHeight; }
-      else { 
-	theObject = document.getElementById("boardHeadermovesPadding");
-        boardHeadermovesPaddingHeight = theObject ? theObject.offsetHeight : 0;
-	document.getElementById("headerMoves").style.height = frameHeight - boardHeight - 2 * framePadding - boardHeadermovesPaddingHeight; 
-      }
-    }
-  }
-
-  if (gup("showHeightWidth") !== "") { 
-    myAlert("info: board width=" + boardWidth + " height=" + boardHeight, false);
-  }
-}
-
-window.onload = new_start_pgn4web;
-
-function getCSSRule(ruleName, deleteFlag) {               // Return requested style obejct
-   ruleName=ruleName.toLowerCase();                       // Convert test string to lower case.
-   if (document.styleSheets) {                            // If browser can play with stylesheets
-      for (var i=0; i<document.styleSheets.length; i++) { // For each stylesheet
-         var styleSheet=document.styleSheets[i];          // Get the current Stylesheet
-         var ii=0;                                        // Initialize subCounter.
-         var cssRule=false;                               // Initialize cssRule. 
-         do {                                             // For each rule in stylesheet
-            if (styleSheet.cssRules) {                    // Browser uses cssRules?
-               cssRule = styleSheet.cssRules[ii];         // Yes --Mozilla Style
-            } else {                                      // Browser usses rules?
-               cssRule = styleSheet.rules[ii];            // Yes IE style. 
-            }                                             // End IE check.
-	    if (cssRule && (cssRule.selectorText != undefined))  { // If we found a rule...
-     	      if (cssRule.selectorText.toLowerCase()==ruleName) { //  match ruleName?
-  	        if (deleteFlag=='delete') {               // Yes.  Are we deleteing?
-                     if (styleSheet.cssRules) {           // Yes, deleting...
-                        styleSheet.deleteRule(ii);        // Delete rule, Moz Style
-                     } else {                             // Still deleting.
-                        styleSheet.removeRule(ii);        // Delete rule IE style.
-                     }                                    // End IE check.
-                     return true;                         // return true, class deleted.
-                  } else {                                // found and not deleting.
-                     return cssRule;                      // return the style object.
-                  }                                       // End delete Check
-               }                                          // End found rule name
-            }                                             // end found cssRule
-            ii++;                                         // Increment sub-counter
-         } while (cssRule)                                // end While loop
-      }                                                   // end For loop
-   }                                                      // end styleSheet ability check
-   return false;                                          // we found NOTHING!
-}                                                         // end getCSSRule 
-
-function killCSSRule(ruleName) {                          // Delete a CSS rule   
-   return getCSSRule(ruleName,'delete');                  // just call getCSSRule w/delete flag.
-}                                                         // end killCSSRule
-
-function addCSSRule(ruleName) {                           // Create a new css rule
-   if (document.styleSheets) {                            // Can browser do styleSheets?
-      if (!getCSSRule(ruleName)) {                        // if rule doesn't exist...
-         if (document.styleSheets[0].addRule) {           // Browser is IE?
-            document.styleSheets[0].addRule(ruleName, null,0);      // Yes, add IE style
-         } else {                                         // Browser is IE?
-            document.styleSheets[0].insertRule(ruleName+' { }', 0); // Yes, add Moz style.
-         }                                                // End browser check
-      }                                                   // End already exist check.
-   }                                                      // End browser ability check.
-   return getCSSRule(ruleName);                           // return rule we just created.
-} 
-
-
-function percentFixFromUrl( text ) {
-  text += ''; // makes sure text is a string
-  return text.replace(/pct$/,'%').replace(/p$/,'%'); // 100pct and 100p both mean 100%
-}
-
-
-var  sexEncodingCharSet = "$0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
-
-function sex2hex(sex) {
-  if (sex === "") { return ""; }
-  sex += "";
-  var dec = 0;
-  var cnt;
-  for (cnt=0; cnt<sex.length; cnt++) {
-    dec <<= 6;
-    dec += sexEncodingCharSet.indexOf(sex.charAt(cnt));
-  }
-  var hex = dec.toString(16).toUpperCase() + "";
-  while (hex.length < 6) { hex = "0" + hex; }
-  return hex;
-}
-
+// reads the URL search string and sets parameters
 
 function gup( name ){
 
@@ -346,7 +104,7 @@ function gup( name ){
   regexS = regexS+"(?!.*"+regexS+")"; // matches the LAST occurrence
   var regex = new RegExp( regexS );
   var results = regex.exec( window.location.href );
-  if( results !== null ) { return results[1]; } 
+  if( results !== null ) { return decodeURIComponent(results[1]); } 
 
   // allows for short version of the URL parameters, for instance sC matches squareColor
   compact_name = name.charAt(0);
@@ -361,9 +119,29 @@ function gup( name ){
   regex = new RegExp( regexS );
 
   results = regex.exec( window.location.href );
-  if( results !== null ) { return results[1]; }
+  if( results !== null ) { return decodeURIComponent(results[1]); }
   
   return "";
+}
+
+function percentFixFromUrl( text ) {
+  text += ''; // makes sure text is a string
+  return text.replace(/pct$/,'%').replace(/p$/,'%'); // 100pct and 100p both mean 100%
+}
+
+var  sexEncodingCharSet = "$0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+function sex2hex(sex) {
+  if (sex === "") { return ""; }
+  sex += "";
+  var dec = 0;
+  var cnt;
+  for (cnt=0; cnt<sex.length; cnt++) {
+    dec <<= 6;
+    dec += sexEncodingCharSet.indexOf(sex.charAt(cnt));
+  }
+  var hex = dec.toString(16).toUpperCase() + "";
+  while (hex.length < 6) { hex = "0" + hex; }
+  return hex;
 }
 
 var pieceSizeOptions = new Array(20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 52, 56, 60, 64, 72, 80, 88, 96, 112, 128, 144, 300);
@@ -441,7 +219,7 @@ if ((pieceFont == "default") || (pieceFont == "d")) {
   }
 }
 
-SetImagePath(pieceFont + "/" + pieceSize);
+SetImagePath("" + pieceFont + "/" + pieceSize);
 
 if ((boardBorderColor = gup("boardBorderColorName")) === "") {
   if ((boardBorderColor = "#" + gup("boardBorderColorHex")) == "#") {
@@ -674,14 +452,10 @@ if ((newPgnId = gup("pgnId")) !== "") {
 }
 
 if ((fenString = gup("fenString")) !== "") {
-  // remove URL escape chars such as %20 replaced by space
-  fenString = decodeURIComponent(fenString);
   document.getElementById('pgnText').value = '[FEN "' + fenString + '"]';
 }
 
 if ((newPgnText = gup("pgnText")) !== "") {
-  // remove URL escape chars such as %20 replaced by space
-  newPgnText = decodeURIComponent(newPgnText);
   document.getElementById('pgnText').value = newPgnText = cleanPgnInput(newPgnText);
 } 
 
@@ -816,6 +590,7 @@ if (refreshMinutes > 0) {
   }
 }
 
+
 if (gup("help") !== "") {
   document.write("<PRE>");
   document.write("URL parameters\n");
@@ -829,10 +604,11 @@ if (gup("help") !== "") {
   document.write(" - refreshMinutes = live broadcast delay (default 0 = live broadcast disabled)\n");
   document.write(" - refreshDemo = if set true sets live demo mode (default false)\n");
   document.write("\n");
+  document.write(" - initialGame = first | last | random | a number (default first)\n");
+  document.write(" - initialHalfmove = start | end | random | comment | a number | a search expression (default start)\n");
+  document.write("\n");
   document.write(" - autoplayMode = game (autoplay first game once) | loop (loops through games continiously) | none (default game)\n");
   document.write(" - delay = autoplay delay in ms (default 1000)\n");
-  document.write(" - initialGame = first | last | random | a number (default first)\n");
-  document.write(" - initialHalfmove = start | end | random | comment | a number (default start)\n");
   document.write("\n");
   document.write(" - squareSize = size of square (default 28)\n");
   document.write(" - pieceSize = size of pieces | default (default selects piece size based on piece size)\n");
@@ -879,6 +655,133 @@ if (gup("help") !== "") {
   document.write("\n");
   document.write("</PRE>\n<HR>\n");
 }
+
+
+// write updated CSS stylesheet with new values overriding the one at the top of the file
+
+newStyleSheet = '<style type="text/css"> \n';
+
+newStyleSheet += 'body { background: ' + backgroundColor + '; padding: ' + framePadding + '; } \n';
+
+newStyleSheet += '.pieceImage { width: ' + pieceSize + '; height: ' + pieceSize + '; } \n';
+
+if (highlightMode == 'border') {
+
+  newStyleSheet += '.whiteSquare { ' + 
+                   'width: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'height: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'background: ' + lightColor + '; ' + 
+                   'border-style: solid; ' +
+                   'border-width: ' + borderSize + 'px; ' +
+                   'border-color: ' + lightColor + '; ' +
+                   '} \n';
+				   
+  newStyleSheet += '.blackSquare { ' + 
+                   'width: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'height: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'background: ' + darkColor + '; ' + 
+                   'border-style: solid; ' +
+                   'border-width: ' + borderSize + 'px; ' +
+                   'border-color: ' + darkColor + '; ' +
+                   '} \n';
+  
+  newStyleSheet += '.highlightWhiteSquare { ' + 
+                   'width: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'height: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'background: ' + lightColor + '; ' + 
+                   'border-style: solid; ' +
+                   'border-width: ' + borderSize + 'px; ' +
+                   'border-color: ' + highlightLightColor + '; ' +
+                   '} \n';
+
+  newStyleSheet += '.highlightBlackSquare { ' + 
+                   'width: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'height: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'background: ' + darkColor + '; ' + 
+                   'border-style: solid; ' +
+                   'border-width: ' + borderSize + 'px; ' +
+                   'border-color: ' + highlightDarkColor + '; ' +
+                   '} \n';  
+
+} else {
+
+  newStyleSheet += '.whiteSquare { ' + 
+                   'width: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'height: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'background: ' + lightColor + '; ' + 
+                   '} \n';
+				   
+  newStyleSheet += '.blackSquare { ' + 
+                   'width: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'height: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'background: ' + darkColor + '; ' + 
+                   '} \n';
+  
+  newStyleSheet += '.highlightWhiteSquare { ' + 
+                   'width: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'height: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'background: ' + highlightLightColor + '; ' + 
+                   '} \n';
+
+  newStyleSheet += '.highlightBlackSquare { ' + 
+                   'width: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'height: ' + (squareSize - 2 * borderSize) + 'px; ' +
+                   'background: ' + highlightDarkColor + '; ' + 
+                   '} \n';  
+
+  }
+
+  newStyleSheet += '.boardTable { border-color: ' + boardBorderColor + '; } \n'; 
+  
+  if (!fontMovesSize.match(/[^0-9]/)) { fontMovesSize += 'px'; }
+  newStyleSheet += '.move { color: ' + fontMovesColor + '; font-size: ' + fontMovesSize + '; } \n';
+  
+  if (!fontMovesSize.match(/[^0-9]/)) { fontMovesSize += 'px'; }
+  newStyleSheet += '.moveOn { ' +
+                   ' background: ' + (highlightMoveColor == 'none' ? backgroundColor : highlightMoveColor) + '; ' +
+                   ' color: ' + fontMovesColor + '; font-size: ' + fontMovesSize + '; ' + 
+                   '} \n';
+  
+  if (!fontHeaderSize.match(/[^0-9]/)) { fontHeaderSize += 'px'; }
+  newStyleSheet += '.header { color: ' + fontHeaderColor + '; font-size: ' + fontHeaderSize + '; } \n';
+  
+  if (!fontCommentsSize.match(/[^0-9]/)) { fontCommentsSize += 'px'; }
+  newStyleSheet += '.comment { ' + 
+                   'color: ' + fontCommentsColor + 
+                   '; font-size: ' + (fontCommentsSize == 'moves' ? fontMovesSize : fontCommentsSize) + '; ' + 
+                   '} \n';
+ 
+  newStyleSheet += '.nag { color: ' + fontCommentsColor + '; } \n';
+  //  the nag is always embedded in the comment, no need to add font-size: fontCommentsSize
+
+  if ((controlBackgroundColor != 'default') && (controlBackgroundColor != '#default')) { 
+    controlFontSize = Math.floor(squareSize / 2.5);
+    newStyleSheet += '.buttonControl, .buttonControlPlay, .buttonControlStop { ' +
+                     'border-style: solid; ' +
+                     'border-width: 0px; ' +
+                     'border-color: ' + backgroundColor + '; ' +
+                     'background-color: ' + controlBackgroundColor + '; ' +
+                     'color: ' + controlTextColor + '; ' +
+                     'font-size: ' + controlFontSize + 'px; ' +
+                     ' } \n';
+
+    newStyleSheet += '.selectControl { ' +
+                     'padding: 3px; ' +
+                     'border-style: solid; ' +
+                     'border-width: 1px; ' +
+                     'border-color: ' + backgroundColor + '; ' +
+                     'background-color: ' + controlBackgroundColor + '; ' +
+                     'color: ' + controlTextColor + '; ' +
+                     'font-size: ' + controlFontSize + 'px; ' +
+                     ' } \n';
+  }
+
+newStyleSheet += '</style> \n';
+
+document.write(newStyleSheet);
+
+
+// write actual chessboard components
 
 document.write("<center>");
 document.write("<table id='outerFrame' style='width: 100%;' cellspacing=0 cellpadding=0 border=0>");
@@ -989,6 +892,82 @@ function display_header_moves() {
 
 }
 
+function customFunctionOnPgnTextLoad() {
+
+  paddingControlHeight = Math.floor(squareSize / 2.5);
+  if ((paddingControlWidth = squareSize - textMargin) < 0) { paddingControlWidth = 0; }
+
+  theObject = document.getElementById("GameButtons");
+  if (theObject) { theObject.style.paddingTop = paddingControlHeight; }
+
+  theObject = document.getElementById("GameSelector");
+  if (theObject) { 
+    if ((buttonsDisplay != "hidden") && (numberOfGames > 1)) { 
+      theObject.style.paddingBottom = paddingControlHeight; 
+      theObject.style.display = "block";
+    } else { 
+      theObject.style.paddingBottom = "0px"; 
+      theObject.style.display = "inline";
+    }
+  }
+
+  theObject = document.getElementById("headerMovesPadding");
+  if (theObject) { 
+    if (horizontalLayout === true) { theObject.width = paddingControlWidth + 'px'; }
+    else { theObject.style.minHeight = paddingControlHeight; }
+  }
+
+  boardHeight = document.getElementById("boardTable").offsetHeight;
+  document.getElementById("boardTable").style.width = boardHeight;
+  boardWidth = document.getElementById("boardTable").offsetWidth;
+
+  theObject = document.getElementById("GameButtons");
+  if (theObject) {
+    if (buttonsDisplay != "hidden") { boardHeight += document.getElementById("GameButtons").offsetHeight; }
+  }
+
+  theObject = document.getElementById("GameSelector");
+  if (theObject) {
+    if ((buttonsDisplay != "hidden") && (numberOfGames > 1)) { boardHeight += document.getElementById("GameSelector").offsetHeight; }
+  }
+
+  if (horizontalLayout === true) {
+    document.getElementById("extendedBoard").width = boardWidth;
+  }
+
+  if (fixFrameWidthToBoard) { frameWidth = boardWidth + 2 * framePadding; }
+  if (fixFrameHeightToBoard) { frameHeight = boardHeight + 2 * framePadding; }
+
+  theObject = document.getElementById("headerMoves");
+  if (theObject !== null) {
+    if (horizontalLayout === true) {
+      if (frameWidth === "") { theObject.style.width = textWidth; }
+      else { document.getElementById("outerFrame").style.width = frameWidth - 2 * framePadding; }
+      theObject.style.height = frameHeight === "" ? textHeight : frameHeight - 2 * framePadding;
+    } else {
+      theObject.style.width = frameWidth === "" ? textWidth : frameWidth - 2 * framePadding;
+      if (frameHeight === "") { theObject.style.height = textHeight; }
+      else { 
+       boardHeadermovesPaddingHeight = document.getElementById("boardHeadermovesPadding") ? document.getElementById("boardHeadermovesPadding").offsetHeight : 0;
+	theObject.style.height = frameHeight - boardHeight - 2 * framePadding - boardHeadermovesPaddingHeight; 
+      }
+    }
+  }
+
+  // cope with occasional failures to load the live PGN data
+  if ((LiveBroadcastDelay !== 0) && (LiveBroadcastTicker > 0) && (!LiveBroadcastFoundOldGame)) {
+    SetInitialGame(init_Game);
+    SetInitialHalfmove(init_Halfmove,always_Halfmove);
+    setCurrentGameFromInitialGame();
+    Init();
+    GoToInitialHalfmove();
+  }
+
+  if (gup("showHeightWidth") !== "") { 
+    myAlert("info: board width=" + boardWidth + " height=" + boardHeight, false);
+  }
+}
+
 function customFunctionOnPgnGameLoad() {
 
   theObject = document.getElementById("roundDetails");
@@ -1071,6 +1050,18 @@ function customFunctionOnPgnGameLoad() {
     }
   }
 
+// uncomment this to show the result at the end of the moves text
+//
+// theObject = document.getElementById("GameText");
+//   if (theObject) {
+//     if ( (gameResult[currentGame] == "1-0")     || 
+//          (gameResult[currentGame] == "0-1")     ||
+//          (gameResult[currentGame] == "1/2-1/2") ||
+//          (gameResult[currentGame] == "*") ) {
+//       theObject.innerHTML += '<span class="move"> ' + gameResult[currentGame] + '</span>'; 
+//     }
+//   }
+
 }
 
 var boardGeneratorWin=null;
@@ -1093,4 +1084,3 @@ function customShortcutKey_Shift_1() {
 </body>
 
 </html>
-

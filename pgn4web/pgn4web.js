@@ -10,7 +10,7 @@
  *  Alternatively, check the project wiki at http://pgn4web.casaschi.net
  */
 
-var pgn4web_version = '2.04';
+var pgn4web_version = '2.05';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -579,7 +579,7 @@ configBoardShrortcut("H5", "", function(){});
 // A4
 configBoardShrortcut("A4", "jump to previous event", function(){ if (!checkHeaderDefined(gameEvent[currentGame])) { return; } for (ii=currentGame-1; ii>=0; ii--) { if ((checkHeaderDefined(gameEvent[ii])) && (gameEvent[ii] != gameEvent[currentGame])) { break; } } if (ii>=0) { currentGame = ii; Init();} });
 // B4
-configBoardShrortcut("B4", "jump to previous round of same event", function(){ if (!checkHeaderDefined(gameRound[currentGame])) { return; } for (ii=currentGame-1; ii>=0; ii--) { if ((checkHeaderDefined(gameRound[ii])) && (gameEvent[ii] == gameEvent[currentGame]) && (gameRound[ii] != gameRound[currentGame])) { break; } } if (ii>=0) { currentGame = ii; Init();} });
+configBoardShrortcut("B4", "jump to previous round of same event", function(){ if ((!checkHeaderDefined(gameEvent[currentGame])) || (!checkHeaderDefined(gameRound[currentGame]))) { return; } for (ii=currentGame-1; ii>=0; ii--) { if ((checkHeaderDefined(gameRound[ii])) && (gameEvent[ii] == gameEvent[currentGame]) && (gameRound[ii] != gameRound[currentGame])) { break; } } if (ii>=0) { currentGame = ii; Init();} });
 // C4
 configBoardShrortcut("C4", "load previous game of same black player", function(){ if (!checkHeaderDefined(gameBlack[currentGame])) { return; } for (ii=currentGame-1; ii>=0; ii--) { if ((checkHeaderDefined(gameBlack[ii])) && (gameBlack[ii] == gameBlack[currentGame])) { break; } } if (ii>=0) { currentGame = ii; Init();} });
 // D4
@@ -589,7 +589,7 @@ configBoardShrortcut("E4", "load next game of same white player", function(){ if
 // F4
 configBoardShrortcut("F4", "load next game of same black player", function(){ if (!checkHeaderDefined(gameBlack[currentGame])) { return; } for (ii=currentGame+1; ii<numberOfGames; ii++) { if ((checkHeaderDefined(gameBlack[ii])) && (gameBlack[ii] == gameBlack[currentGame])) { break; } } if (ii<numberOfGames) { currentGame = ii; Init();} });
 // G4
-configBoardShrortcut("G4", "jump to next round of same event", function(){ if (!checkHeaderDefined(gameRound[currentGame])) { return; } for (ii=currentGame+1; ii<numberOfGames; ii++) { if ((checkHeaderDefined(gameRound[ii])) && (gameEvent[ii] == gameEvent[currentGame]) && (gameRound[ii] != gameRound[currentGame])) { break; } } if (ii<numberOfGames) { currentGame = ii; Init();} });
+configBoardShrortcut("G4", "jump to next round of same event", function(){ if ((!checkHeaderDefined(gameEvent[currentGame])) || (!checkHeaderDefined(gameRound[currentGame]))) { return; } for (ii=currentGame+1; ii<numberOfGames; ii++) { if ((checkHeaderDefined(gameRound[ii])) && (gameEvent[ii] == gameEvent[currentGame]) && (gameRound[ii] != gameRound[currentGame])) { break; } } if (ii<numberOfGames) { currentGame = ii; Init();} });
 // H4
 configBoardShrortcut("H4", "jump to next event", function(){ if (!checkHeaderDefined(gameEvent[currentGame])) { return; } for (ii=currentGame+1; ii<numberOfGames; ii++) { if ((checkHeaderDefined(gameEvent[ii])) && (gameEvent[ii] != gameEvent[currentGame])) { break; } } if (ii<numberOfGames) { currentGame = ii; Init();} });
 // A3
@@ -1018,9 +1018,9 @@ DocumentImages = new Array();
 var pgnHeaderTagRegExp       = /\[\s*(\w+)\s*"([^"]*)"\s*\]/; 
 var pgnHeaderTagRegExpGlobal = /\[\s*(\w+)\s*"([^"]*)"\s*\]/g;
 var dummyPgnHeader = '[x""]';
-var emptyPgnHeader = '[White ""]\n[Black ""]\n[Result ""]\n[Date ""]\n[Event ""]\n[Site ""]\n[Round ""]\n\n';
-var templatePgnHeader = '[White "?"]\n[Black "?"]\n[Result "?"]\n[Date "?"]\n[Event "?"]\n[Site "?"]\n[Round "?"]\n';
-var alertPgnHeader = '[White ""]\n[Black ""]\n[Result ""]\n[Date ""]\n[Event ""]\n[Site ""]\n[Round ""]\n\n{error: click on the top left chessboard square for debug info}';
+var emptyPgnHeader = '[Event ""]\n[Site ""]\n[Date ""]\n[Round ""]\n[White ""]\n[Black ""]\n[Result ""]\n\n';
+var templatePgnHeader = '[Event "?"]\n[Site "?"]\n[Date "?"]\n[Round "?"]\n[White "?"]\n[Black "?"]\n[Result "?"]\n';
+var alertPgnHeader = '[Event ""]\n[Site ""]\n[Date ""]\n[Round ""]\n[White ""]\n[Black ""]\n[Result ""]\n\n{error: click on the top left chessboard square for debug info}';
 
 var gameSelectorHead      = ' ...';
 var gameSelectorMono      = true;
@@ -1345,11 +1345,7 @@ function SetInitialHalfmove(number_or_string, always) {
 }
 
 function SetInitialGame(number_or_string) {
-  initialGame = number_or_string;
-  if (initialGame == "first") { return; }
-  if (initialGame == "last") { return; }
-  if (initialGame == "random") { return; }
-  if ((initialGame = parseInt(initialGame, 10)) == NaN) { initialGame = 1; } 
+  if (number_or_string) { initialGame = number_or_string; }
 }
 
 // the clock value is detected with two options: first the DGT sequence [%clk 01:02] 
@@ -1686,7 +1682,7 @@ function restartLiveBroadcastTimeout() {
   LiveBroadcastTicker++;
 }
 
-
+var LiveBroadcastFoundOldGame = false;
 function refreshPgnSource() {
   if (LiveBroadcastDelay === 0) { return; }
   if (LiveBroadcastInterval) { clearTimeout(LiveBroadcastInterval); LiveBroadcastInterval = null; }
@@ -1719,23 +1715,26 @@ function refreshPgnSource() {
   if (!LiveBroadcastStarted) { pgnGameFromPgnText(LiveBroadcastPlaceholderPgn); }
 
   LoadGameHeaders();
-  foundOldGame = false;
+  LiveBroadcastFoundOldGame = false;
   for (ii=0; ii<numberOfGames; ii++) {
-    foundOldGame = ( (gameWhite[ii]==oldGameWhite) && (gameBlack[ii]==oldGameBlack) &&
-                     (gameEvent[ii]==oldGameEvent) && (gameRound[ii]==oldGameRound) &&
-                     (gameSite[ii] ==oldGameSite ) && (gameDate[ii] ==oldGameDate ) );
-    if (foundOldGame === true) { break; }
+    LiveBroadcastFoundOldGame = ( (gameWhite[ii]==oldGameWhite) && 
+                                  (gameBlack[ii]==oldGameBlack) &&
+                                  (gameEvent[ii]==oldGameEvent) && 
+                                  (gameRound[ii]==oldGameRound) &&
+                                  (gameSite[ii] ==oldGameSite ) && 
+                                  (gameDate[ii] ==oldGameDate ) );
+    if (LiveBroadcastFoundOldGame) { break; }
   }
-  if (foundOldGame === true) { initialGame = ii + 1; }
+  if (LiveBroadcastFoundOldGame) { initialGame = ii + 1; }
 
-  if ((foundOldGame === true) && (oldCurrentPly >= 0)) { 
+  if (LiveBroadcastFoundOldGame && (oldCurrentPly >= 0)) { 
     oldInitialHalfmove = initialHalfmove; 
     initialHalfmove = oldCurrentPly;
   }
   
   Init();
 
-  if ((foundOldGame === true) && (oldCurrentPly >= 0)) { 
+  if (LiveBroadcastFoundOldGame && (oldCurrentPly >= 0)) { 
     initialHalfmove = oldInitialHalfmove; 
   }
   
@@ -1744,7 +1743,7 @@ function refreshPgnSource() {
 
   restartLiveBroadcastTimeout();
 
-  if ((foundOldGame === true) && (oldAutoplay)) { SetAutoPlay(true); }
+  if (LiveBroadcastFoundOldGame && oldAutoplay) { SetAutoPlay(true); }
 
 }
 
@@ -1814,32 +1813,65 @@ function createBoard(){
 }
 
 
+function setCurrentGameFromInitialGame() {
+  switch (initialGame) {
+    case "first":
+      currentGame = 0;
+      break;
+    case "last":
+      currentGame = numberOfGames - 1;
+      break;
+    case "random":
+      currentGame = Math.floor(Math.random()*numberOfGames);
+      break;
+    default:
+      if (isNaN(parseInt(initialGame,10))) { 
+        currentGame = gameNumberSearchPgn(initialGame);
+        if (!currentGame) { currentGame = 0; }
+      } else {
+        initialGame = parseInt(initialGame,10);
+        if (initialGame < 0) { currentGame = 0; }
+        else if (initialGame === 0) { currentGame = Math.floor(Math.random()*numberOfGames); }
+        else if (initialGame <= numberOfGames) { currentGame = (initialGame - 1); } 
+        else { currentGame = numberOfGames - 1; }
+      }
+      break;
+  }
+}
+
+function GoToInitialHalfmove(){
+  switch (initialHalfmove) {
+    case "start":
+      GoToMove(0);
+      break;
+    case "end":
+      GoToMove(StartPly+PlyNumber);
+      break;
+    case "random":
+      GoToMove(StartPly + Math.floor(Math.random()*(StartPly+PlyNumber)));
+      break;
+    case "comment":
+      GoToMove(0);
+      MoveToNextComment();
+      break;
+    default:
+      if (isNaN(initialHalfmove)) { initialHalfmove = 0; }
+      if (initialHalfmove < -3) { initialHalfmove = 0; }
+      if (initialHalfmove == -3) { GoToMove(StartPly+PlyNumber); }
+      else if (initialHalfmove == -2) { GoToMove(0); MoveToNextComment(); }
+      else if (initialHalfmove == -1) { GoToMove(StartPly + Math.floor(Math.random()*(StartPly+PlyNumber))); }
+      else { GoToMove(initialHalfmove); }
+      break;
+  }
+}
+
 function Init(){
 
   if (isAutoPlayOn) { SetAutoPlay(false); }
   InitImages();
   if (firstStart){
     LoadGameHeaders();
-    switch (initialGame) {
-      case "first":
-        currentGame = 0;
-        break;
-      case "last":
-        currentGame = numberOfGames - 1;
-        break;
-      case "random":
-        currentGame = Math.floor(Math.random()*numberOfGames);
-        break;
-      default:
-        if (isNaN(initialGame = parseInt(initialGame,10))) { currentGame = 0; }
-        else {
-          if (initialGame < 0) { currentGame = 0; }
-          else if (initialGame === 0) { currentGame = Math.floor(Math.random()*numberOfGames); }
-          else if (initialGame <= numberOfGames) { currentGame = (initialGame - 1); } 
-          else { currentGame = numberOfGames - 1; }
-        }
-        break;
-    }
+    setCurrentGameFromInitialGame();
   }
 
   if ((gameSetUp[currentGame] != undefined) && (gameSetUp[currentGame] != "1")) { InitFEN(); }
@@ -1860,34 +1892,10 @@ function Init(){
   RefreshBoard();
   CurrentPly = StartPly;
   HighlightLastMove(); 
-  if (firstStart || alwaysInitialHalfmove) {
-    switch (initialHalfmove) {
-      case "start":
-        GoToMove(0);
-        break;
-      case "end":
-        GoToMove(StartPly+PlyNumber);
-        break;
-      case "random":
-        GoToMove(StartPly + Math.floor(Math.random()*(StartPly+PlyNumber)));
-        break;
-      case "comment":
-        GoToMove(0);
-        MoveToNextComment();
-        break;
-      default:
-        if (isNaN(initialHalfmove)) { initialHalfmove = 0; }
-        if (initialHalfmove < -3) { initialHalfmove = 0; }
-        if (initialHalfmove == -3) { GoToMove(StartPly+PlyNumber); }
-        else if (initialHalfmove == -2) { GoToMove(0); MoveToNextComment(); }
-        else if (initialHalfmove == -1) { GoToMove(StartPly + Math.floor(Math.random()*(StartPly+PlyNumber))); }
-        else { GoToMove(initialHalfmove); }
-        break;
-    }
-  } else {
-    // added here customFunctionOnMove for consistency, as a null move starting a new game
-    customFunctionOnMove();
-  }
+  if (firstStart || alwaysInitialHalfmove) { GoToInitialHalfmove(); }
+  else { customFunctionOnMove(); }
+  // added here customFunctionOnMove for consistency, as a null move starting a new game
+
   if ((firstStart) && (autostartAutoplay)) { SetAutoPlay(true); }
 
   customFunctionOnPgnGameLoad();
@@ -2968,22 +2976,31 @@ function reset_after_click (ii, jj, originalClass, newClass) {
 
 
 var lastSearchPgnExpression = "";
-function searchPgnGame(searchExpression) {
+function gameNumberSearchPgn(searchExpression) {
   lastSearchPgnExpression = searchExpression;
-  if ((searchExpression === "") || (! searchExpression)) { return; }
-  if (numberOfGames < 2) { return; }
+  if (searchExpression === "") { return false; }
   // when searching we replace newline characters with spaces, 
   // so that we can use the "." special regexp characters on the whole game as a single line
   newlinesRegExp = new RegExp("[\n\r]", "gm");
   searchExpressionRegExp = new RegExp(searchExpression, "im");
-  for (checkGame=(currentGame+1) % numberOfGames; 
-       checkGame != currentGame; 
+  // at start currentGame might still be -1
+  currentGameSearch = (currentGame < 0) || (currentGame >= numberOfGames) ? 0 : currentGame;
+  for (checkGame = (currentGameSearch + 1) % numberOfGames; 
+       checkGame != currentGameSearch; 
        checkGame = (checkGame + 1) % numberOfGames) { 
     if (pgnGame[checkGame].replace(newlinesRegExp, " ").match(searchExpressionRegExp)) {
-      break;
+      return checkGame;
     }
   }
-  if (checkGame != currentGame) {
+  return false;
+}
+
+function searchPgnGame(searchExpression) {
+  lastSearchPgnExpression = searchExpression;
+  if ((searchExpression === "") || (! searchExpression)) { return; }
+  if (numberOfGames < 2) { return; }
+  checkGame = gameNumberSearchPgn(searchExpression);
+  if ((checkGame !== false) && (checkGame != currentGame)) {
     currentGame = checkGame;
     Init();
   }
@@ -3001,6 +3018,11 @@ function searchPgnGamePrompt() {
     theObject.value = searchExpression;
   }
   searchPgnGame(searchExpression);
+}
+
+function searchPgnGameForm() {
+  theObject = document.getElementById('searchPgnExpression');
+  if (theObject) { searchPgnGame(document.getElementById('searchPgnExpression').value); }
 }
 
 
@@ -3311,18 +3333,20 @@ function PrintHTML() {
       while (theObject.firstChild) { theObject.removeChild(theObject.firstChild); }
     } else {
       text = '<FORM ID="searchPgnForm" STYLE="display: inline;" ' +
-             'ACTION="javascript:searchPgnGame(document.getElementById(\'searchPgnExpression\').value);">';
+             'ACTION="javascript:searchPgnGameForm();">';
       text += '<INPUT ID="searchPgnButton" CLASS="searchPgnButton" STYLE="display: inline; ';
       if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + tableSize/4 + '; '; }
       text += '" TITLE="find games matching the search string (or regular expression)" ';
       text += 'TYPE="submit" VALUE="?">';
       text += '<INPUT ID="searchPgnExpression" CLASS="searchPgnExpression" ' +
               'TITLE="find games matching the search string (or regular expression)" ' + 
-              'TYPE="input" VALUE="' + lastSearchPgnExpression + '" STYLE="display: inline; ';
+              'TYPE="input" VALUE="" STYLE="display: inline; ';
       if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + 3*tableSize/4 + '; '; }
       text += '" ONFOCUS="disableShortcutKeysAndStoreStatus();" ONBLUR="restoreShortcutKeysStatus();">'; 
       text += '</FORM>';
       theObject.innerHTML = text;
+      theObject = document.getElementById('searchPgnExpression');
+      if (theObject) { theObject.value = lastSearchPgnExpression; }
     }
   }
 }
