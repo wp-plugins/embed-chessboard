@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Embeds a javascript chessboard in wordpress articles for replaying chess games. Use plugin options to blend the chessboard with the site template; use tag parameters to customize each chessboard. Insert chess games in PGN format into your wordpress article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. For more info on plugin options and tag parameters please <a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress">read the tutorial</a>.
-Version: 1.25
+Version: 1.26
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 
@@ -39,6 +39,7 @@ ChangeLog:
   1.23  - upgraded pgn4web to 2.03
   1.24  - upgraded pgn4web to 2.04
   1.25  - minor bug fix
+  1.26  - added rawurlencode() to url parameters and upgraded pgn4web to 2.05
 */
 
 class pgnBBCode {
@@ -113,34 +114,34 @@ class pgnBBCode {
 		$replacement .= $pgnText;
 		$replacement .= "</textarea>";
 		$replacement .= "<iframe src='" . plugins_url("pgn4web/board.html", __FILE__) . "?";
-		$replacement .= "am=" . $autoplayMode;
+		$replacement .= "am=" . rawurlencode($autoplayMode);
 		$replacement .= "&amp;d=3000";
-		$replacement .= "&amp;ig=" . $initialGame;
-		$replacement .= "&amp;ih=" . $initialHalfmove;
+		$replacement .= "&amp;ig=" . rawurlencode($initialGame);
+		$replacement .= "&amp;ih=" . rawurlencode($initialHalfmove);
 		$replacement .= "&amp;ss=26&amp;ps=d&amp;pf=d";
-		$replacement .= "&amp;lch=" . get_option_with_default('embedchessboard_light_squares_color');
-		$replacement .= "&amp;dch=" . get_option_with_default('embedchessboard_dark_squares_color');
-		$replacement .= "&amp;bbch=" . get_option_with_default('embedchessboard_board_border_color');
+		$replacement .= "&amp;lch=" . rawurlencode(get_option_with_default('embedchessboard_light_squares_color'));
+		$replacement .= "&amp;dch=" . rawurlencode(get_option_with_default('embedchessboard_dark_squares_color'));
+		$replacement .= "&amp;bbch=" . rawurlencode(get_option_with_default('embedchessboard_board_border_color'));
 		$replacement .= "&amp;hm=b";
-		$replacement .= "&amp;hch=" . get_option_with_default('embedchessboard_square_highlight_color');
+		$replacement .= "&amp;hch=" . rawurlencode(get_option_with_default('embedchessboard_square_highlight_color'));
 		$replacement .= "&amp;bd=c";
-		$replacement .= "&amp;cbch=" . get_option_with_default('embedchessboard_control_buttons_background_color');
-		$replacement .= "&amp;ctch=" . get_option_with_default('embedchessboard_control_buttons_text_color');
+		$replacement .= "&amp;cbch=" . rawurlencode(get_option_with_default('embedchessboard_control_buttons_background_color'));
+		$replacement .= "&amp;ctch=" . rawurlencode(get_option_with_default('embedchessboard_control_buttons_text_color'));
 		$replacement .= "&amp;hd=j";
-		$replacement .= "&amp;md=" . $movesDisplay;
+		$replacement .= "&amp;md=" . rawurlencode($movesDisplay);
 		$replacement .= "&amp;tm=13";
-		$replacement .= "&amp;fhch=" . get_option_with_default('embedchessboard_header_text_color');
+		$replacement .= "&amp;fhch=" . rawurlencode(get_option_with_default('embedchessboard_header_text_color'));
 		$replacement .= "&amp;fhs=80p";
-		$replacement .= "&amp;fmch=" . get_option_with_default('embedchessboard_moves_text_color');
-		$replacement .= "&amp;fcch=" . get_option_with_default('embedchessboard_comments_text_color');
-		$replacement .= "&amp;hmch=" . get_option_with_default('embedchessboard_move_highlight_color');
+		$replacement .= "&amp;fmch=" . rawurlencode(get_option_with_default('embedchessboard_moves_text_color'));
+		$replacement .= "&amp;fcch=" . rawurlencode(get_option_with_default('embedchessboard_comments_text_color'));
+		$replacement .= "&amp;hmch=" . rawurlencode(get_option_with_default('embedchessboard_move_highlight_color'));
 		$replacement .= "&amp;fms=80p&amp;fcs=m&amp;cd=i";
-		$replacement .= "&amp;bch=" . get_option_with_default('embedchessboard_background_color');
+		$replacement .= "&amp;bch=" . rawurlencode(get_option_with_default('embedchessboard_background_color'));
 		$replacement .= "&amp;fp=13";
-		$replacement .= "&amp;hl=" . $horizontalLayout;
-		$replacement .= "&amp;fh=" . $frameHeight;
+		$replacement .= "&amp;hl=" . rawurlencode($horizontalLayout);
+		$replacement .= "&amp;fh=" . rawurlencode($frameHeight);
 		$replacement .= "&amp;fw=p";
-		$replacement .= "&amp;pi=" . $pgnId . "' ";
+		$replacement .= "&amp;pi=" . rawurlencode($pgnId) . "' ";
 		$replacement .= "frameborder='0' width='100%' height='" . $height . "' ";
 		$replacement .= "scrolling='no' marginheight='0' marginwidth='0'>";
 		$replacement .= "your web browser and/or your host do not support iframes as required to display the chessboard; alternatively your wordpress theme might suppress the html iframe tag from articles or excerpts";
