@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Embeds a javascript chessboard in wordpress articles for replaying chess games. Use plugin options to blend the chessboard with the site template; use tag parameters to customize each chessboard. Insert chess games in PGN format into your wordpress article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. For more info on plugin options and tag parameters please <a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress">read the tutorial</a>.
-Version: 1.26
+Version: 1.27
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 
@@ -40,6 +40,7 @@ ChangeLog:
   1.24  - upgraded pgn4web to 2.04
   1.25  - minor bug fix
   1.26  - added rawurlencode() to url parameters and upgraded pgn4web to 2.05
+  1.27  - added extendedOptions switch to the [pgn] tag
 */
 
 class pgnBBCode {
@@ -104,6 +105,21 @@ class pgnBBCode {
 		elseif ( isset($atts['am']) ) { $autoplayMode = $atts['am']; }
 		else { $autoplayMode = get_option_with_default('embedchessboard_autoplay_mode'); }
 
+		$pgnSourceOverride = false;
+		$extendedOptionsString = '';
+		if ( isset($atts['extendedoptions']) ) { $extendedOptions = $atts['extendedoptions']; }
+		elseif ( isset($atts['eo']) ) { $extendedOptions = htmlspecialchars($atts['eo']); }
+		else { $extendedOptions = 'false'; }
+		if (($extendedOptions == 'true') || ($extendedOptions == 't')) {
+			$skipParameters = array('layout', 'l', 'showmoves', 'sm', 'height', 'h', 'initialgame', 'ig', 'initialhalfmove', 'ih', 'autoplaymode', 'am', 'extendedoptions', 'eo');
+			$pgnParameters = array('pgntext', 'pt', 'pgnencoded', 'pe', 'fenstring', 'fs', 'pgnid', 'pi', 'pgndata', 'pd');
+			foreach ($atts as $key => $value) {
+				if (in_array(strtolower($key), $skipParameters)) { continue; }
+				if (in_array(strtolower($key), $pgnParameters)) { $pgnSourceOverride = true;  }
+				$extendedOptionsString .= '&amp;' . rawurlencode($key) . '=' . rawurlencode($value);
+			}
+		}
+
 		$pgnId = "pgn4web_" . dechex(crc32($pgnText));
 
 		$containerStyle = get_option_with_default('embedchessboard_container_style');
@@ -141,7 +157,8 @@ class pgnBBCode {
 		$replacement .= "&amp;hl=" . rawurlencode($horizontalLayout);
 		$replacement .= "&amp;fh=" . rawurlencode($frameHeight);
 		$replacement .= "&amp;fw=p";
-		$replacement .= "&amp;pi=" . rawurlencode($pgnId) . "' ";
+		if (!$pgnSourceOverride) { $replacement .= "&amp;pi=" . rawurlencode($pgnId); }
+		$replacement .= $extendedOptionsString . "' ";
 		$replacement .= "frameborder='0' width='100%' height='" . $height . "' ";
 		$replacement .= "scrolling='no' marginheight='0' marginwidth='0'>";
 		$replacement .= "your web browser and/or your host do not support iframes as required to display the chessboard; alternatively your wordpress theme might suppress the html iframe tag from articles or excerpts";
