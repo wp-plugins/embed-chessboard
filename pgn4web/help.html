@@ -122,7 +122,7 @@ Errors alert messages are logged, such as failures to load PGN games, incorrect 
     document.write("</table>");	
     document.write("<i>Squares labeled assuming " + colorAtTheBottom + " on bottom.</i>");
   } catch (e) {
-    print_help_row("could not find shortcut squares info from the opener window", "");
+    print_help_row("shortcut squares info not available from the opener window", "");
     print_help_row("please hover the mouse pointer on each square of the chessboard to check for their shortcut action", "");
     document.write("</table>");	
   }
@@ -199,8 +199,10 @@ print_help_row("something", "search for text <i>something</i> anywhere in the PG
 print_help_row("White\\s*\"Somebody", "search for player <i>Somebody</i> as White");
 print_help_row("\(White|Black\)\\s*\"Somebody", "search for player <i>Somebody</i> as either White or Black");
 print_help_row("White\\s*\"Somebody.*Black\\s*\"Other", "search for <i>Somebody</i> vs <i>Other</i> games");
-print_help_row("Site\\s*\"Somewhere.*Result\\s\"\(1-0|0-1\)", "search for games at the <i>Somewhere</i> site ending with a win");
-print_help_row("1.\\s*e4\\s*e6", "search for games with moves <i>1. e4 e6</i>");
+print_help_row("Site\\s*\"Somewhere.*Result\\s*\"\(1-0|0-1\)", "search for games at the <i>Somewhere</i> site ending with a win");
+print_help_row("Result\\s*\"\(?!1-0\)", "search for games not ending with a White win");
+print_help_row("[^0-9]1.\\s*e4\\s*e6", "search for games with moves <i>1. e4 e6</i>");
+print_help_row("[^0-9]1.\\s*e4\\s*e5\(?!\\s*2.\\s*Nf3\)", "search for games with moves <i>1. e4 e5</i> without <i>2. Nf3</i>");
 document.write("</table>");
 
 </script>

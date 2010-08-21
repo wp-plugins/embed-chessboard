@@ -40,7 +40,7 @@ ChangeLog:
   1.24  - upgraded pgn4web to 2.04
   1.25  - minor bug fix
   1.26  - added rawurlencode() to url parameters and upgraded pgn4web to 2.05
-  1.27+  - added extendedOptions switch to the [pgn] tag
+  1.27  - added extendedOptions switch to the [pgn] tag and upgraded pgn4web to 2.06
 */
 
 class pgnBBCode {
