@@ -149,6 +149,7 @@ to any <div> or <span> containers with the following IDs:
   <div id="GameWhiteClock"></div>
   <div id="GameBlackClock"></div>
   <div id="GameLiveStatus"></div>
+  <div id="GameLiveLastModified"></div>
 
 The file template.css shows a list of customization style options.
 
@@ -216,9 +217,12 @@ If your live PGN contains clock info as comments after each game such as
 Clock information provided by the DGT chessboards (like {[%clk 1:59:59]}) is
 also supported.
 
-The status of the live broadcast is displayed in the following section: 
+The status of the live broadcast is displayed in the following sections: 
 
   <div id="GameLiveStatus"></div>
+  <div id="GameLiveLastRefreshed"></div>
+  <div id="GameLiveLastReceived"></div>
+  <div id="GameLiveLastModifiedServer"></div>
 
 Clicking on the H6 square will force a games refresh.
 Clicking on the A6/B6 squares will pause/restart the automatic games refresh.
@@ -278,18 +282,22 @@ allow for execution of custom commands when shift + a number key is pressed:
 
 TECHNICAL NOTES ABOUT WEB BROWSERS
 
-pgn4web.js is developed and tested with a variety of browsers (Arora, 
-Blackberry browser, Chrome, Epiphany, Firefox, Internet Explorer, Opera, 
-Safari) on a variety of platforms (Linux/Debian, MacOS, Windows). Not every 
-browser version and every combination of browser/platform has been tested. 
+pgn4web is developed and tested with recent versions of a variety of 
+browsers (Arora, Blackberry browser, Chrome, Epiphany, Firefox, Internet 
+Explorer, Opera, Safari) on a variety of personal computer platforms 
+(Linux/Debian, MacOS, Windows) and some smartphone/pda platform (Android, 
+Blackberry, Apple iOS for iPhone/iPad/iPod).
+Not every browser version (please upgrade to a recent release) has been 
+tested and not every combination of browser/platform has been validated. 
 If you have any issue with using pgn4web on your platform, please email 
-pgn4web@casaschi.net
+pgn4web@casaschi.net 
 
 Note about Google Chrome: you might experience problems when testing HTML
 pages from your local computer while developing your site. This is a
-limitation of the browser with respect to loading local files. There is no
-workaround other than testing with a different browser. Browsing pgn4web
-websites with Google Chrome should work properly.
+security limitation of the browser with respect to loading local files. 
+The limitation can be bypassed by starting Google Chrome with the command 
+line switch '--allow-file-access-from-files'. Browsing pgn4web websites
+with Google Chrome should work properly.
 
 Note about Internet Explorer v7 and above: under some circumstances you might
 experience problems when testing HTML pages from your local computer while 

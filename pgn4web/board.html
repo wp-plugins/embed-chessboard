@@ -102,7 +102,7 @@ function gup( name ){
   name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
   var regexS = "[\\?&]"+name+"=([^&#]*)";  
   regexS = regexS+"(?!.*"+regexS+")"; // matches the LAST occurrence
-  var regex = new RegExp( regexS );
+  var regex = new RegExp( regexS, "i" );
   var results = regex.exec( window.location.href );
   if( results !== null ) { return decodeURIComponent(results[1]); } 
 
@@ -116,7 +116,7 @@ function gup( name ){
   name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
   regexS = "[\\?&]"+name+"=([^&#]*)";  
   regexS = regexS+"(?!.*"+regexS+")"; // matches the LAST occurrence
-  regex = new RegExp( regexS );
+  regex = new RegExp( regexS, "i" );
 
   results = regex.exec( window.location.href );
   if( results !== null ) { return decodeURIComponent(results[1]); }
@@ -604,8 +604,8 @@ if (gup("help") !== "") {
   document.write(" - refreshMinutes = live broadcast delay (default 0 = live broadcast disabled)\n");
   document.write(" - refreshDemo = if set true sets live demo mode (default false)\n");
   document.write("\n");
-  document.write(" - initialGame = first | last | random | a number (default first)\n");
-  document.write(" - initialHalfmove = start | end | random | comment | a number | a search expression (default start)\n");
+  document.write(" - initialGame = first | last | random | a number | a search expression (default first)\n");
+  document.write(" - initialHalfmove = start | end | random | comment | a number (default start)\n");
   document.write("\n");
   document.write(" - autoplayMode = game (autoplay first game once) | loop (loops through games continiously) | none (default game)\n");
   document.write(" - delay = autoplay delay in ms (default 1000)\n");
