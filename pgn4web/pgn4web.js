@@ -5,13 +5,13 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.08';
+var pgn4web_version = '2.09';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
 // pgn4web_project_email could be preassigned in pgn4web-server-config.js
 var pgn4web_project_email;
-if (pgn4web_project_email == undefined) { pgn4web_project_email = 'pgn4web@casaschi.net'; }
+if (pgn4web_project_email === undefined) { pgn4web_project_email = 'pgn4web@casaschi.net'; }
 
 var helpWin=null;
 function displayHelp(section){
@@ -41,7 +41,8 @@ function start_pgn4web() {
   // keep startup logs at first run
   // reset alert log when reloading start_pgn4web
   if (alertFirstResetLoadingPgn) { alertFirstResetLoadingPgn = false; }
-  else { resetAlert(); } 
+  else { resetAlert(); }
+  InitImages(); 
   createBoard();
   if (LiveBroadcastDelay > 0) { restartLiveBroadcastTimeout(); }
 }
@@ -871,8 +872,9 @@ HistEnPassant[0] = false;
 HistEnPassantCol = new Array(MaxMove);
 HistEnPassantCol[0] = -1;
 
-var PieceCode = "KQRBNP";
 var FenPieceName = "KQRBNP";
+var PieceCode = new Array(); // IE needs an array to work with [index]
+for (i=0; i<6; i++) { PieceCode[i] = FenPieceName.charAt(i); }
 var FenStringStart = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 var columnsLetters = "ABCDEFGH";
 
@@ -882,9 +884,8 @@ startingImageSize = -1;
 PiecePicture = new Array(2);
 for(i=0; i<2; ++i) { PiecePicture[i] = new Array(6); }
 
-var ImageOffset  = -1; 
 var ImagePath = '';                                                 
-var ImagePathOld;
+var ImagePathOld = null;
 var imageType = 'png';
 var defaultImagesSize = 40;
 
@@ -908,9 +909,6 @@ var StartPly;
 var CurrentPly;
 
 var IsRotated = false;
-
-ClearImg = new Image();
-DocumentImages = new Array();
 
 var pgnHeaderTagRegExp       = /\[\s*(\w+)\s*"([^"]*)"\s*\]/; 
 var pgnHeaderTagRegExpGlobal = /\[\s*(\w+)\s*"([^"]*)"\s*\]/g;
@@ -1244,7 +1242,7 @@ function HighlightLastMove() {
 
   var theShowCommentTextObject = document.getElementById("GameLastComment");
   if (theShowCommentTextObject !== null) {
-    if (MoveComments[showThisMove+1] != undefined) {
+    if (MoveComments[showThisMove+1] !== undefined) {
       // remove PGN extension tags
       thisComment = MoveComments[showThisMove+1].replace(/\[%[^\]]*\]\s*/g,''); // trailing spaces also removed
       // remove spaces only comments
@@ -1317,10 +1315,10 @@ function HighlightLastMove() {
         highlightColFrom = highlightRowFrom = -1;
         highlightColTo   = highlightRowTo   = -1;
       } else {
-        highlightColFrom = HistCol[0][showThisMove] == undefined ? -1 : HistCol[0][showThisMove];
-        highlightRowFrom = HistRow[0][showThisMove] == undefined ? -1 : HistRow[0][showThisMove];
-        highlightColTo   = HistCol[2][showThisMove] == undefined ? -1 : HistCol[2][showThisMove];
-        highlightRowTo   = HistRow[2][showThisMove] == undefined ? -1 : HistRow[2][showThisMove];
+        highlightColFrom = HistCol[0][showThisMove] === undefined ? -1 : HistCol[0][showThisMove];
+        highlightRowFrom = HistRow[0][showThisMove] === undefined ? -1 : HistRow[0][showThisMove];
+        highlightColTo   = HistCol[2][showThisMove] === undefined ? -1 : HistCol[2][showThisMove];
+        highlightRowTo   = HistRow[2][showThisMove] === undefined ? -1 : HistRow[2][showThisMove];
       }
       highlightMove(highlightColFrom, highlightRowFrom, highlightColTo, highlightRowTo);
     }
@@ -1355,7 +1353,7 @@ function highlightMove(colFrom, rowFrom, colTo, rowTo) {
 }
 
 function highlightSquare(col, row, on) {
-  if ((col == undefined) || (row == undefined)) { return false; }
+  if ((col === undefined) || (row === undefined)) { return false; }
   if (! SquareOnBoard(col, row)) { return false; }
   // locates coordinates on HTML table
   if (IsRotated) { trow = row; tcol = 7 - col; }
@@ -1520,7 +1518,7 @@ function checkLiveBroadcastStatus() {
 
   // broadcast started yet?
   // check for fake LiveBroadcastPlaceholderPgn game when no PGN file is found
-  if ((LiveBroadcastStarted === false) || ((pgnGame == undefined) ||
+  if ((LiveBroadcastStarted === false) || ((pgnGame === undefined) ||
     ((numberOfGames == 1) && (gameEvent[0] == LiveBroadcastPlaceholderEvent)))) {
     LiveBroadcastEnded = false;
     LiveBroadcastStatusString = "live broadcast yet to start";
@@ -1805,27 +1803,18 @@ function Init(nextGame){
   }
 
   if (isAutoPlayOn) { SetAutoPlay(false); }
+
   InitImages();
-  if (firstStart){
+  if (firstStart) {
     LoadGameHeaders();
     setCurrentGameFromInitialGame();
   }
 
-  if ((gameSetUp[currentGame] != undefined) && (gameSetUp[currentGame] != "1")) { InitFEN(); }
+  if ((gameSetUp[currentGame] !== undefined) && (gameSetUp[currentGame] != "1")) { InitFEN(); }
   else { InitFEN(gameFEN[currentGame]); }
   
   OpenGame(currentGame);
   
-  // find index of first square image
-  if (ImageOffset < 0) {
-    for (ii = 0; ii < document.images.length; ++ii) {
-      if (document.images[ii].src == ClearImg.src) {
-        ImageOffset = ii;
-        break;
-      }
-    }
-  }
-
   RefreshBoard();
   CurrentPly = StartPly;
   HighlightLastMove(); 
@@ -1842,7 +1831,7 @@ function Init(nextGame){
 
 
 function InitFEN(startingFEN) {
-  FenString = startingFEN != undefined ? startingFEN : FenStringStart;
+  FenString = startingFEN !== undefined ? startingFEN : FenStringStart;
   
   // board reset
   var ii, jj;
@@ -2136,14 +2125,13 @@ function SetImageType(extension) {
 }
 
 function InitImages() {
-  DocumentImages.length = 0;
-  
-  if (ImagePathOld == ImagePath) { return; }
+  if (ImagePathOld === ImagePath) { return; }
 
   if ((ImagePath.length > 0) && (ImagePath[ImagePath.length-1] != '/')) {
     ImagePath += '/';
   }
 
+  ClearImg = new Image();
   ClearImg.src = ImagePath+'clear.'+imageType;
 
   var color;
@@ -2257,12 +2245,12 @@ function LoadGameHeaders(){
   }
   if ((LiveBroadcastDemo) && (numberOfGames > 0)) {
     for (ii = 0; ii < numberOfGames; ++ii) {
-       if (gameDemoLength[ii] == undefined) {
+       if (gameDemoLength[ii] === undefined) {
          InitFEN(gameFEN[ii]);
          ParsePGNGameString(pgnGame[ii]);
          gameDemoLength[ii] = PlyNumber; 
        }
-       if (gameDemoMaxPly[ii] == undefined) { gameDemoMaxPly[ii] = 0; }
+       if (gameDemoMaxPly[ii] === undefined) { gameDemoMaxPly[ii] = 0; }
        if (gameDemoMaxPly[ii] <= gameDemoLength[ii]) { gameResult[ii] = '*'; }
     }
   }
@@ -2340,8 +2328,7 @@ function MoveForward(diff) {
   // reach to selected move checking legality
   for(thisPly = CurrentPly; thisPly < goToPly; ++thisPly) {
     var move = Moves[thisPly];
-    var parse = ParseMove(move, thisPly);
-    if (!parse) {
+    if (! (parse = ParseMove(move, thisPly))) {
       text = (Math.floor(thisPly / 2) + 1) + ((thisPly % 2) === 0 ? '. ' : '... ');
       myAlert('error: invalid ply ' + text + move + ' in game ' + (currentGame+1), true);
       break;
@@ -2735,7 +2722,7 @@ function translateNAGs(comment) {
       if (jj == comment.length) { break; }
     }
     nag = parseInt(comment.substring(ii+1,jj),10);
-    if ((nag != undefined) && (NAG[nag] != undefined)) {
+    if ((nag !== undefined) && (NAG[nag] !== undefined)) {
       comment = comment.replace(comment.substring(ii,jj), '<SPAN CLASS="nag">' + NAG[nag] + '</SPAN>');
     }
     ii++;  
@@ -2812,7 +2799,7 @@ function ParseMove(move, plyCount) {
   if (ll === 0) { mvPiece = 6; }
   else {
     for(ii = 1; ii < 6; ++ii) { if (remainder.charAt(0) == PieceCode[ii-1]) { mvPiece = ii; } }
-    if (mvPiece == -1) { if ('abcdefgh'.indexOf(remainder.charAt(0)) >= 0) { mvPiece = 6; } }
+    if (mvPiece == -1) { if (columnsLetters.toLowerCase().indexOf(remainder.charAt(0)) >= 0) { mvPiece = 6; } }
     if (mvPiece == -1) { return false; }
     if (remainder.charAt(ll-1) == 'x') { mvCapture = 1; }
     if (isNaN(move.charAt(ll-1-mvCapture))) {
@@ -2876,9 +2863,7 @@ function ParseMove(move, plyCount) {
   }
 
   // check move legality
-  var retVal;
-  retVal = CheckLegality(PieceCode[mvPiece-1], plyCount);
-  if (!retVal) { return false; }
+  if (! CheckLegality(PieceCode[mvPiece-1], plyCount)) { return false; }
 
   // pawn moved => check if en-passant possible
   HistEnPassant[plyCount]    = false;
@@ -2969,7 +2954,7 @@ function searchPgnGameForm() {
 }
 
 
-var tableSize = null;
+var tableSize = 0;
 function PrintHTML() {
   var ii, jj;
   var text;
@@ -2978,8 +2963,7 @@ function PrintHTML() {
 
   if (theObject = document.getElementById("GameBoard")) {
     text = '<TABLE CLASS="boardTable" ID="boardTable" CELLSPACING=0 CELLPADDING=0';
-    text += ((tableSize !== null) && (tableSize !== 0)) ?
-      ' STYLE="width: ' + tableSize + 'px; height: ' + tableSize + 'px;">' : '>';
+    text += (tableSize > 0) ? ' STYLE="width: ' + tableSize + 'px; height: ' + tableSize + 'px;">' : '>';
     for (ii = 0; ii < 8; ++ii) {
       text += '<TR>';
       for (jj = 0; jj < 8; ++jj) {
@@ -2998,7 +2982,7 @@ function PrintHTML() {
           'STYLE="text-decoration: none; outline: none;" ' +
           'ONFOCUS="this.blur()">' + 
           '<IMG CLASS="pieceImage" ID="' + imageId + '" ' + 
-          ' SRC="'+ImagePath+'clear.'+imageType+'" BORDER=0></A></TD>';
+          ' SRC="'+ ClearImg.src +'" BORDER=0></A></TD>';
       }
       text += '</TR>';
     }
@@ -3020,18 +3004,18 @@ function PrintHTML() {
     numberOfButtons = 5;
     spaceSize = 3;
     buttonSize = (tableSize - spaceSize*(numberOfButtons - 1)) / numberOfButtons;
-    text =  '<FORM NAME="GameButtonsForm" STYLE="display:inline;">' +
+    text = '<FORM NAME="GameButtonsForm" STYLE="display:inline;">' +
       '<TABLE BORDER=0 CELLPADDING=0 CELLSPACING=0>' + 
       '<TR><TD>' +
       '<INPUT ID="startButton" TYPE="BUTTON" VALUE="&lt;&lt;" STYLE="';
-    if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + 'px;'; }
+    if (buttonSize > 0) { text += 'width: ' + buttonSize + 'px;'; }
     text += '"; CLASS="buttonControl" TITLE="go to game start" ' +
       ' ID="btnGoToStart" onClick="javascript:GoToMove(StartPly)" ONFOCUS="this.blur()">' +
       '</TD>' +
       '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
       '</TD><TD>' +
       '<INPUT ID="backButton" TYPE="BUTTON" VALUE="&lt;" STYLE="';
-    if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + 'px;'; }
+    if (buttonSize > 0) { text += 'width: ' + buttonSize + 'px;'; }
     text += '"; CLASS="buttonControl" TITLE="move backward" ' +
       ' ID="btnMoveBackward1" onClick="javascript:MoveBackward(1)" ONFOCUS="this.blur()">' +
       '</TD>' +
@@ -3039,7 +3023,7 @@ function PrintHTML() {
       '</TD><TD>';
     text += '<INPUT ID="autoplayButton" TYPE="BUTTON" VALUE=' +
       (isAutoPlayOn ? "=" : "+") + ' STYLE="';
-    if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + 'px;'; }
+    if (buttonSize > 0) { text += 'width: ' + buttonSize + 'px;'; }
     text += isAutoPlayOn ?
       '"; CLASS="buttonControlStop" TITLE="toggle autoplay (stop)" ' :
       '"; CLASS="buttonControlPlay" TITLE="toggle autoplay (start)" ';
@@ -3048,14 +3032,14 @@ function PrintHTML() {
       '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
       '</TD><TD>' +
       '<INPUT ID="forwardButton" TYPE="BUTTON" VALUE="&gt;" STYLE="';
-    if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + 'px;'; }
+    if (buttonSize > 0) { text += 'width: ' + buttonSize + 'px;'; }
     text += '"; CLASS="buttonControl" TITLE="move forward" ' +
       ' ID="btnMoveForward1" onClick="javascript:MoveForward(1)" ONFOCUS="this.blur()">' +
       '</TD>' +
       '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
       '</TD><TD>' +
       '<INPUT ID="endButton" TYPE="BUTTON" VALUE="&gt;&gt;" STYLE="';
-    if ((buttonSize != undefined) && (buttonSize > 0)) { text += 'width: ' + buttonSize + 'px;'; }
+    if (buttonSize > 0) { text += 'width: ' + buttonSize + 'px;'; }
     text += '"; CLASS="buttonControl" TITLE="go to game end" ' +
       ' ID="btnGoToEnd" onClick="javascript:GoToMove(StartPly + PlyNumber)" ONFOCUS="this.blur()">' +
       '</TD></TR></TABLE></FORM>';
@@ -3076,7 +3060,7 @@ function PrintHTML() {
         if (gameSelectorNum) { gameSelectorNumLenght = Math.floor(Math.log(numberOfGames)/Math.log(10)) + 1; }
         text = '<FORM NAME="GameSel" STYLE="display:inline;"> ' +
           '<SELECT ID="GameSelSelect" NAME="GameSelSelect" STYLE="';
-        if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + tableSize + 'px; '; }
+        if (tableSize > 0) { text += 'width: ' + tableSize + 'px; '; }
         text += 'font-family: monospace;" CLASS="selectControl" TITLE="Select a game" ' +
           'ONCHANGE="this.blur(); if(this.value >= 0) { Init(this.value); this.value = -1; }" ' +
           'ONFOCUS="disableShortcutKeysAndStoreStatus();" ONBLUR="restoreShortcutKeysStatus();" ' +
@@ -3231,13 +3215,13 @@ function PrintHTML() {
       text = '<FORM ID="searchPgnForm" STYLE="display: inline;" ' +
         'ACTION="javascript:searchPgnGameForm();">';
       text += '<INPUT ID="searchPgnButton" CLASS="searchPgnButton" STYLE="display: inline; ';
-      if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + (tableSize/4) + 'px; '; }
+      if (tableSize > 0) { text += 'width: ' + (tableSize/4) + 'px; '; }
       text += '" TITLE="find games matching the search string (or regular expression)" ' +
         'TYPE="submit" VALUE="?">' +
         '<INPUT ID="searchPgnExpression" CLASS="searchPgnExpression" ' +
         'TITLE="find games matching the search string (or regular expression)" ' + 
         'TYPE="input" VALUE="" STYLE="display: inline; ';
-      if ((tableSize != undefined) && (tableSize > 0)) { text += 'width: ' + (3*tableSize/4) + 'px; '; }
+      if (tableSize > 0) { text += 'width: ' + (3*tableSize/4) + 'px; '; }
       text += '" ONFOCUS="disableShortcutKeysAndStoreStatus();" ONBLUR="restoreShortcutKeysStatus();">'; 
       text += '</FORM>';
       theObject.innerHTML = text;
@@ -3258,16 +3242,12 @@ function FlipBoard() {
 }
 
 function RefreshBoard() {
-  InitImages();
 
-  // display all squares empty
+  // display all empty squares
   var col, row, square;
   for (col = 0; col < 8;++col) {
     for (row = 0; row < 8; ++row) {
-      if (Board[col][row] === 0) {
-        square = IsRotated ? 63-col-(7-row)*8 : col+(7-row)*8;
-	SetImage(square, ClearImg.src);
-      }
+      if (Board[col][row] === 0) { SetImage(col, row, ClearImg.src); }
     }
   }
 
@@ -3276,10 +3256,7 @@ function RefreshBoard() {
   for (color = 0; color < 2; ++color) {
     for (ii = 0; ii < 16; ++ii) {
       if (PieceType[color][ii] > 0) {
-        square = IsRotated ? 
-          63-PieceCol[color][ii] - (7-PieceRow[color][ii])*8 :
-          PieceCol[color][ii] + (7-PieceRow[color][ii])*8;
-        SetImage(square, PiecePicture[color][PieceType[color][ii]].src);
+        SetImage(PieceCol[color][ii], PieceRow[color][ii], PiecePicture[color][PieceType[color][ii]].src);
       }
     }
   }
@@ -3330,10 +3307,11 @@ function SetLiveBroadcast(delay, alertFlag, demoFlag) {
   LiveBroadcastDemo = (demoFlag === true);
 }
 
-function SetImage(square, image) {
-  if (DocumentImages[square] != image) {
-    document.images[square+ImageOffset].src = image;
-    DocumentImages[square] = image;
+function SetImage(col, row, image) {
+  if (IsRotated) { trow = row; tcol = 7 - col; }
+  else { trow = 7 - row; tcol = col; }
+  if (theObject = document.getElementById('img_' + 'tcol' + tcol + 'trow' + trow)) {
+    if (theObject.src != image) { theObject.src = image; }
   }
 }
 
