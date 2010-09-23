@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.09';
+var pgn4web_version = '2.10';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -525,7 +525,9 @@ boardShortcut("H1", "go to game end", function(){ GoToMove(StartPly + PlyNumber)
 
 var deciles = new Array(11);
 function calculateDeciles() {
-  for (ii=0; ii<deciles.length; ii++) { deciles[ii] = Math.round((numberOfGames - 1) * ii / 10); }
+  for (ii=0; ii<deciles.length; ii++) { 
+    deciles[ii] = Math.round((numberOfGames - 1) * ii / (deciles.length - 1));
+  }
 }
 
 function detectJavascriptLocation() {
@@ -2359,11 +2361,12 @@ function MoveForward(diff) {
 
 function AutoplayNextGame() {
   if (fatalErrorNumSinceReset === 0) {
-    if (currentGame < numberOfGames) { Init(currentGame + 1); }
-    else { Init(0); }
-    if ((numberOfGames > 0) || (PlyNumber > 0)) {
-      SetAutoPlay(true);
-      return;
+    if (numberOfGames > 0) {
+      Init((currentGame + 1) % numberOfGames);
+      if ((numberOfGames > 1) || (PlyNumber > 0)) {
+        SetAutoPlay(true);
+        return;
+      }
     }
   }
   SetAutoPlay(false);
