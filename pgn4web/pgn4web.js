@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.10';
+var pgn4web_version = '2.11';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -1366,8 +1366,17 @@ function highlightSquare(col, row, on) {
   return true;
 }
 
+function fixCommonPgnMistakes(text) {
+  text = text.replace(/\u00BD/g,"1/2"); // replace "half fraction" char with "1/2"
+  text = text.replace(/[\u2010-\u2015]/g,"-"); // replace "hyphens" chars with "-"
+  text = text.replace(/\u2024/g,"."); // replace "one dot leader" char with "."
+  text = text.replace(/[\u2025-\u2026]/g,"..."); // replace "two dot leader" and "ellipsis" chars with "..."
+  return text;
+}
 
 function pgnGameFromPgnText(pgnText) {
+
+  pgnText = fixCommonPgnMistakes(pgnText);
 
   // replace < and > with html entities: avoid html injection from PGN data
   pgnText = pgnText.replace(/</g, "&lt;");
@@ -2399,7 +2408,7 @@ function OpenGame(gameId) {
 function ParsePGNGameString(gameString) {
 
   var ss = gameString;
-  // remove PGN tags and result at the end 
+  // remove PGN tags and spaces at the end 
   ss = ss.replace(pgnHeaderTagRegExpGlobal, ''); 
   ss = ss.replace(/^\s/, '');
   ss = ss.replace(/\s$/, '');
@@ -2537,14 +2546,9 @@ function ParsePGNGameString(gameString) {
         searchThis = moveCount.toString()+'.';
         if(ss.indexOf(searchThis,start)==start) {
           start += searchThis.length;
-          while ((ss.charAt(start) == '.') || (ss.charAt(start) == ' ')  || (ss.charAt(start) == '\n') || (ss.charAt(start) == '\r')){start++;}
-        } else {
-          searchThis = moveCount.toString()+String.fromCharCode(8230); // ellipsis ...
-          if(ss.indexOf(searchThis,start)==start){
-            start += searchThis.length;
-            while ((ss.charAt(start) == '.') || (ss.charAt(start) == ' ')  || (ss.charAt(start) == '\n') || (ss.charAt(start) == '\r')){start++;}
-          }
+          while ((ss.charAt(start) == '.') || (ss.charAt(start) == ' ') || (ss.charAt(start) == '\n') || (ss.charAt(start) == '\r')){start++;}
 	}
+
         end = ss.indexOf(' ',start);
         end2 = ss.indexOf('$',start); if ((end2 > 0) && (end2 < end)) { end = end2; }
         end2 = ss.indexOf('{',start); if ((end2 > 0) && (end2 < end)) { end = end2; } 
