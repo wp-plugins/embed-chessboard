@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.11';
+var pgn4web_version = '2.12';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -349,12 +349,16 @@ function handlekey(e) {
 
     case 79: // o
       SetCommentsOnSeparateLines(!commentsOnSeparateLines);
+      oldPly = CurrentPly;
       Init();
+      GoToMove(oldPly);
       return stopKeyProp(e);
 
     case 80: // p
       SetCommentsIntoMoveText(!commentsIntoMoveText);
+      oldPly = CurrentPly;
       Init();
+      GoToMove(oldPly);
       return stopKeyProp(e);
 
     default:
@@ -412,9 +416,9 @@ boardShortcut("H8", "pgn4web help", function(){ displayHelp(); });
 // A7
 boardShortcut("A7", "pgn4web website", function(){ window.open(pgn4web_project_url); });
 // B7
-boardShortcut("B7", "toggle show comments in game text", function(){ SetCommentsIntoMoveText(!commentsIntoMoveText); thisPly = CurrentPly; Init(); GoToMove(thisPly); });
+boardShortcut("B7", "toggle show comments in game text", function(){ SetCommentsIntoMoveText(!commentsIntoMoveText); oldPly = CurrentPly; Init(); GoToMove(oldPly); });
 // C7
-boardShortcut("C7", "toggle show comments on separate lines in game text", function(){ SetCommentsOnSeparateLines(!commentsOnSeparateLines); thisPly = CurrentPly; Init(); GoToMove(thisPly); });
+boardShortcut("C7", "toggle show comments on separate lines in game text", function(){ SetCommentsOnSeparateLines(!commentsOnSeparateLines); oldPly = CurrentPly; Init(); GoToMove(oldPly); });
 // D7
 boardShortcut("D7", "toggle highlight last move", function(){ SetHighlight(!highlightOption); });
 // E7
@@ -656,7 +660,7 @@ function CurrentFEN() {
   CastlingLongFEN = new Array(2);
   CastlingLongFEN[0] = CastlingLong[0];
   CastlingLongFEN[1] = CastlingLong[1];
-  for (thisPly = StartPly; thisPly < CurrentPly; thisPly++) {
+  for (var thisPly = StartPly; thisPly < CurrentPly; thisPly++) {
     SideToMoveFEN = thisPly%2;
     BackrowSideToMoveFEN = SideToMoveFEN * 7;
     if (HistType[0][thisPly] == 1) { 
@@ -724,7 +728,7 @@ function displayFenData() {
 
   currentMovesString = "";
   lastLineStart = 0;
-  for(thisPly = CurrentPly; thisPly <= StartPly + PlyNumber; thisPly++) {
+  for(var thisPly = CurrentPly; thisPly <= StartPly + PlyNumber; thisPly++) {
     addToMovesString = "";
     if (thisPly == StartPly + PlyNumber) {
       if ((gameResult[currentGame]) && (gameResult[currentGame] != "*")) {
@@ -2277,8 +2281,7 @@ function MoveBackward(diff) {
   if (goToPly < StartPly) { goToPly = StartPly-1; }
 
   // reconstruct old position ply by ply
-  var thisPly;
-  for(thisPly = goFromPly; thisPly > goToPly; --thisPly) {
+  for(var thisPly = goFromPly; thisPly > goToPly; --thisPly) {
     CurrentPly--;
     MoveColor = 1-MoveColor;
 
@@ -2334,10 +2337,10 @@ function MoveForward(diff) {
   goToPly = CurrentPly + parseInt(diff,10);
 
   if (goToPly > (StartPly+PlyNumber)) { goToPly = StartPly+PlyNumber; }
-  var thisPly;
 
   // reach to selected move checking legality
-  for(thisPly = CurrentPly; thisPly < goToPly; ++thisPly) {
+  parse = false;
+  for(var thisPly = CurrentPly; thisPly < goToPly; ++thisPly) {
     var move = Moves[thisPly];
     if (! (parse = ParseMove(move, thisPly))) {
       text = (Math.floor(thisPly / 2) + 1) + ((thisPly % 2) === 0 ? '. ' : '... ');
