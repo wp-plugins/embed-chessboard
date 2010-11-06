@@ -304,7 +304,7 @@ leave blank values to reset to defaults
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_height">chessboard frame height</label></th>
 		<td><input type="text" name="embedchessboard_height" value="<?php echo get_option_with_default('embedchessboard_height'); ?>" /></td>
-		<td><small>set to <b>auto</b> or to a number</small></td>
+		<td><small>normally set to <b>auto</b>, it can be set to a number to assign the chessboard frame height</small></td>
 		</tr>
 
 		<tr><td colspan=3></td></tr>
