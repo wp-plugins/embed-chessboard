@@ -21,7 +21,7 @@ Use following tag to insert a chessboard:
 Tag parameters:
 
  * display=horizontal|vertical
- * height=*number*
+ * height=auto|*number*
  * showMoves=justified|hidden
  * initialGame=first|last|random|*number*
  * initialHalfmove=start|end|random|comment|*number*

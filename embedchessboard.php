@@ -47,6 +47,7 @@ ChangeLog:
   1.31  - upgraded pgn4web to 2.10 and minor bug fix
   1.32  - upgraded pgn4web to 2.11 and minor bug fix
   1.33  - upgraded pgn4web to 2.12
+  1.34beta  - enhanced frame height management and upgraded pgn4web to 2.13
 */
 
 class pgnBBCode {
@@ -64,7 +65,7 @@ class pgnBBCode {
 	function shortcode_pgn( $atts = array(), $content = NULL ) {
 		if ( NULL === $content ) return '';
 
-		// [pgn height=600 showMoves=justified initialGame=1 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
+		// [pgn height=auto showMoves=justified initialGame=1 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
 
 		$pgnText = preg_replace("@(<.*?>|\n)@", " ", $content);
 
@@ -82,21 +83,25 @@ class pgnBBCode {
 		elseif ( isset($atts['sm']) ) { $movesDisplay = $atts['sm']; }
 		else { $movesDisplay = 'j'; }
 
-		if ( isset($atts['height']) ) { $frameHeight = $height = $atts['height']; }
-		elseif ( isset($atts['h']) ) { $frameHeight = $height = $atts['h']; } 
-		elseif ( isset($atts[0]) ) { $frameHeight = $height = $atts[0]; } // compatibility with v < 1.09
-		else {
+		if ( isset($atts['height']) ) { $height = $atts['height']; }
+		elseif ( isset($atts['h']) ) { $height = $atts['h']; } 
+		elseif ( isset($atts[0]) ) { $height = $atts[0]; } // compatibility with v < 1.09
+		else { $height = get_option_with_default('embedchessboard_height'); }
+
+		if (($height == "auto") || (strlen($height) == 0)) {
+			$height = 268; // 26*8 squares + 3*2 border + 13*2 padding + 28 buttons
+			// guessing if one game or multiple games are supplied
+			$multiGamesRegexp = '/\s*\[\s*\w+\s*"[^"]*"\s*\]\s*[^\s\[\]]+[\s\S]*\[\s*\w+\s*"[^"]*"\s*\]\s*/';
+			if (preg_match($multiGamesRegexp, $pgnText) > 0) { $height += 34; }
 			if ($horizontalLayout == "t") {
-				// guessing if one game or multiple games are supplied
-				$multiGamesRegexp = '/\s*\[\s*\w+\s*"[^"]*"\s*\]\s*[^\s\[\]]+[\s\S]*\[\s*\w+\s*"[^"]*"\s*\]\s*/';
-				if (preg_match($multiGamesRegexp, $pgnText) > 0) { $height = 302; }
-				else { $height = 268; }
 				$frameHeight = "b";
 			} else {
-				if (($movesDisplay == 'hidden') || ($movesDisplay == 'h')) { $height = 373; }
-				else { $height = 600; }
+				$height += 75; // header
+				if (($movesDisplay != 'hidden') && ($movesDisplay != 'h')) { $height += 300; } // moves
 				$frameHeight = $height;
 			}
+		} else {
+			$frameHeight = $height;
 		}
 
 		if ( isset($atts['initialgame']) ) { $initialGame = $atts['initialgame']; }
@@ -194,6 +199,7 @@ function embedchessboard_create_menu() {
 function register_mysettings() {
 	//register our settings
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_horizontal_layout' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_height' );
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_background_color' );
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_light_squares_color' );
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_dark_squares_color' );
@@ -216,6 +222,9 @@ function get_option_with_default($optionName) {
 		switch ($optionName) {
 			case 'embedchessboard_horizontal_layout':
 				$retVal = 'f';
+				break;
+			case 'embedchessboard_height':
+				$retVal = 'auto';
 				break;
 			case 'embedchessboard_background_color':
 				$retVal = 'FFFFFF';
@@ -290,6 +299,12 @@ leave blank values to reset to defaults
 			<option <?php if ("f" == get_option_with_default('embedchessboard_horizontal_layout')) echo "selected" ?> value="f">vertical layout</option>
 			</select>
 		</td>
+		</tr>
+
+		<tr valign="top">
+		<th scope="row"><label for="embedchessboard_height">chessboard frame height</label></th>
+		<td><input type="text" name="embedchessboard_height" value="<?php echo get_option_with_default('embedchessboard_height'); ?>" /></td>
+		<td><small>set to <b>auto</b> or to a number</small></td>
 		</tr>
 
 		<tr><td colspan=3></td></tr>
