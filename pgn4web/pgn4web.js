@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.12';
+var pgn4web_version = '2.13';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -1289,7 +1289,7 @@ function HighlightLastMove() {
   // show next move
   var theShowMoveTextObject = document.getElementById("GameNextMove");
   if (theShowMoveTextObject !== null) {
-    if (showThisMove+1 >= (StartPly+PlyNumber)) {
+    if (showThisMove + 1 >= StartPly + PlyNumber) {
       text = gameResult[currentGame];
     } else {
       text = (Math.floor((showThisMove+1)/2) + 1) + 
@@ -1503,6 +1503,9 @@ function SetPgnUrl(url) {
 function LiveBroadcastLastModified_Reset() {
   LiveBroadcastLastModified = new Date(0);
   LiveBroadcastLastModifiedHeader = LiveBroadcastLastModified.toUTCString();
+}
+
+function LiveBroadcastLastReceivedLocal_Reset() {
   LiveBroadcastLastReceivedLocal = 'unavailable';
 }
 
@@ -1606,6 +1609,7 @@ function refreshPgnSource() {
         LiveBroadcastStarted = false;
         pgnGameFromPgnText(LiveBroadcastPlaceholderPgn);
         LiveBroadcastLastModified_Reset();
+        LiveBroadcastLastReceivedLocal_Reset();
         initialGame = 1;
         firstStart = true;
         textSelectOptions = '';
@@ -1704,7 +1708,8 @@ function createBoard(){
           myAlert('error: failed loading games from PGN URL\n' + pgnUrl, true);
         } else { // live broadcast: wait for live show start
           LiveBroadcastStarted = false;
-          LiveBroadcastLastModified_Reset(); 
+          LiveBroadcastLastModified_Reset();
+          LiveBroadcastLastReceivedLocal_Reset();
           pgnGameFromPgnText(LiveBroadcastPlaceholderPgn); 
           Init();
 	  checkLiveBroadcastStatus();
@@ -1787,10 +1792,10 @@ function GoToInitialHalfmove() {
       GoToMove(0);
       break;
     case "end":
-      GoToMove(StartPly+PlyNumber);
+      GoToMove(StartPly + PlyNumber);
       break;
     case "random":
-      GoToMove(StartPly + Math.floor(Math.random()*(StartPly+PlyNumber)));
+      GoToMove(StartPly + Math.floor(Math.random()*(StartPly + PlyNumber)));
       break;
     case "comment":
       GoToMove(0);
@@ -1801,9 +1806,9 @@ function GoToInitialHalfmove() {
       initialHalfmove = parseInt(initialHalfmove,10);
       initialHalfmove = initialHalfmove < 0 ? -Math.floor(-initialHalfmove) : Math.floor(initialHalfmove);
       if (initialHalfmove < -3) { initialHalfmove = 0; }
-      if (initialHalfmove == -3) { GoToMove(StartPly+PlyNumber); }
+      if (initialHalfmove == -3) { GoToMove(StartPly + PlyNumber); }
       else if (initialHalfmove == -2) { GoToMove(0); MoveToNextComment(); }
-      else if (initialHalfmove == -1) { GoToMove(StartPly + Math.floor(Math.random()*(StartPly+PlyNumber))); }
+      else if (initialHalfmove == -1) { GoToMove(StartPly + Math.floor(Math.random()*(StartPly + PlyNumber))); }
       else { GoToMove(Math.floor(initialHalfmove)); }
       break;
   }
@@ -2228,6 +2233,7 @@ function fixRegExp(exp) {
 
 function LoadGameHeaders(){
   var ii;
+  var parse;
 
   gameEvent.length = gameSite.length = gameRound.length = gameDate.length = 0;
   gameWhite.length = gameBlack.length = gameResult.length = 0;
@@ -2235,10 +2241,9 @@ function LoadGameHeaders(){
   gameInitialWhiteClock.length = gameInitialBlackClock.length = 0;
   gameVariant.length = 0;
 
-  pgnHeaderTagRegExpGlobal.exec(""); // coping with IE bug when reloading PGN e.g. inputform.html
+  pgnHeaderTagRegExpGlobal.lastIndex = 0; // resets global regular expression
   for (ii = 0; ii < numberOfGames; ++ii) {
     var ss = pgnGame[ii];
-    var parse;
     gameEvent[ii] = gameSite[ii] = gameRound[ii] = gameDate[ii] = "";
     gameWhite[ii] = gameBlack[ii] = gameResult[ii] = "";
     gameInitialWhiteClock[ii] = gameInitialBlackClock[ii] = "";
@@ -2263,7 +2268,7 @@ function LoadGameHeaders(){
        if (gameDemoLength[ii] === undefined) {
          InitFEN(gameFEN[ii]);
          ParsePGNGameString(pgnGame[ii]);
-         gameDemoLength[ii] = PlyNumber; 
+         gameDemoLength[ii] = PlyNumber;
        }
        if (gameDemoMaxPly[ii] === undefined) { gameDemoMaxPly[ii] = 0; }
        if (gameDemoMaxPly[ii] <= gameDemoLength[ii]) { gameResult[ii] = '*'; }
@@ -2336,10 +2341,10 @@ function MoveForward(diff) {
   // CurrentPly counts from 1, starting position 0
   goToPly = CurrentPly + parseInt(diff,10);
 
-  if (goToPly > (StartPly+PlyNumber)) { goToPly = StartPly+PlyNumber; }
+  if (goToPly > (StartPly + PlyNumber)) { goToPly = StartPly + PlyNumber; }
 
   // reach to selected move checking legality
-  parse = false;
+  var parse = false;
   for(var thisPly = CurrentPly; thisPly < goToPly; ++thisPly) {
     var move = Moves[thisPly];
     if (! (parse = ParseMove(move, thisPly))) {
@@ -2571,7 +2576,7 @@ function ParsePGNGameString(gameString) {
         break;
     }
   }
-  for (ii=StartPly; ii<=PlyNumber; ii++) {
+  for (ii=StartPly; ii<=StartPly+PlyNumber; ii++) {
     MoveComments[ii] = MoveComments[ii].replace(/\s+/g, " ");
     pgn4webCommentTmp = MoveComments[ii].match(/\[%pgn4web\s*(.*?)\]/);
     pgn4webMoveComments[ii] = pgn4webCommentTmp ? pgn4webCommentTmp[1] : "";

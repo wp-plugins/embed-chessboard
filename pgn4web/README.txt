@@ -159,7 +159,7 @@ classes, such as:
 
 See template.html file for an example.
 See *mini.html* for an example of embedding the PGN content into the HTML file.
-See http://pgn4web-demo.casaschi.net usage example, including a live broadcast
+See http://pgn4web.casaschi.net/demo/ usage example, including a live broadcast
 demo.
 See http://pgn4web-blog.casaschi for a usage example within a blog using the
 iframe html tag. 
@@ -406,7 +406,7 @@ See http://jscolor.com/
 
 The above items remains subject to their original licenses (if any).
 
-Remaining pgn4web code is copyright (C) 2010 Paolo Casaschi
+Remaining pgn4web code is copyright (C) 2009, 2010 Paolo Casaschi
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
