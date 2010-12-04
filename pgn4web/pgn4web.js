@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.13';
+var pgn4web_version = '2.14';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -32,6 +32,19 @@ function customFunctionOnPgnGameLoad() {}
 function customFunctionOnMove() {}
 function customFunctionOnAlert(msg) {}
 
+// API to parse custom tags in customFunctionOnPgnGameLoad
+
+function customPgnHeaderTag(customTagString, htmlElementIdString, gameNumber) {
+  customTagString = customTagString.replace(/\W+/g, "");
+  if (gameNumber === undefined) { gameNumber = currentGame; }
+  if (tagValues = pgnGame[gameNumber].match('\\[\\s*' + customTagString + '\\s*\"([^\"]+)\"\\s*\\]')) {
+    tagValue = tagValues[1];
+  } else { tagValue = ""; }
+  if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (theObject.innerHTML !== null)) {
+    theObject.innerHTML = tagValue;
+  }
+  return tagValue;
+}
 
 window.onload = start_pgn4web;
 
@@ -480,7 +493,7 @@ boardShortcut("H4", "search next event", function(){ searchPgnGame('\\[\\s*Event
 // A3
 boardShortcut("A3", "load first game", function(){ if (numberOfGames > 1) { Init(0); } });
 // B3
-boardShortcut("B3", "junp to previous games decile", function(){ if (currentGame > 0) { calculateDeciles(); for(ii=(deciles.length-2); ii>=0; ii--) { if (currentGame > deciles[ii]) { Init(deciles[ii]); break; } } } });
+boardShortcut("B3", "jump to previous games decile", function(){ if (currentGame > 0) { calculateDeciles(); for(ii=(deciles.length-2); ii>=0; ii--) { if (currentGame > deciles[ii]) { Init(deciles[ii]); break; } } } });
 // C3
 boardShortcut("C3", "load previous game", function(){ Init(currentGame - 1); });
 // D3
@@ -820,7 +833,7 @@ var LiveBroadcastLastModified = new Date(0); // default to epoch start
 var LiveBroadcastLastModifiedHeader = LiveBroadcastLastModified.toUTCString();
 var LiveBroadcastLastReceivedLocal = 'unavailable';
 var LiveBroadcastLastRefreshedLocal = 'unavailable';
-var LiveBroadcastPlaceholderEvent = 'pgn4web live broadcast';
+var LiveBroadcastPlaceholderEvent = 'live chess broadcast';
 var LiveBroadcastPlaceholderPgn = '[Event "' + LiveBroadcastPlaceholderEvent + '"]';
 var gameDemoMaxPly = new Array();
 var gameDemoLength = new Array();
@@ -1445,8 +1458,8 @@ function loadPgnFromPgnUrl(pgnUrl){
   }
 
   try {
-    // anti-caching #1: add random parameter
-    urlRandomizer = (LiveBroadcastDelay > 0) ? "?nocahce=" + Math.random() : "";
+    // anti-caching #1: add random parameter, only to plain URLs
+    urlRandomizer = ((LiveBroadcastDelay > 0) && (pgnUrl.indexOf("?") == -1) && (pgnUrl.indexOf("#") == -1)) ? "?nocahce=" + Math.random() : "";
     http_request.open("GET", pgnUrl + urlRandomizer, false);
     // anti-caching #2: add header option
     if (LiveBroadcastDelay > 0) {
@@ -1771,7 +1784,7 @@ function setCurrentGameFromInitialGame() {
       break;
     default:
       if (isNaN(parseInt(initialGame,10))) { 
-        currentGame = gameNumberSearchPgn(initialGame);
+        currentGame = gameNumberSearchPgn(initialGame, false, true);
         if (!currentGame) { currentGame = 0; }
       } else {
         initialGame = parseInt(initialGame,10);
@@ -2925,7 +2938,7 @@ function reset_after_click (ii, jj, originalClass, newClass) {
 
 
 var lastSearchPgnExpression = "";
-function gameNumberSearchPgn(searchExpression, backward) {
+function gameNumberSearchPgn(searchExpression, backward, includeCurrent) {
   lastSearchPgnExpression = searchExpression;
   if (searchExpression === "") { return false; }
   // replace newline with spaces so that we can use regexp "." on whole game
@@ -2933,6 +2946,9 @@ function gameNumberSearchPgn(searchExpression, backward) {
   searchExpressionRegExp = new RegExp(searchExpression, "im");
   // at start currentGame might still be -1
   currentGameSearch = (currentGame < 0) || (currentGame >= numberOfGames) ? 0 : currentGame;
+  if (includeCurrent && pgnGame[currentGameSearch].replace(newlinesRegExp, " ").match(searchExpressionRegExp)) {
+    return ((currentGameSearch === currentGame) ? false : currentGameSearch);
+  }
   delta = backward ? -1 : +1;
   for (checkGame = (currentGameSearch + delta + numberOfGames) % numberOfGames; 
        checkGame != currentGameSearch; 
@@ -2950,7 +2966,7 @@ function searchPgnGame(searchExpression, backward) {
   { theObject.value = searchExpression; }
   if ((searchExpression === "") || (! searchExpression)) { return; }
   if (numberOfGames < 2) { return; }
-  checkGame = gameNumberSearchPgn(searchExpression, backward);
+  checkGame = gameNumberSearchPgn(searchExpression, backward, false);
   if ((checkGame !== false) && (checkGame != currentGame)) { Init(checkGame); }
 }
 
@@ -3076,7 +3092,7 @@ function PrintHTML() {
         text = '<FORM NAME="GameSel" STYLE="display:inline;"> ' +
           '<SELECT ID="GameSelSelect" NAME="GameSelSelect" STYLE="';
         if (tableSize > 0) { text += 'width: ' + tableSize + 'px; '; }
-        text += 'font-family: monospace;" CLASS="selectControl" TITLE="Select a game" ' +
+        text += 'font-family: monospace;" CLASS="selectControl" TITLE="select a game" ' +
           'ONCHANGE="this.blur(); if(this.value >= 0) { Init(this.value); this.value = -1; }" ' +
           'ONFOCUS="disableShortcutKeysAndStoreStatus();" ONBLUR="restoreShortcutKeysStatus();" ' +
           '> ' +
@@ -3438,4 +3454,5 @@ function sign(nn) {
 function SquareOnBoard(col, row) {
   return col >= 0 && col <= 7 && row >= 0 && row <= 7;
 }
+
 
