@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.14';
+var pgn4web_version = '2.15';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -1238,12 +1238,12 @@ function SetInitialGame(number_or_string) {
 // b) check for nn:nn:nn and nn.nn.nn at the comment start 
   
 function clockFromComment(comment) {
-  var clock = "";
-  if ((DGTclock = comment.match(/\[%clk\s*(.*?)\]/)) !== null) { clock = DGTclock[1]; }
-  else { if (!(clock = comment.match(/^\s*[0-9:\.]+/))) {clock = ""; } }
-  return clock;
+  var clock;
+  if ((DGTclock = comment.match(/\[%clk\s*(.*?)\]/)) !== null) { return DGTclock[1]; }
+  else if (clock = comment.match(/^\s*([0-9]+(:[0-9]+)+)($|\s)/)) { return clock[1]; }
+  else if (clock = comment.match(/^\s*([0-9]+(\.[0-9]+)+)($|\s)/)) { return clock[1]; }
+  return "";
 }
-
 
 function HighlightLastMove() {
   var anchorName;
@@ -1268,7 +1268,6 @@ function HighlightLastMove() {
       thisComment = thisComment.replace(/^\s+$/,'');
     } else { thisComment = ''; }
     theShowCommentTextObject.innerHTML = thisComment;
-    theShowCommentTextObject.className = 'GameLastComment';
   }
   
   // show side to move
@@ -1383,7 +1382,9 @@ function highlightSquare(col, row, on) {
   return true;
 }
 
+// keep this aligned with the one in chrome-extension/background.html
 function fixCommonPgnMistakes(text) {
+  text = text.replace(/[\u00A0\u180E\u2000-\u200A\u202F\u205F\u3000]/g," "); // replace some "space" char with plain space
   text = text.replace(/\u00BD/g,"1/2"); // replace "half fraction" char with "1/2"
   text = text.replace(/[\u2010-\u2015]/g,"-"); // replace "hyphens" chars with "-"
   text = text.replace(/\u2024/g,"."); // replace "one dot leader" char with "."
