@@ -2,7 +2,7 @@
 
 <!--
   pgn4web javascript chessboard
-  copyright (C) 2009, 2010 Paolo Casaschi
+  copyright (C) 2009, 2011 Paolo Casaschi
   see README file and http://pgn4web.casaschi.net
   for credits, license and more details
 -->
@@ -109,8 +109,8 @@ Errors alert messages are logged, such as failures to load PGN games, incorrect 
 <script type="text/javascript">print_menu("squares", 2, "shortcut&nbsp;squares");</script>
 
 <script type="text/javascript">
-  document.write("<table style='padding:0;' border=0>");	
   try {
+    document.write("<table style='padding:0;' border=0>");
     for (r=7; r>=0; r--) {
       rowDisplayed = false;
       for (c=0; c<=7; c++) {
@@ -122,11 +122,9 @@ Errors alert messages are logged, such as failures to load PGN games, incorrect 
       if (rowDisplayed) { print_help_row("&nbsp;", ""); }
     }
     document.write("</table>");	
-    document.write("<i>Squares labeled assuming " + colorAtTheBottom + " on bottom.</i>");
+    document.write("Squares labeled assuming " + colorAtTheBottom + " on bottom.");
   } catch (e) {
-    print_help_row("shortcut squares info not available from the opener window", "");
-    print_help_row("please hover the mouse pointer on each square of the chessboard to check for their shortcut action", "");
-    document.write("</table>");	
+    document.write("Shortcut squares info not available from the opener window, please hover the mouse pointer on each square of the chessboard to check for their shortcut action.");
   }
 </script>
 
@@ -136,7 +134,16 @@ Errors alert messages are logged, such as failures to load PGN games, incorrect 
 <script type="text/javascript">print_menu("keys", 2, "shortcut&nbsp;keys");</script>
 
 <script type="text/javascript">
+
+try {
+  var keysEnabled = opener.shortcutKeysEnabled;
+  document.write('Shortcut keys currently ' + (keysEnabled ? "enabled, disable" : "disabled, enable") + ' in the chessboard with shift+escape or clicking square ' + shortcutSquareKeyEnable + ' (assuming ' + colorAtTheBottom + ' on bottom).\n'); 
+} catch (e) {
+  document.write('Shortcut keys info not available from the opener window, please check about shortcut keys in the chessboard with shift+escape or clicking square ' + shortcutSquareKeyEnable + ' (assuming ' + colorAtTheBottom + ' on bottom).\n');
+}
+
 document.write("<table style='padding:0;' border=0>");	
+print_help_row("&nbsp;", "");
 print_help_row("h , l", "game start, end (also arrow up, down keys)");
 print_help_row("u, i", "find previous, next comment");
 print_help_row("j , k", "move backward, forward (also arrow left, right keys)");
@@ -155,6 +162,7 @@ print_help_row("shift-enter", "repeat last search backward");
 print_help_row("&nbsp;", "");
 print_help_row("r, y", "pause, restart live broadcast automatic refresh");
 print_help_row("t", "force games refresh during live broadcast");
+print_help_row("shift-t", "toggle live broadcast stepping");
 print_help_row("&nbsp;", "");
 print_help_row("p", "toggle comments");
 print_help_row("o", "toggle comments on separate lines");
@@ -166,22 +174,8 @@ print_help_row("z", "pgn4web debug info");
 print_help_row("shift-z", "pgn4web website");
 print_help_row("esc", "pgn4web help");
 print_help_row("shift-esc", "toggle enabling shortcut keys");
-print_help_row("&nbsp;", "");
 document.write("</table>");
 
-try {
-  if (opener.shortcutKeysEnabled) {
-    ke_curr = "enabled";
-    ke_next = "disable";
-  } else {
-    ke_curr = "disabled";
-    ke_next = "enable";
-  }
-  document.write('<i>Shorcut keys currently ' + ke_curr + ', ' + ke_next + 
-                 ' in the chessboard with shift+escape or clicking square ' +
-                 shortcutSquareKeyEnable + ' (assuming ' + 
-                 colorAtTheBottom + ' on bottom).</i>\n');
-} catch (e) {}
 </script>
 
 <p></p>
@@ -221,7 +215,7 @@ PNG images from http://ixian.com/chess/jin-piece-sets (<a href=http://creativeco
 <p></p>
 The figurine fonts are derived from the <i>Liberation Sans</i> font (released under GNU General Public License, see https://fedorahosted.org/liberation-fonts/) with the addition of chess pieces from freeware fonts: the <i>alpha2</i> font (Peter Strickland), the <i>good companion</i> font (David L. Brown), the <i>merida</i> font (Armando H. Marroquin), the <i>pirate</i> font (Klaus Wolf) and the <i>chess usual</i> font (Armando H. Marroquin). The original chess fonts and more details are available at http://www.enpassant.dk/chess/fonteng.htm
 <p></p>
-Remaining pgn4web code is copyright (C) 2009, 2010 <a href=mailto:pgn4web@casaschi.net target=_blank>Paolo Casaschi (pgn4web@casaschi.net)</a> and licensed under the terms of the <a href=license-gpl-2.0.txt>GNU General Public License version 2</a> as published by the <a href=http://www.fsf.org target=_blank>Free Software Foundation</a>; either <a href=license-gpl-2.0.txt>version 2 of the License</a>, or (at your option) any later version.
+Remaining pgn4web code is copyright (C) 2009, 2011 <a href=mailto:pgn4web@casaschi.net target=_blank>Paolo Casaschi (pgn4web@casaschi.net)</a> and licensed under the terms of the <a href=license-gpl-2.0.txt>GNU General Public License version 2</a> as published by the <a href=http://www.fsf.org target=_blank>Free Software Foundation</a>; either <a href=license-gpl-2.0.txt>version 2 of the License</a>, or (at your option) any later version.
 
 <p></p>
 
