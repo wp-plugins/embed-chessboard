@@ -1,11 +1,11 @@
 /*
  *  pgn4web javascript chessboard
- *  copyright (C) 2009, 2010 Paolo Casaschi
+ *  copyright (C) 2009, 2011 Paolo Casaschi
  *  see README file and http://pgn4web.casaschi.net
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.15';
+var pgn4web_version = '2.16';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -32,18 +32,37 @@ function customFunctionOnPgnGameLoad() {}
 function customFunctionOnMove() {}
 function customFunctionOnAlert(msg) {}
 
-// API to parse custom tags in customFunctionOnPgnGameLoad
+// API to parse custom header tags in customFunctionOnPgnGameLoad()
 
-function customPgnHeaderTag(customTagString, htmlElementIdString, gameNumber) {
+function customPgnHeaderTag(customTagString, htmlElementIdString, gameNum) {
   customTagString = customTagString.replace(/\W+/g, "");
-  if (gameNumber === undefined) { gameNumber = currentGame; }
-  if (tagValues = pgnGame[gameNumber].match('\\[\\s*' + customTagString + '\\s*\"([^\"]+)\"\\s*\\]')) {
+  if (gameNum === undefined) { gameNum = currentGame; }
+  if (tagValues = pgnGame[gameNum].match('\\[\\s*' + customTagString + '\\s*\"([^\"]+)\"\\s*\\]')) {
     tagValue = tagValues[1];
   } else { tagValue = ""; }
   if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (theObject.innerHTML !== null)) {
     theObject.innerHTML = tagValue;
   }
   return tagValue;
+}
+
+// API to parse custom comment tags in customFunctionOnMove()
+
+function customPgnCommentTag(customTagString, htmlElementIdString, plyNum) {
+  customTagString = customTagString.replace(/\W+/g, "");
+  if (plyNum === undefined) { plyNum = CurrentPly; }
+  if (tagValues = MoveComments[plyNum].match('\\[%' + customTagString + '\\s*([^\\]]+)\\s*\\]')) {
+    tagValue = tagValues[1];
+  } else { tagValue = ""; }
+  if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (theObject.innerHTML !== null)) {
+    theObject.innerHTML = tagValue;
+  }
+  return tagValue;
+}
+
+function strippedMoveComment(plyNum) {
+  if (!plyNum || !MoveComments[plyNum]) { return ""; }
+  return MoveComments[plyNum].replace(/\[%[^\]]*\]\s*/g,'').replace(/^\s+$/,'');
 }
 
 window.onload = start_pgn4web;
@@ -174,7 +193,7 @@ function handlekey(e) {
 
   if (e.altKey || e.ctrlKey || e.metaKey) { return true; }
 
-  // escape always enabled: show help and toggle enabling shortcut keys
+  // escape always enabled: help and toggle shortcut keys
   if ((keycode != 27) && (shortcutKeysEnabled === false)) { return true; }
 
   switch(keycode) {
@@ -314,7 +333,8 @@ function handlekey(e) {
       return stopKeyProp(e);
 
     case 84: // t
-      refreshPgnSource();
+      if (e.shiftKey) { LiveBroadcastSteppingMode = !LiveBroadcastSteppingMode; }
+      else { refreshPgnSource(); }
       return stopKeyProp(e);
 
     case 89: // y
@@ -385,10 +405,14 @@ boardTitle = new Array(8);
 for (col=0; col<8; col++) {
   boardOnClick[col] = new Array(8);
   boardTitle[col] = new Array(8);
-  for (row=0; row<8; row++) {
-    boardTitle[col][row] = "";
-    boardOnClick[col][row] = function(){};
-  }
+}
+clearShortcutSquares("ABCDEFGH", "12345678");
+
+function clearShortcutSquares(cols, rows) {
+  if ((typeof cols != "string") || (typeof rows != "string")) { return; }
+  for (c=0; c<cols.length; c++) { for (r=0; r<rows.length; r++) { 
+      boardShortcut(cols.charAt(c).toUpperCase()+rows.charAt(r), "", function(){});
+  } }
 }
 
 function boardShortcut(square, title, functionPointer) {
@@ -455,7 +479,7 @@ boardShortcut("E6", "search next unfinished game", function(){  searchPgnGame('\
 // F6
 boardShortcut("F6", "search next finished game", function(){ searchPgnGame('\\[\\s*Result\\s*"(?!\\*"\\s*\\])', false); });
 // G6
-boardShortcut("G6", "", function(){});
+boardShortcut("G6", "toggle live broadcast stepping", function(){ LiveBroadcastSteppingMode = !LiveBroadcastSteppingMode; });
 // H6
 boardShortcut("H6", "force games refresh during live broadcast", function(){ refreshPgnSource(); });
 // A5
@@ -594,7 +618,7 @@ function displayDebugInfo() {
     'PLY: start=' + StartPly + ' current=' + CurrentPly + ' number=' + PlyNumber + '\n' +
     'AUTOPLAY: ' + (isAutoPlayOn ? 'delay=' + Delay + 'ms' + ' autoplaynext=' + autoplayNextGame : 'off') +
     '\n\n' +
-    'LIVEBROADCAST: ' + (LiveBroadcastDelay > 0 ? 'ticker=' + LiveBroadcastTicker + ' delay=' + LiveBroadcastDelay + 'm' + ' started=' + LiveBroadcastStarted + ' ended=' + LiveBroadcastEnded + ' paused=' + LiveBroadcastPaused + ' demo=' + LiveBroadcastDemo + ' alert=' + LiveBroadcastAlert + '\n' + 'refreshed: ' + LiveBroadcastLastRefreshedLocal + '\n' + 'received: ' + LiveBroadcastLastReceivedLocal + '\n' + 'modified (server time): ' + LiveBroadcastLastModified_ServerTime() : 'off') + 
+    'LIVEBROADCAST: ' + (LiveBroadcastDelay > 0 ? 'ticker=' + LiveBroadcastTicker + ' delay=' + LiveBroadcastDelay + 'm' + ' started=' + LiveBroadcastStarted + ' ended=' + LiveBroadcastEnded + ' paused=' + LiveBroadcastPaused + ' demo=' + LiveBroadcastDemo + ' alert=' + LiveBroadcastAlert + ' stepping=' + LiveBroadcastSteppingMode + '\n' + 'refreshed: ' + LiveBroadcastLastRefreshedLocal + '\n' + 'received: ' + LiveBroadcastLastReceivedLocal + '\n' + 'modified (server time): ' + LiveBroadcastLastModified_ServerTime() : 'off') + 
     '\n\n' +
     'ALERTLOG: fatalnew=' + fatalErrorNumSinceReset + ' new=' + alertNumSinceReset + 
     ' shown=' + Math.min(alertNum, alertLog.length) + ' total=' + alertNum + '\n--';
@@ -837,6 +861,7 @@ var LiveBroadcastPlaceholderEvent = 'live chess broadcast';
 var LiveBroadcastPlaceholderPgn = '[Event "' + LiveBroadcastPlaceholderEvent + '"]';
 var gameDemoMaxPly = new Array();
 var gameDemoLength = new Array();
+var LiveBroadcastSteppingMode = false;
 
 var MaxMove = 500;
 
@@ -857,10 +882,10 @@ var mvCapturedId = -1;
 Board = new Array(8);
 for(i=0; i<8; ++i) { Board[i] = new Array(8); }
 
-// HistCol and HistRow contain move history up to the last replayed ply
-// HistCol[0] and HistRow[0] contain the "square from" (0..7, 0..7 from square a1)
-// HistCol[1] and HistRow[1] contain castling and capture info
-// HistCol[2] and HistRow[2] contain the "square to" (0..7, 0..7 from square a1)
+// HistCol, HistRow: move history up to last replayed ply
+// HistCol[0], HistRow[0]: "square from" (0..7, 0..7 from square a1)
+// HistCol[1], HistRow[1]: castling/capture
+// HistCol[2], HistRow[2]: "square to" (0..7, 0..7 from square a1)
 
 HistCol = new Array(3);
 HistRow = new Array(3);
@@ -919,7 +944,6 @@ CastlingLong  = new Array(2);
 CastlingShort = new Array(2);
 Moves = new Array(MaxMove);
 MoveComments = new Array(MaxMove);
-pgn4webMoveComments = new Array(MaxMove);
 
 var MoveColor;
 var MoveCount;
@@ -1233,16 +1257,10 @@ function SetInitialGame(number_or_string) {
   if (number_or_string) { initialGame = number_or_string; }
 }
 
-// clock value detection:
-// a) check DGT sequence [%clk 01:02] 
-// b) check for nn:nn:nn and nn.nn.nn at the comment start 
+// clock detection: check DGT sequence [%clk 01:02]
   
-function clockFromComment(comment) {
-  var clock;
-  if ((DGTclock = comment.match(/\[%clk\s*(.*?)\]/)) !== null) { return DGTclock[1]; }
-  else if (clock = comment.match(/^\s*([0-9]+(:[0-9]+)+)($|\s)/)) { return clock[1]; }
-  else if (clock = comment.match(/^\s*([0-9]+(\.[0-9]+)+)($|\s)/)) { return clock[1]; }
-  return "";
+function clockFromComment(plyNum) {
+  return customPgnCommentTag("clk", null, plyNum);
 }
 
 function HighlightLastMove() {
@@ -1259,15 +1277,8 @@ function HighlightLastMove() {
   var showThisMove = CurrentPly - 1;
   if (showThisMove > StartPly + PlyNumber) { showThisMove = StartPly + PlyNumber; }
 
-  var theShowCommentTextObject = document.getElementById("GameLastComment");
-  if (theShowCommentTextObject !== null) {
-    if (MoveComments[showThisMove+1] !== undefined) {
-      // remove PGN extension tags
-      thisComment = MoveComments[showThisMove+1].replace(/\[%[^\]]*\]\s*/g,''); // trailing spaces also removed
-      // remove spaces only comments
-      thisComment = thisComment.replace(/^\s+$/,'');
-    } else { thisComment = ''; }
-    theShowCommentTextObject.innerHTML = thisComment;
+  if (theShowCommentTextObject = document.getElementById("GameLastComment")) {
+    theShowCommentTextObject.innerHTML = strippedMoveComment(showThisMove+1);
   }
   
   // show side to move
@@ -1291,11 +1302,17 @@ function HighlightLastMove() {
 
   if (lastMoverClockObject !== null) {
     lastMoverClockObject.innerHTML = showThisMove+1 > StartPly ?
-      clockFromComment(MoveComments[showThisMove+1]) : initialLastMoverClock;
+      clockFromComment(showThisMove+1) : initialLastMoverClock;
+    // fix DGT board issue possibly missing last move clock info
+    if ((lastMoverClockObject.innerHTML === "") && 
+      ((LiveBroadcastDelay > 0) || (showThisMove+1 === StartPly+PlyNumber))) {
+      lastMoverClockObject.innerHTML = showThisMove-1 > StartPly ?
+        clockFromComment(showThisMove-1) : initialLastMoverClock;
+    }
   }
   if (beforeLastMoverClockObject !== null) {
-    beforeLastMoverClockObject.innerHTML = showThisMove+1 > StartPly+1 ?
-      clockFromComment(MoveComments[showThisMove]) : initialLastMoverClock;
+    beforeLastMoverClockObject.innerHTML = showThisMove > StartPly ?
+      clockFromComment(showThisMove) : initialLastMoverClock;
   }
 
   // show next move
@@ -1384,11 +1401,11 @@ function highlightSquare(col, row, on) {
 
 // keep this aligned with the one in chrome-extension/background.html
 function fixCommonPgnMistakes(text) {
-  text = text.replace(/[\u00A0\u180E\u2000-\u200A\u202F\u205F\u3000]/g," "); // replace some "space" char with plain space
-  text = text.replace(/\u00BD/g,"1/2"); // replace "half fraction" char with "1/2"
-  text = text.replace(/[\u2010-\u2015]/g,"-"); // replace "hyphens" chars with "-"
-  text = text.replace(/\u2024/g,"."); // replace "one dot leader" char with "."
-  text = text.replace(/[\u2025-\u2026]/g,"..."); // replace "two dot leader" and "ellipsis" chars with "..."
+  text = text.replace(/[\u00A0\u180E\u2000-\u200A\u202F\u205F\u3000]/g," "); // some "space" to plain space
+  text = text.replace(/\u00BD/g,"1/2"); // "half fraction" to "1/2"
+  text = text.replace(/[\u2010-\u2015]/g,"-"); // "hyphens" to "-"
+  text = text.replace(/\u2024/g,"."); // "one dot leader" to "."
+  text = text.replace(/[\u2025-\u2026]/g,"..."); // "two dot leader" and "ellipsis" to "..."
   return text;
 }
 
@@ -1511,6 +1528,8 @@ function loadPgnFromPgnUrl(pgnUrl){
 
 function SetPgnUrl(url) {
   pgnUrl = url;
+  // hidden link for the chrome extension to detect
+  if (url) { document.write("<a style='display:none;' href=" + url + "></a>"); }
 }
 
 
@@ -1591,6 +1610,8 @@ function restartLiveBroadcastTimeout() {
 var LiveBroadcastFoundOldGame = false;
 var LiveBroadcastGameLoadFailures = 0;
 var LiveBroadcastGameLoadFailuresThreshold = 5;
+var LiveBroadcastOldCurrentPly;
+var LiveBroadcastOldCurrentPlyLast = false;
 function refreshPgnSource() {
   if (LiveBroadcastDelay === 0) { return; }
   if (LiveBroadcastInterval) { clearTimeout(LiveBroadcastInterval); LiveBroadcastInterval = null; }
@@ -1598,10 +1619,10 @@ function refreshPgnSource() {
     addedPly = 0;
     for(ii=0;ii<numberOfGames;ii++) {
       rnd = Math.random();
-      if      (rnd <= 0.05) { newPly = 3; } //  5% of times add 3 ply
-      else if (rnd <= 0.20) { newPly = 2; } // 15% of times add 2 ply
-      else if (rnd <= 0.60) { newPly = 1; } // 40% of times add 1 ply
-      else                  { newPly = 0; } // 40% of times add 0 ply
+      if      (rnd <= 0.05) { newPly = 3; } //  5% add 3 ply
+      else if (rnd <= 0.20) { newPly = 2; } // 15% add 2 ply
+      else if (rnd <= 0.60) { newPly = 1; } // 40% add 1 ply
+      else                  { newPly = 0; } // 40% add 0 ply
       if (gameDemoMaxPly[ii] <= gameDemoLength[ii]) { 
         gameDemoMaxPly[ii] += newPly;
         addedPly += newPly;
@@ -1649,7 +1670,8 @@ function refreshPgnSource() {
       firstStart = true;
       textSelectOptions = '';
 
-      oldCurrentPly = CurrentPly != StartPly + PlyNumber ? CurrentPly : -1;
+      LiveBroadcastOldCurrentPly = CurrentPly;
+      LiveBroadcastOldCurrentPlyLast = (CurrentPly === StartPly + PlyNumber);
 
       oldAutoplay = isAutoPlayOn;
       if (isAutoPlayOn) { SetAutoPlay(false); }
@@ -1665,21 +1687,32 @@ function refreshPgnSource() {
       }
       if (LiveBroadcastFoundOldGame) { initialGame = ii + 1; }
 
-      if (LiveBroadcastFoundOldGame && (oldCurrentPly >= 0)) { 
+      if (LiveBroadcastFoundOldGame) { 
         oldInitialHalfmove = initialHalfmove; 
-        initialHalfmove = oldCurrentPly;
+        if (LiveBroadcastSteppingMode) {
+          initialHalfmove = LiveBroadcastOldCurrentPlyLast ? 
+            LiveBroadcastOldCurrentPly+1 : LiveBroadcastOldCurrentPly;
+        } else {
+          initialHalfmove = LiveBroadcastOldCurrentPlyLast ? "end" : LiveBroadcastOldCurrentPly;
+        }
       }
   
       Init();
 
-      if (LiveBroadcastFoundOldGame && (oldCurrentPly >= 0)) { 
+      if (LiveBroadcastFoundOldGame) { 
         initialHalfmove = oldInitialHalfmove; 
       } 
   
       checkLiveBroadcastStatus();
       customFunctionOnPgnTextLoad();
 
-      if (LiveBroadcastFoundOldGame && oldAutoplay) { SetAutoPlay(true); }
+      if (LiveBroadcastFoundOldGame) {
+        if (LiveBroadcastSteppingMode) {
+          if (oldAutoplay || LiveBroadcastOldCurrentPlyLast) { SetAutoPlay(true); }
+        } else {
+          if (oldAutoplay) { SetAutoPlay(true); }
+        }
+      }
 
       break;
 
@@ -2405,13 +2438,13 @@ function AutoplayNextGame() {
 
 function MoveToNextComment() {
   for(ii=CurrentPly+1; ii<=StartPly+PlyNumber; ii++) {
-    if (MoveComments[ii] !== '') { GoToMove(ii); break; }
+    if (strippedMoveComment(ii)) { GoToMove(ii); break; }
   }
 }
 
 function MoveToPrevComment() {
   for(ii=(CurrentPly-1); ii>=0; ii--) {
-    if (MoveComments[ii] !== '') { GoToMove(ii); break; }
+    if (strippedMoveComment(ii)) { GoToMove(ii); break; }
   }
 }
 
@@ -2583,17 +2616,15 @@ function ParsePGNGameString(gameString) {
         Moves[StartPly+PlyNumber] = ClearMove(move);
         if (ss.charAt(end) == ' ') { start = end; } 
         else { start = end - 1; }
-        if (Moves[StartPly+PlyNumber] !== "") { // to cope with misformed PGN data
+        if (Moves[StartPly+PlyNumber] !== '') { // to cope with misformed PGN data
           PlyNumber++;
-          MoveComments[StartPly+PlyNumber]='';
+          MoveComments[StartPly+PlyNumber] = '';
         }
         break;
     }
   }
   for (ii=StartPly; ii<=StartPly+PlyNumber; ii++) {
-    MoveComments[ii] = MoveComments[ii].replace(/\s+/g, " ");
-    pgn4webCommentTmp = MoveComments[ii].match(/\[%pgn4web\s*(.*?)\]/);
-    pgn4webMoveComments[ii] = pgn4webCommentTmp ? pgn4webCommentTmp[1] : "";
+    MoveComments[ii] = MoveComments[ii].replace(/\s+/g, ' ');
     MoveComments[ii] = translateNAGs(MoveComments[ii]);
     MoveComments[ii] = MoveComments[ii].replace(/\s+$/g, '');
   }
@@ -2920,7 +2951,7 @@ function SetGameSelectorOptions(head, num, chEvent, chSite, chRound, chWhite, ch
 
 var clickedSquareInterval = null;
 function clickedSquare(ii, jj) {
-  if (clickedSquareInterval) { return; } // dont trigger effect twice
+  if (clickedSquareInterval) { return; } // dont trigger twice
   squareId = 'tcol' + jj + 'trow' + ii;
   theObject = document.getElementById(squareId);
   originalClass = theObject.className;
@@ -3198,11 +3229,7 @@ function PrintHTML() {
     text = '<SPAN ID="ShowPgnText">';
     for (ii = StartPly; ii < StartPly+PlyNumber; ++ii) {
       printedComment = false;
-      // remove PGN extension tags
-      thisComment = MoveComments[ii].replace(/\[%[^\]]*?\]\s*/g,''); // note trailing spaces also removed
-      // remove spaces only comments
-      thisComment = thisComment.replace(/^\s+$/,'');
-      if (commentsIntoMoveText && (thisComment !== '')) {
+      if (commentsIntoMoveText && (thisComment = strippedMoveComment(ii))) {
         if (commentsOnSeparateLines && (ii > StartPly)) { 
           text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>';
         }
@@ -3224,11 +3251,7 @@ function PrintHTML() {
         '" ONFOCUS="this.blur()">' + Moves[ii] + '</A></SPAN>' +
         '<SPAN CLASS="move"> </SPAN>';
     }
-    // remove PGN extension tags and trailing spaces
-    thisComment = MoveComments[StartPly+PlyNumber].replace(/\[%.*?\]\s*/g,'');
-    // remove spaces only comments
-    thisComment = thisComment.replace(/^\s+$/,'');
-    if (commentsIntoMoveText && (thisComment !== '')) {
+    if (commentsIntoMoveText && (thisComment = strippedMoveComment(StartPly+PlyNumber))) {
       if (commentsOnSeparateLines) { text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>'; }
       text += '<SPAN CLASS="comment">' + thisComment + '</SPAN><SPAN CLASS="move"> </SPAN>';
     }
@@ -3333,10 +3356,11 @@ function SetAutoplayDelayAndStart(vv) {
   SetAutoPlay(true);
 }
 
-function SetLiveBroadcast(delay, alertFlag, demoFlag) {
+function SetLiveBroadcast(delay, alertFlag, demoFlag, stepFlag) {
   LiveBroadcastDelay = delay; // delay = 0 => no live broadcast
   LiveBroadcastAlert = (alertFlag === true); // display myAlerts during live broadcast?
   LiveBroadcastDemo = (demoFlag === true);
+  LiveBroadcastSteppingMode = (stepFlag === true);
 }
 
 function SetImage(col, row, image) {

@@ -1,6 +1,6 @@
 #
 #  pgn4web javascript chessboard
-#  copyright (C) 2009, 2010 Paolo Casaschi
+#  copyright (C) 2009, 2011 Paolo Casaschi
 #  see README file and http://pgn4web.casaschi.net
 #  for credits, license and more details
 #
@@ -122,7 +122,7 @@ Example:
     SetInitialHalfmove(0,false); // halfmove number to be shown at load, 0 (default) for start position; values (keep the quotes) of "start", "end", "random" and "comment" (go to first comment) are also accepted. Second parameter if true applies the setting to every selected game instead of startup only
     SetShortcutKeysEnabled(false);
 
-    SetLiveBroadcast(0.25, true, true); // set live broadcast; parameters are delay (refresh delay in minutes, 0 means no broadcast, default 0) alertFlag (if true, displays debug error messages, default false) demoFlag (if true starts broadcast demo mode, default false)
+    SetLiveBroadcast(1, false, false, false); // set live broadcast; parameters are delay (refresh delay in minutes, 0 means no broadcast, default 0) alertFlag (if true, displays debug error messages, default false) demoFlag (if true starts broadcast demo mode, default false) stepFlag (if true, autoplays updates in steps, default false)
 
   </script>
  
@@ -205,27 +205,30 @@ page or your blog.
 
 THE LIVE BROADCAST OF GAMES
 
-By setting the SetLiveBroadcast(delay, alertFlag, demoFlag) option in the 
-HTML file, pgn4web will periodically refresh the PGN file, showing the live 
-progress of the games. PGN files produced by the DGT chessboards are supported.
+By setting the SetLiveBroadcast(delay, alertFlag, demoFlag, stepFlag) option 
+in the HTML file, pgn4web will periodically refresh the PGN file, showing the  
+live progress of the games. PGN files produced by the DGT chessboards are 
+supported.
 
-SetLiveBroadcast(delay, alertFlag, demoFlag) parameters:
+SetLiveBroadcast(delay, alertFlag, demoFlag, stepFlag) parameters:
  - delay = refresh interval in minutes, decimals allowed (default 1)
  - alertFlag = if set true, shows alert debug messages (default false)
  - demoFlag = if set true, sets live demo mode (default false)
+ - stepFlag = if set true, autoplays updates in steps (default false)
+
+If you set stepFlag, please note that the autoplay delay is set by
+SetAutoplayDelay(delay), where no more than 2000ms should be used for live
+broadcasts.
 
 The bash shell script live-grab.sh, executed on your server allows for grabbing
 the updated game source from anywhere on the Internet to your server.
 The live broadcast stops refreshing once all games are ended.
 
-If your live PGN contains clock info as comments after each game such as
-{1:59:59}, the clock information is displayed in the following sections:
+Clock information as provided by the DGT chessboards in PGN move comments, such
+as {[%clk 1:59:59]}, is displayed in the following sections:
 
   <div id="GameWhiteClock"></div>
   <div id="GameBlackClock"></div>
-
-Clock information provided by the DGT chessboards (like {[%clk 1:59:59]}) is
-also supported.
 
 The status of the live broadcast is displayed in the following sections: 
 
@@ -262,8 +265,9 @@ refreshed with the live games, then add the following iframe to your page:
 Of course live-compact.html can be edited to customize colors, layout and every
 detail.
 
-http://pgn4web-live.casaschi.net will occasionally broadcast live major chess
-events.
+http://pgn4web.casaschi.net/live/live.html and 
+http://pgn4web.casaschi.net/live/live-multi.html will occasionally broadcast live 
+major chess events.
 
 
 CUSTOMIZATION FUNCTIONS
@@ -285,6 +289,11 @@ is available for use in customFunctionOnPgnGameLoad() to parse custom PGN header
 tags and automatically assign their value to the given HTML elements. The function 
 returns the custom tag value and the `gameNumber` parameter, if unassigned, 
 defaults to the current game.
+The function customPgnCommentTag(customTagString, htmlElementIdString, plyNumber)
+is available for use in customFunctionOnMove() to parse custom PGN comment tags
+like { [%pgn4web info] } and automatically assign their value to the given HTML 
+elements. The function returns the custom tag value and the `plyNumber` parameter,
+if unassigned, defaults to the current ply.
 
 See twic765.html or live.html for examples.
 
@@ -367,8 +376,8 @@ specifically:
   clock time after each move
 - understands the PGN tags [WhiteClock "2:00:00"] and 
   [BlackClock "2:00:00"] as the clock times at the beginning of the game
-- defines the [%pgn4web internal comment] tag in the PGN comment section 
-and stores the internal comment value for internal use. 
+- allows parsing of generic comment tags using the function
+  customPgnCommentTag()
 
 Please email me for review any PGN file that pgn4web fails parsing correctly. 
 
@@ -418,7 +427,7 @@ See http://jscolor.com/
 
 The above items remains subject to their original licenses (if any).
 
-Remaining pgn4web code is copyright (C) 2009, 2010 Paolo Casaschi
+Remaining pgn4web code is copyright (C) 2009, 2011 Paolo Casaschi
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
