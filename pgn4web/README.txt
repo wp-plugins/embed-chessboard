@@ -225,7 +225,9 @@ the updated game source from anywhere on the Internet to your server.
 The live broadcast stops refreshing once all games are ended.
 
 Clock information as provided by the DGT chessboards in PGN move comments, such
-as {[%clk 1:59:59]}, is displayed in the following sections:
+as {[%clk 1:59:59]}, and in the PGN header, such as [WhiteClock "2:00:00"],
+[BlackClock "2:00:00"] and [Clock "W/1:59:59"] is displayed in the following
+sections:
 
   <div id="GameWhiteClock"></div>
   <div id="GameBlackClock"></div>
@@ -264,6 +266,9 @@ refreshed with the live games, then add the following iframe to your page:
 </iframe>
 Of course live-compact.html can be edited to customize colors, layout and every
 detail.
+
+The live-multi.html file has been designed in a similar way, while offering
+a layout with multiple live boards on the same page.
 
 http://pgn4web.casaschi.net/live/live.html and 
 http://pgn4web.casaschi.net/live/live-multi.html will occasionally broadcast live 
@@ -376,6 +381,8 @@ specifically:
   clock time after each move
 - understands the PGN tags [WhiteClock "2:00:00"] and 
   [BlackClock "2:00:00"] as the clock times at the beginning of the game
+- understands the PGN tag [Clock "W/1:59:59"] as the clock time of the
+  running clock
 - allows parsing of generic comment tags using the function
   customPgnCommentTag()
 
