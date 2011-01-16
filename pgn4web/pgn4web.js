@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.16';
+var pgn4web_version = '2.17';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -37,7 +37,7 @@ function customFunctionOnAlert(msg) {}
 function customPgnHeaderTag(customTagString, htmlElementIdString, gameNum) {
   customTagString = customTagString.replace(/\W+/g, "");
   if (gameNum === undefined) { gameNum = currentGame; }
-  if (tagValues = pgnGame[gameNum].match('\\[\\s*' + customTagString + '\\s*\"([^\"]+)\"\\s*\\]')) {
+  if ((pgnGame[gameNum]) && (tagValues = pgnGame[gameNum].match('\\[\\s*' + customTagString + '\\s*\"([^\"]+)\"\\s*\\]'))) {
     tagValue = tagValues[1];
   } else { tagValue = ""; }
   if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (theObject.innerHTML !== null)) {
@@ -51,7 +51,7 @@ function customPgnHeaderTag(customTagString, htmlElementIdString, gameNum) {
 function customPgnCommentTag(customTagString, htmlElementIdString, plyNum) {
   customTagString = customTagString.replace(/\W+/g, "");
   if (plyNum === undefined) { plyNum = CurrentPly; }
-  if (tagValues = MoveComments[plyNum].match('\\[%' + customTagString + '\\s*([^\\]]+)\\s*\\]')) {
+  if ((MoveComments[plyNum]) && (tagValues = MoveComments[plyNum].match('\\[%' + customTagString + '\\s*([^\\]]+)\\s*\\]'))) {
     tagValue = tagValues[1];
   } else { tagValue = ""; }
   if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (theObject.innerHTML !== null)) {
@@ -61,7 +61,7 @@ function customPgnCommentTag(customTagString, htmlElementIdString, plyNum) {
 }
 
 function strippedMoveComment(plyNum) {
-  if (!plyNum || !MoveComments[plyNum]) { return ""; }
+  if (!MoveComments[plyNum]) { return ""; }
   return MoveComments[plyNum].replace(/\[%[^\]]*\]\s*/g,'').replace(/^\s+$/,'');
 }
 
@@ -691,12 +691,8 @@ function CurrentFEN() {
   currentFEN += CurrentPly%2 === 0 ? " w" : " b";
 
   // castling availability
-  CastlingShortFEN = new Array(2);
-  CastlingShortFEN[0] = CastlingShort[0];
-  CastlingShortFEN[1] = CastlingShort[1];
-  CastlingLongFEN = new Array(2);
-  CastlingLongFEN[0] = CastlingLong[0];
-  CastlingLongFEN[1] = CastlingLong[1];
+  CastlingShortFEN = CastlingShort;
+  CastlingLongFEN = CastlingLong;
   for (var thisPly = StartPly; thisPly < CurrentPly; thisPly++) {
     SideToMoveFEN = thisPly%2;
     BackrowSideToMoveFEN = SideToMoveFEN * 7;
@@ -1245,22 +1241,29 @@ function SetAutoplayNextGame(onOff) {
 
 function SetInitialHalfmove(number_or_string, always) {
   if (always === true) { alwaysInitialHalfmove = true; }
+  if (number_or_string === undefined) { initialHalfmove = 0; return; }
   initialHalfmove = number_or_string;
-  if (initialHalfmove == "start") { return; }
-  if (initialHalfmove == "end") { return; }
-  if (initialHalfmove == "random") { return; }
-  if (initialHalfmove == "comment") { return; }
+  if ((typeof number_or_string == "string") &&
+    (number_or_string.match(/^(start|end|random|comment)$/))) { return; }
   if ((initialHalfmove = parseInt(initialHalfmove,10)) == NaN) { initialHalfmove = 0; }
 }
 
 function SetInitialGame(number_or_string) {
-  if (number_or_string) { initialGame = number_or_string; }
+  if (number_or_string === undefined) { initialGame = 1; }
+  else { initialGame = number_or_string; }
 }
 
 // clock detection: check DGT sequence [%clk 01:02]
   
 function clockFromComment(plyNum) {
   return customPgnCommentTag("clk", null, plyNum);
+}
+
+function clockFromHeader(whiteToMove) {
+  clockHeaderString = customPgnHeaderTag("Clock") + "";
+  if (tagValues = clockHeaderString.match("^" + (whiteToMove ? "W" : "B") + "/(.*)$")) {
+    return tagValues[1];
+  } else { return null; }
 }
 
 function HighlightLastMove() {
@@ -1282,37 +1285,41 @@ function HighlightLastMove() {
   }
   
   // show side to move
-  text = (showThisMove+1)%2 === 0 ? 'white' : 'black';
+  whiteToMove = ((showThisMove+1)%2 === 0);
+  text = whiteToMove ? 'white' : 'black';
  
   if (theObject = document.getElementById("GameSideToMove"))
   { theObject.innerHTML = text; }
 
   // show clock if any
-  if ((showThisMove+1)%2 == 1) { // white has just moved
-    lastMoverClockObject = document.getElementById("GameWhiteClock");
-    initialLastMoverClock = gameInitialWhiteClock[currentGame];
-    beforeLastMoverClockObject = document.getElementById("GameBlackClock"); 
-    initialBeforeLastMoverClock = gameInitialBlackClock[currentGame];
-  } else {
-    lastMoverClockObject = document.getElementById("GameBlackClock");
-    initialLastMoverClock = gameInitialBlackClock[currentGame];
-    beforeLastMoverClockObject = document.getElementById("GameWhiteClock"); 
-    initialBeforeLastMoverClock = gameInitialWhiteClock[currentGame];
-  }
+  lastMoverClockObject = document.getElementById(whiteToMove ?
+    "GameBlackClock" : "GameWhiteClock");
+  initialLastMoverClock = whiteToMove ?
+    gameInitialBlackClock[currentGame] : gameInitialWhiteClock[currentGame];  
+  beforeLastMoverClockObject = document.getElementById(whiteToMove ?
+    "GameWhiteClock" : "GameBlackClock");
+  initialBeforeLastMoverClock = whiteToMove ?
+    gameInitialWhiteClock[currentGame] : gameInitialBlackClock[currentGame];
 
   if (lastMoverClockObject !== null) {
-    lastMoverClockObject.innerHTML = showThisMove+1 > StartPly ?
-      clockFromComment(showThisMove+1) : initialLastMoverClock;
-    // fix DGT board issue possibly missing last move clock info
-    if ((lastMoverClockObject.innerHTML === "") && 
-      ((LiveBroadcastDelay > 0) || (showThisMove+1 === StartPly+PlyNumber))) {
-      lastMoverClockObject.innerHTML = showThisMove-1 > StartPly ?
-        clockFromComment(showThisMove-1) : initialLastMoverClock;
+    clockString = ((showThisMove+1 === StartPly+PlyNumber) &&
+      ((!LiveBroadcastDemo) || (gameResult[currentGame] !== "*"))) ?
+      clockFromHeader(!whiteToMove) : null;
+    if (clockString === null) {
+      clockString = showThisMove+1 > StartPly ? 
+        clockFromComment(showThisMove+1) : initialLastMoverClock;
     }
+    lastMoverClockObject.innerHTML = clockString;
   }
   if (beforeLastMoverClockObject !== null) {
-    beforeLastMoverClockObject.innerHTML = showThisMove > StartPly ?
-      clockFromComment(showThisMove) : initialLastMoverClock;
+    clockString = ((showThisMove+1 === StartPly+PlyNumber) &&
+      ((!LiveBroadcastDemo) || (gameResult[currentGame] !== "*"))) ?
+      clockFromHeader(whiteToMove) : null;
+    if (clockString === null) {
+      clockString = showThisMove > StartPly ?
+        clockFromComment(showThisMove) : initialBeforeLastMoverClock;
+    }
+    beforeLastMoverClockObject.innerHTML = clockString;
   }
 
   // show next move
@@ -1442,7 +1449,7 @@ function pgnGameFromPgnText(pgnText) {
     }
     lines[ii] = lines[ii].replace(/^\s*/,"");
     lines[ii] = lines[ii].replace(/\s*$/,"");
-    if (gameIndex >= 0) { pgnGame[gameIndex] += lines[ii] + ' \n'; } 
+    if (gameIndex >= 0) { pgnGame[gameIndex] += lines[ii] + '\n'; } 
   }
 
   numberOfGames = pgnGame.length;
@@ -1917,36 +1924,18 @@ function InitFEN(startingFEN) {
 
   var newEnPassant = false;
   var newEnPassantCol;
-  CastlingLong[0] = CastlingLong[1] = 0;
-  CastlingShort[0] = CastlingShort[1] = 7;
+  CastlingLong = [0, 0];
+  CastlingShort = [7, 7];
   InitialHalfMoveClock = 0;
 
   if (FenString == FenStringStart) {
     for (color = 0; color < 2; ++color) {
-      PieceType[color][0] = 1; // King
-      PieceCol[color][0]  = 4;
-      PieceType[color][1] = 2; // Queen
-      PieceCol[color][1]  = 3;
-      PieceType[color][6] = 3; // Rooks
-      PieceType[color][7] = 3;
-      PieceCol[color][6]  = 0;
-      PieceCol[color][7]  = 7;
-      PieceType[color][4] = 4; // Bishops
-      PieceType[color][5] = 4;
-      PieceCol[color][4]  = 2;
-      PieceCol[color][5]  = 5;
-      PieceType[color][2] = 5; // Knights
-      PieceType[color][3] = 5;
-      PieceCol[color][2]  = 1;
-      PieceCol[color][3]  = 6;
-      for (pawn = 0; pawn < 8; ++pawn) {
-	PieceType[color][pawn+8] = 6;
-	PieceCol[color][pawn+8]  = pawn;
-      }
-      for (ii = 0; ii < 16; ++ii) {
-	PieceMoveCounter[color][ii] = 0;
-	PieceRow[color][ii] = (1-color) * Math.floor(ii/8) + color * (7-Math.floor(ii/8));
-      }
+      //                         K  Q  N     B     R     p
+      PieceType[color]        = [1, 2, 5, 5, 4, 4, 3, 3, 6, 6, 6, 6, 6, 6, 6, 6];
+      PieceCol[color]         = [4, 3, 1, 6, 2, 5, 0, 7, 0, 1, 2, 3, 4, 5, 6, 7];
+      PieceMoveCounter[color] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      PieceRow[color] = color ? [7, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6]:
+                                [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1];
       for (ii = 0; ii < 16; ii++) {
         var col = PieceCol[color][ii];
         var row = PieceRow[color][ii];
@@ -2085,7 +2074,8 @@ function InitFEN(startingFEN) {
       myAlert("error: invalid FEN ("+ll+") missing castling availability in game "+(currentGame+1)+"\n"+FenString, true);
       return;
     }
-    CastlingShort[0] = CastlingLong[0] = CastlingShort[1] = CastlingLong[1] = -1;
+    CastlingLong = [-1, -1];
+    CastlingShort = [-1, -1];
     cc = FenString.charAt(ll++);
     while (cc!=" ") {
       if (cc.charCodeAt(0) == FenPieceName.toUpperCase().charCodeAt(0)) {
@@ -2201,21 +2191,13 @@ function InitImages() {
   ClearImg = new Image();
   ClearImg.src = ImagePath+'clear.'+imageType;
 
-  var color;
   ColorName = new Array ("w", "b");
+  PiecePrefix = new Array ("k", "q", "r", "b", "n", "p");
   for (color = 0; color < 2; ++color) {
-    PiecePicture[color][1] = new Image();
-    PiecePicture[color][1].src = ImagePath + ColorName[color] + 'k.'+imageType;
-    PiecePicture[color][2] = new Image();
-    PiecePicture[color][2].src = ImagePath + ColorName[color] + 'q.'+imageType;
-    PiecePicture[color][3] = new Image();
-    PiecePicture[color][3].src = ImagePath + ColorName[color] + 'r.'+imageType;
-    PiecePicture[color][4] = new Image();
-    PiecePicture[color][4].src = ImagePath + ColorName[color] + 'b.'+imageType;
-    PiecePicture[color][5] = new Image();
-    PiecePicture[color][5].src = ImagePath + ColorName[color] + 'n.'+imageType;
-    PiecePicture[color][6] = new Image();
-    PiecePicture[color][6].src = ImagePath + ColorName[color] + 'p.'+imageType;
+    for (piece = 1; piece < 7; piece++) {
+      PiecePicture[color][piece] = new Image();
+      PiecePicture[color][piece].src = ImagePath + ColorName[color] + PiecePrefix[piece-1] + '.' + imageType;
+    }
   }
   ImagePathOld = ImagePath;
 }
@@ -2604,14 +2586,7 @@ function ParsePGNGameString(gameString) {
           while ((ss.charAt(start) == '.') || (ss.charAt(start) == ' ') || (ss.charAt(start) == '\n') || (ss.charAt(start) == '\r')){start++;}
 	}
 
-        end = ss.indexOf(' ',start);
-        end2 = ss.indexOf('$',start); if ((end2 > 0) && (end2 < end)) { end = end2; }
-        end2 = ss.indexOf('{',start); if ((end2 > 0) && (end2 < end)) { end = end2; } 
-        end2 = ss.indexOf(';',start); if ((end2 > 0) && (end2 < end)) { end = end2; }
-        end2 = ss.indexOf('(',start); if ((end2 > 0) && (end2 < end)) { end = end2; } 
-        end2 = ss.indexOf('!',start); if ((end2 > 0) && (end2 < end)) { end = end2; }
-        end2 = ss.indexOf('?',start); if ((end2 > 0) && (end2 < end)) { end = end2; }
-        if (end < 0) { end = ss.length; }
+        if ((end = start + ss.substr(start).search(/[\s${;(!?]/)) < start) { end = ss.length; }
         move = ss.substring(start,end);
         Moves[StartPly+PlyNumber] = ClearMove(move);
         if (ss.charAt(end) == ' ') { start = end; } 
