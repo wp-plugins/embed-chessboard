@@ -19,7 +19,8 @@
 
 <style type="text/css"> 
 
-@import url("fonts/pgn4web-fonts.css");
+@import url("fonts/pgn4web-font-ChessSansPiratf.css");
+@import url("fonts/pgn4web-font-LiberationSans.css");
 
 html,
 body {
@@ -984,11 +985,14 @@ function customFunctionOnPgnTextLoad() {
 
   // cope with occasional failures to load the live PGN data
   if ((LiveBroadcastDelay !== 0) && (LiveBroadcastTicker > 0) && (!LiveBroadcastFoundOldGame)) {
-    SetInitialGame(init_Game);
-    SetInitialHalfmove(init_Halfmove,always_Halfmove);
+    thisCurrentGame = currentGame;
+    SetInitialGame(iniGame);
     setCurrentGameFromInitialGame();
-    Init();
-    GoToInitialHalfmove();
+    if (currentGame != thisCurrentGame) {
+      SetInitialHalfmove("end",true);
+      Init();
+      GoToInitialHalfmove();
+    }
   }
 
   if (gup("showHeightWidth") !== "") { 
