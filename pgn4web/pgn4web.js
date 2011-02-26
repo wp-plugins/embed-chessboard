@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.17';
+var pgn4web_version = '2.17+';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -2954,7 +2954,7 @@ function gameNumberSearchPgn(searchExpression, backward, includeCurrent) {
   // at start currentGame might still be -1
   currentGameSearch = (currentGame < 0) || (currentGame >= numberOfGames) ? 0 : currentGame;
   if (includeCurrent && pgnGame[currentGameSearch].replace(newlinesRegExp, " ").match(searchExpressionRegExp)) {
-    return ((currentGameSearch === currentGame) ? false : currentGameSearch);
+    return currentGameSearch;
   }
   delta = backward ? -1 : +1;
   for (checkGame = (currentGameSearch + delta + numberOfGames) % numberOfGames; 
