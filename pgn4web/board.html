@@ -1090,12 +1090,25 @@ function customFunctionOnPgnGameLoad() {
 }
 
 var boardGeneratorWin=null;
-function customShortcutKey_Shift_1() {
+function customShortcutKey_Shift_0() {
   if ((newPgnEncoded === "") && (newPgnText === "")) { return; }
   if (! window.location.href.match(/board\.html/)) { return; }
   if (boardGeneratorWin && !boardGeneratorWin.closed) { boardGeneratorWin.close(); }
   boardGeneratorWin = window.open(window.location.href.replace(/board\.html/g, "board-generator.html").replace(window.location.hash, "") + "#preview");
-  if ((boardGeneratorWin !== null) && (window.focus)) { boardGeneratorWin.window.focus(); }
+  if (boardGeneratorWin && window.focus) { boardGeneratorWin.focus(); }
+}
+
+function openFidePlayerUrl(name) {
+  if (! name) { return; }
+  window.open("http://ratings.fide.com/seek.phtml?idcode=&name=" + name + "&offset=0");
+}
+
+function customShortcutKey_Shift_1() {
+  openFidePlayerUrl(gameWhite[currentGame]);
+}
+
+function customShortcutKey_Shift_2() {
+  openFidePlayerUrl(gameBlack[currentGame]);
 }
 
 </script>

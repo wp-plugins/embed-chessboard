@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.17+';
+var pgn4web_version = '2.18';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -20,7 +20,7 @@ function displayHelp(section){
   helpWin = window.open(detectHelpLocation() + "?" + 
    (Math.floor(900 * Math.random()) + 100) + "#" + section, "pgn4web_help",
    "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
-  if ((helpWin !== null) && (window.focus)) { helpWin.window.focus(); }
+  if ((helpWin !== null) && (window.focus)) { helpWin.focus(); }
 }
 
 
@@ -639,7 +639,7 @@ function displayDebugInfo() {
       debugWin.document.open("text/html", "replace");
       debugWin.document.write(text);
       debugWin.document.close();
-      if (window.focus) { debugWin.window.focus(); }
+      if (window.focus) { debugWin.focus(); }
     }
   }
   alertNumSinceReset = fatalErrorNumSinceReset = 0;
@@ -660,7 +660,7 @@ function displayPgnData(allGames) {
     pgnWin.document.open("text/html", "replace");
     pgnWin.document.write(text);
     pgnWin.document.close();
-    if (window.focus) { pgnWin.window.focus(); }
+    if (window.focus) { pgnWin.focus(); }
   }
 }
 
@@ -804,7 +804,7 @@ function displayFenData() {
     fenWin.document.open("text/html", "replace");
     fenWin.document.write(text);
     fenWin.document.close();
-    if (window.focus) { fenWin.window.focus(); }
+    if (window.focus) { fenWin.focus(); }
   }
 }
 
@@ -1413,6 +1413,7 @@ function fixCommonPgnMistakes(text) {
   text = text.replace(/[\u2010-\u2015]/g,"-"); // "hyphens" to "-"
   text = text.replace(/\u2024/g,"."); // "one dot leader" to "."
   text = text.replace(/[\u2025-\u2026]/g,"..."); // "two dot leader" and "ellipsis" to "..."
+  text = text.replace(/\\"/g,"'"); // fix parsing headers like: [Opening "King\"s Indian Attack"]
   return text;
 }
 
@@ -2547,44 +2548,23 @@ function ParsePGNGameString(gameString) {
 
       default:
         
-        searchThis = '1-0';
-        if (ss.indexOf(searchThis,start)==start) {
-          start += searchThis.length;
-          MoveComments[StartPly+PlyNumber] += ss.substring(start, ss.length);
-          start = ss.length;
-          break;
+        searchThis = new Array('1-0', '0-1', '1/2-1/2', '*');
+        for (ii=0; ii<searchThis.length; ii++) {
+          if (ss.indexOf(searchThis[ii],start)==start) {
+            start += searchThis[ii].length;
+            MoveComments[StartPly+PlyNumber] += ss.substring(start, ss.length).replace(/^\s*\{(.*)\}\s*$/, '$1');
+            start = ss.length;
+            break;
+          }
         }
-        
-        searchThis = '0-1';
-        if (ss.indexOf(searchThis,start)==start) {
-          start += searchThis.length;
-          MoveComments[StartPly+PlyNumber] += ss.substring(start, ss.length);
-          start = ss.length;
-          break;
-        }
-        
-        searchThis = '1/2-1/2';
-        if (ss.indexOf(searchThis,start)==start) {
-          start += searchThis.length;
-          MoveComments[StartPly+PlyNumber] += ss.substring(start, ss.length);
-          start = ss.length;
-          break;
-        }
-        
-        searchThis = '*';
-        if (ss.indexOf(searchThis,start)==start) {
-          start += searchThis.length;
-          MoveComments[StartPly+PlyNumber] += ss.substring(start, ss.length);
-          start = ss.length;
-          break;
-        }
+        if (start == ss.length) { break; }
         
         moveCount = Math.floor((StartPly+PlyNumber)/2)+1;
         searchThis = moveCount.toString()+'.';
         if(ss.indexOf(searchThis,start)==start) {
           start += searchThis.length;
           while ((ss.charAt(start) == '.') || (ss.charAt(start) == ' ') || (ss.charAt(start) == '\n') || (ss.charAt(start) == '\r')){start++;}
-	}
+        }
 
         if ((end = start + ss.substr(start).search(/[\s${;(!?]/)) < start) { end = ss.length; }
         move = ss.substring(start,end);
