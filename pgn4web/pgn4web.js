@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.18';
+var pgn4web_version = '2.21';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -2809,7 +2809,7 @@ function ParseMove(move, plyCount) {
 
   // get piece and origin square: mark captures ('x' is there)
   ll = remainder.length;
-  if (ll > 3) { return false; }
+  if (ll > 4) { return false; }
   mvPiece = -1; // make sure mvPiece is properly assigned later
   if (ll === 0) { mvPiece = 6; }
   else {
@@ -2823,11 +2823,14 @@ function ParseMove(move, plyCount) {
     } else {
       mvFromRow = move.charAt(ll-1-mvCapture) - 1;
       if ((mvFromRow < 0) || (mvFromRow > 7)) { mvFromRow = -1; }
+      else {
+        mvFromCol = move.charCodeAt(ll-2-mvCapture) - 97;
+        if ((mvFromCol < 0) || (mvFromCol > 7)) { mvFromCol = -1; }
+      }
     }
     
     if ( (ll > 1) && (!mvCapture) && (mvFromCol == -1) && (mvFromRow == -1) ) { return false; }
     if ( (mvPiece == 6) && (!mvCapture) && (mvFromCol == -1) && (mvFromRow == -1) ) { return false; }
-    if ( (mvPiece == 6) && (mvFromCol == mvToCol) ) { return false; }
   }
 
   mvPieceOnTo = mvPiece;
@@ -2841,18 +2844,19 @@ function ParseMove(move, plyCount) {
     }
   }
 
-  // move contains '=' or char after destination row: might be a promotion
-  ii = move.indexOf('=');
-  if (ii < 0) { ii = toRowMarker; }
-  if ((ii > 0) && (ii < move.length-1)) {
-    if (mvPiece == 6) {
+  if (mvPiece == 6) {
+    // move contains '=' or char after destination row: might be a promotion
+    ii = move.indexOf('=');
+    if (ii < 0) { ii = toRowMarker; }
+    if ((ii > 0) && (ii < move.length-1)) {
       var newPiece = move.charAt(ii+1);
       if (newPiece == PieceCode[1]) { mvPieceOnTo = 2; }
       else if (newPiece == PieceCode[2]) { mvPieceOnTo = 3; }
       else if (newPiece == PieceCode[3]) { mvPieceOnTo = 4; }
       else if (newPiece == PieceCode[4]) { mvPieceOnTo = 5; }
-      mvIsPromotion = 1;
+      if (mvPieceOnTo != mvPiece) { mvIsPromotion = 1; }
     }
+    if ((mvToRow == 7 * (1-MoveColor)) ? !mvIsPromotion : mvIsPromotion) { return false; }
   }
 
   // which piece was captured: if nothing found must be en-passant
