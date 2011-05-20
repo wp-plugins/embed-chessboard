@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.22';
+var pgn4web_version = '2.23';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -31,6 +31,7 @@ function customFunctionOnPgnTextLoad() {}
 function customFunctionOnPgnGameLoad() {}
 function customFunctionOnMove() {}
 function customFunctionOnAlert(msg) {}
+function customFunctionOnCheckLiveBroadcastStatus() {}
 
 // API to parse custom header tags in customFunctionOnPgnGameLoad()
 
@@ -60,9 +61,16 @@ function customPgnCommentTag(customTagString, htmlElementIdString, plyNum) {
   return tagValue;
 }
 
+var basicNAGs = /^[\?!+#\s]*/;
 function strippedMoveComment(plyNum) {
   if (!MoveComments[plyNum]) { return ""; }
-  return MoveComments[plyNum].replace(/\[%[^\]]*\]\s*/g,'').replace(/^\s+$/,'');
+  return MoveComments[plyNum].replace(/\[%[^\]]*\]\s*/g,'').replace(basicNAGs, '').replace(/^\s+$/,'');
+}
+
+function basicNAGsMoveComment(plyNum) {
+  if (!MoveComments[plyNum]) { return ""; }
+  thisBasicNAGs = MoveComments[plyNum].replace(/\[%[^\]]*\]\s*/g,'').match(basicNAGs, '');
+  return thisBasicNAGs ? thisBasicNAGs[0].replace(/\s+/,'') : '';
 }
 
 window.onload = start_pgn4web;
@@ -859,6 +867,8 @@ var gameDemoMaxPly = new Array();
 var gameDemoLength = new Array();
 var LiveBroadcastSteppingMode = false;
 
+var ParseLastMoveError = false;
+
 var MaxMove = 500;
 
 var castleRook = -1;
@@ -1330,6 +1340,7 @@ function HighlightLastMove() {
     } else {
       text = (Math.floor((showThisMove+1)/2) + 1) + 
         ((showThisMove+1) % 2 === 0 ? '. ' : '... ') + Moves[showThisMove+1];
+      if (commentsIntoMoveText) { text += basicNAGsMoveComment(showThisMove+2); }
     }
     theShowMoveTextObject.innerHTML = text; 
     theShowMoveTextObject.style.whiteSpace = 'nowrap';
@@ -1341,6 +1352,7 @@ function HighlightLastMove() {
     if ((showThisMove >= StartPly) && Moves[showThisMove]) {
       text = (Math.floor(showThisMove/2) + 1) + 
        (showThisMove % 2 === 0 ? '. ' : '... ') + Moves[showThisMove];
+      if (commentsIntoMoveText) { text += basicNAGsMoveComment(showThisMove+1); }
     } else { text = ''; }
     theShowMoveTextObject.innerHTML = text; 
     theShowMoveTextObject.style.whiteSpace = 'nowrap';
@@ -1429,7 +1441,9 @@ function pgnGameFromPgnText(pgnText) {
   inGameHeader = false;
   inGameBody = false;
   gameIndex = -1;
-  pgnGame.length = 0;
+  
+  newPgnGame = new Array();
+
   for(ii in lines) {
 
     // PGN standard: lines starting with % must be ignored
@@ -1438,7 +1452,7 @@ function pgnGameFromPgnText(pgnText) {
     if(pgnHeaderTagRegExp.test(lines[ii]) === true) {
       if(!inGameHeader) {
         gameIndex++;
-        pgnGame[gameIndex] = '';
+        newPgnGame[gameIndex] = '';
       }
       inGameHeader = true;
       inGameBody = false;
@@ -1450,17 +1464,17 @@ function pgnGameFromPgnText(pgnText) {
     }
     lines[ii] = lines[ii].replace(/^\s*/,"");
     lines[ii] = lines[ii].replace(/\s*$/,"");
-    if (gameIndex >= 0) { pgnGame[gameIndex] += lines[ii] + '\n'; } 
+    if (gameIndex >= 0) { newPgnGame[gameIndex] += lines[ii] + '\n'; } 
   }
 
-  numberOfGames = pgnGame.length;
+  if (gameIndex >= 0) {
+    pgnGame = newPgnGame;
+    numberOfGames = pgnGame.length;
+  }
 
   return (gameIndex >= 0);
 }
 
-var LOAD_PGN_FROM_PGN_URL_FAIL = 0;
-var LOAD_PGN_FROM_PGN_URL_OK = 1;
-var LOAD_PGN_FROM_PGN_URL_UNMODIFIED = 2;
 var http_request_last_processed_id = 0;
 function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
 
@@ -1473,21 +1487,24 @@ function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
 
     if (this_http_request.status == 304) {
       if (LiveBroadcastDelay > 0) {
-        loadPgnFromPgnUrlResult = LOAD_PGN_FROM_PGN_URL_UNMODIFIED;
+        loadPgnFromPgnUrlResult = LOAD_PGN_UNMODIFIED;
       } else { 
         myAlert('error: unmodified PGN URL when not in live mode\n' + (new Date()).toLocaleString());
-        loadPgnFromPgnUrlResult = LOAD_PGN_FROM_PGN_URL_FAIL;
+        loadPgnFromPgnUrlResult = LOAD_PGN_FAIL;
       }
 
 // dirty hack for some old Opera versions failure with reporting 304 status
     } else if (window.opera && (! this_http_request.responseText) && (this_http_request.status === 0)) {
       this_http_request.abort(); 
-      loadPgnFromPgnUrlResult = LOAD_PGN_FROM_PGN_URL_UNMODIFIED;
+      loadPgnFromPgnUrlResult = LOAD_PGN_UNMODIFIED;
 // end of dirty hack
 
+    } else if (! this_http_request.responseText) {
+      myAlert('error: no data received from PGN URL\n' + pgnUrl + '\n' + (new Date()).toLocaleString(), true); 
+      loadPgnFromPgnUrlResult = LOAD_PGN_FAIL;
     } else if (! pgnGameFromPgnText(this_http_request.responseText)) {
-      myAlert('error: no games found in PGN file\n' + pgnUrl + '\n' + (new Date()).toLocaleString(), true); 
-      loadPgnFromPgnUrlResult = LOAD_PGN_FROM_PGN_URL_FAIL;
+      myAlert('error: no games found at PGN URL\n' + pgnUrl + '\n' + (new Date()).toLocaleString(), true); 
+      loadPgnFromPgnUrlResult = LOAD_PGN_FAIL;
     } else {
       if (LiveBroadcastDelay > 0) {
         LiveBroadcastLastModifiedHeader = this_http_request.getResponseHeader("Last-Modified");
@@ -1497,23 +1514,32 @@ function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
         }
         else { LiveBroadcastLastModified_Reset(); }
       }
-      loadPgnFromPgnUrlResult = LOAD_PGN_FROM_PGN_URL_OK;
+      loadPgnFromPgnUrlResult = LOAD_PGN_OK;
     }
 
   } else { 
-    myAlert('error: failed reading PGN from URL\n' + pgnUrl + '\n' + (new Date()).toLocaleString(), true);
-    loadPgnFromPgnUrlResult = LOAD_PGN_FROM_PGN_URL_FAIL;
+    myAlert('error: failed reading PGN URL\n' + pgnUrl + '\n' + (new Date()).toLocaleString(), true);
+    loadPgnFromPgnUrlResult = LOAD_PGN_FAIL;
   }
 
-  if (LiveBroadcastDemo && (loadPgnFromPgnUrlResult == LOAD_PGN_FROM_PGN_URL_UNMODIFIED)) {
-    loadPgnFromPgnUrlResult = LOAD_PGN_FROM_PGN_URL_OK;
+  if (LiveBroadcastDemo && (loadPgnFromPgnUrlResult == LOAD_PGN_UNMODIFIED)) {
+    loadPgnFromPgnUrlResult = LOAD_PGN_OK;
   }
 
-  switch ( loadPgnFromPgnUrlResult ) {
+  loadPgnCheckingLiveStatus(loadPgnFromPgnUrlResult);
+}
 
-    case LOAD_PGN_FROM_PGN_URL_OK:
+var LOAD_PGN_FAIL = 0;
+var LOAD_PGN_OK = 1;
+var LOAD_PGN_UNMODIFIED = 2;
+function loadPgnCheckingLiveStatus(loadPgnResult) {
+
+  switch ( loadPgnResult ) {
+
+    case LOAD_PGN_OK:
       if (LiveBroadcastDelay > 0) {
         firstStart = true;
+        oldParseLastMoveError = ParseLastMoveError;
         if (! LiveBroadcastStarted) {
           LiveBroadcastStarted = true;
         } else {
@@ -1546,10 +1572,11 @@ function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
           if (LiveBroadcastFoundOldGame) { 
             oldInitialHalfmove = initialHalfmove; 
             if (LiveBroadcastSteppingMode) {
-              initialHalfmove = LiveBroadcastOldCurrentPlyLast ? 
+              initialHalfmove = (LiveBroadcastOldCurrentPlyLast || oldParseLastMoveError) ? 
                 LiveBroadcastOldCurrentPly+1 : LiveBroadcastOldCurrentPly;
             } else {
-              initialHalfmove = LiveBroadcastOldCurrentPlyLast ? "end" : LiveBroadcastOldCurrentPly;
+              initialHalfmove = (LiveBroadcastOldCurrentPlyLast || oldParseLastMoveError) ?
+                "end" : LiveBroadcastOldCurrentPly;
             }
           }
         }
@@ -1569,7 +1596,7 @@ function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
       if (LiveBroadcastDelay > 0) {
         if (LiveBroadcastFoundOldGame) {
           if (LiveBroadcastSteppingMode) {
-            if (oldAutoplay || LiveBroadcastOldCurrentPlyLast) { SetAutoPlay(true); }
+            if (oldAutoplay || LiveBroadcastOldCurrentPlyLast || oldParseLastMoveError) { SetAutoPlay(true); }
           } else {
             if (oldAutoplay) { SetAutoPlay(true); }
           }
@@ -1578,13 +1605,13 @@ function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
 
       break;
 
-    case LOAD_PGN_FROM_PGN_URL_UNMODIFIED: 
+    case LOAD_PGN_UNMODIFIED: 
       if (LiveBroadcastDelay > 0) { 
         checkLiveBroadcastStatus();
       }
       break;
 
-    case LOAD_PGN_FROM_PGN_URL_FAIL:
+    case LOAD_PGN_FAIL:
     default:
       if (LiveBroadcastDelay === 0) {
         pgnGameFromPgnText(alertPgnHeader);
@@ -1622,13 +1649,13 @@ function loadPgnFromPgnUrl(pgnUrl){
     catch (e) {
       try { http_request = new ActiveXObject("Microsoft.XMLHTTP"); }
       catch (e) { 
-        myAlert('error: no XMLHttpRequest options for PGN URL\n' + pgnUrl, true);
+        myAlert('error: XMLHttpRequest unavailable for PGN URL\n' + pgnUrl, true);
         return false; 
       }
     }
   }
   if (!http_request) {
-    myAlert('error: XMLHttpRequest failed for PGN URL\n' + pgnUrl, true);
+    myAlert('error: failed creating XMLHttpRequest for PGN URL\n' + pgnUrl, true);
     return false; 
   }
 
@@ -1645,7 +1672,7 @@ function loadPgnFromPgnUrl(pgnUrl){
     }
     http_request.send(null);
   } catch(e) {
-    myAlert('error: request failed for PGN URL\n' + pgnUrl, true);
+    myAlert('error: failed sending XMLHttpRequest for PGN URL\n' + pgnUrl, true);
     return false;
   }
 
@@ -1720,6 +1747,8 @@ function checkLiveBroadcastStatus() {
   { theObject.innerHTML = LiveBroadcastLastReceivedLocal; }
   if (theObject = document.getElementById("GameLiveLastModifiedServer"))
   { theObject.innerHTML = LiveBroadcastLastModified_ServerTime(); }
+
+  customFunctionOnCheckLiveBroadcastStatus();
 }
 
 function restartLiveBroadcastTimeout() {
@@ -1755,9 +1784,50 @@ function refreshPgnSource() {
     if (addedPly > 0) { LiveBroadcastLastReceivedLocal = (new Date()).toLocaleString(); }
   }
 
-  loadPgnFromPgnUrl(pgnUrl);
+  if (pgnUrl) {
+    loadPgnFromPgnUrl(pgnUrl);
+  } else if ( document.getElementById("pgnText") ) {
+    loadPgnFromTextarea("pgnText");
+  } else {
+    pgnGameFromPgnText(alertPgnHeader);
+    Init();
+    customFunctionOnPgnTextLoad();
+    myAlert('error: missing PGN URL location and pgnText object in the HTML file', true);
+  }
 }
 
+function loadPgnFromTextarea(textareaId) {
+
+  LiveBroadcastLastRefreshedLocal = (new Date()).toLocaleString();
+
+  if (!(theObject = document.getElementById(textareaId))) {
+    myAlert('error: missing ' + textareaId + ' textarea object in the HTML file', true);
+    loadPgnFromTextareaResult = LOAD_PGN_FAIL;
+  } else {
+    if (document.getElementById(textareaId).tagName.toLowerCase() == "textarea") {
+      tmpText = document.getElementById(textareaId).value;
+    } else { // compatibility with pgn4web up to 1.77: <span> used for pgnText
+      tmpText = document.getElementById(textareaId).innerHTML;
+      // fixes browser issue removing \n from innerHTML
+      if (tmpText.indexOf('\n') < 0) { tmpText = tmpText.replace(/((\[[^\[\]]*\]\s*)+)/g, "\n$1\n"); }
+      // fixes browser issue replacing quotes with &quot; e.g. blackberry
+      if (tmpText.indexOf('"') < 0) { tmpText = tmpText.replace(/(&quot;)/g, '"'); }
+    }
+
+    // no html header => add emptyPgnHeader
+    if (pgnHeaderTagRegExp.test(tmpText) === false) { tmpText = emptyPgnHeader + tmpText; }
+
+    if ( pgnGameFromPgnText(tmpText) ) {
+      loadPgnFromTextareaResult = LOAD_PGN_OK;
+      LiveBroadcastLastReceivedLocal = (new Date()).toLocaleString();
+    } else {
+      myAlert('error: no games found in ' + textareaId + 'object in the HTML file');
+      loadPgnFromTextareaResult = LOAD_PGN_FAIL;
+    }
+  }
+
+  loadPgnCheckingLiveStatus(loadPgnFromTextareaResult);
+}
 
 function createBoard(){
 
@@ -1770,35 +1840,12 @@ function createBoard(){
   if (pgnUrl) {
     loadPgnFromPgnUrl(pgnUrl);
   } else if ( document.getElementById("pgnText") ) {
-    if (document.getElementById("pgnText").tagName.toLowerCase() == "textarea") {
-      tmpText = document.getElementById("pgnText").value;
-    } else { // compatibility with pgn4web up to 1.77: <span> used for pgnText
-      tmpText = document.getElementById("pgnText").innerHTML;
-      // fixes browser issue removing \n from innerHTML
-      if (tmpText.indexOf('\n') < 0) { tmpText = tmpText.replace(/((\[[^\[\]]*\]\s*)+)/g, "\n$1\n"); }
-      // fixes browser issue replacing quotes with &quot; e.g. blackberry
-      if (tmpText.indexOf('"') < 0) { tmpText = tmpText.replace(/(&quot;)/g, '"'); }
-    }
-
-    // no html header => add emptyPgnHeader
-    if (pgnHeaderTagRegExp.test(tmpText) === false) { tmpText = emptyPgnHeader + tmpText; }
-
-    if ( pgnGameFromPgnText(tmpText) ) {
-      Init(); 
-      customFunctionOnPgnTextLoad();
-    } else {
-      pgnGameFromPgnText(alertPgnHeader);
-      Init();
-      customFunctionOnPgnTextLoad();
-      myAlert('error: no games found in PGN text', true);
-    }   
-    return;
+    loadPgnFromTextarea("pgnText");
   } else {
     pgnGameFromPgnText(alertPgnHeader);
     Init();
     customFunctionOnPgnTextLoad();
     myAlert('error: missing PGN URL location or pgnText in the HTML file', true);
-    return;
   }
 }
 
@@ -2363,10 +2410,9 @@ function MoveForward(diff) {
   if (goToPly > (StartPly + PlyNumber)) { goToPly = StartPly + PlyNumber; }
 
   // reach to selected move checking legality
-  var parse = false;
   for(var thisPly = CurrentPly; thisPly < goToPly; ++thisPly) {
     var move = Moves[thisPly];
-    if (! (parse = ParseMove(move, thisPly))) {
+    if (ParseLastMoveError = !ParseMove(move, thisPly)) {
       text = (Math.floor(thisPly / 2) + 1) + ((thisPly % 2) === 0 ? '. ' : '... ');
       myAlert('error: invalid ply ' + text + move + ' in game ' + (currentGame+1), true);
       break;
@@ -2381,7 +2427,7 @@ function MoveForward(diff) {
 
   // autoplay: restart timeout
   if (AutoPlayInterval) { clearTimeout(AutoPlayInterval); AutoPlayInterval = null; }
-  if (!parse) { SetAutoPlay(false); } 
+  if (ParseLastMoveError) { SetAutoPlay(false); } 
   else if (thisPly == goToPly) {
     if (isAutoPlayOn) {
       if (goToPly < StartPly + PlyNumber) {
@@ -2424,7 +2470,8 @@ function MoveToPrevComment() {
 function OpenGame(gameId) {
   ParsePGNGameString(pgnGame[gameId]);
   currentGame = gameId;
- 
+  ParseLastMoveError = false;
+
   if (LiveBroadcastDemo) {
     if (gameDemoMaxPly[gameId] <= PlyNumber) { PlyNumber = gameDemoMaxPly[gameId]; }
   }
@@ -2471,7 +2518,11 @@ function ParsePGNGameString(gameString) {
       case '!':
       case '?':
         commentStart = start;
-        commentEnd = commentStart + (((ss.charAt(start+1) == '?') || (ss.charAt(start+1) == '!')) ? 2 : 1);
+        commentEnd = commentStart + 1;
+        while ('!?'.indexOf(ss.charAt(commentEnd)) >= 0) {
+          commentEnd++;
+          if (commentEnd == ss.length) { break; }
+        }
         if (MoveComments[StartPly+PlyNumber].length>0) { MoveComments[StartPly+PlyNumber] += ' '; }
         MoveComments[StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
         start = commentEnd;
@@ -3195,9 +3246,10 @@ function PrintHTML() {
         if ((printedComment) || (ii == StartPly)) { text += '<SPAN CLASS="move">' + moveCount + '...&nbsp;</SPAN>'; }
       }
       jj = ii+1;
-      text += '<A HREF="javascript:GoToMove(' + jj + ')" CLASS="move" ID="Mv' + jj + 
-        '" ONFOCUS="this.blur()">' + Moves[ii] + '</A></SPAN>' +
-        '<SPAN CLASS="move"> </SPAN>';
+      text += '<A HREF="javascript:GoToMove(' + jj + ')" CLASS="move" ID="Mv' + jj +  
+        '" ONFOCUS="this.blur()">' + Moves[ii];
+      if (commentsIntoMoveText) { text += basicNAGsMoveComment(jj); }
+      text += '</A></SPAN>' + '<SPAN CLASS="move"> </SPAN>';
     }
     if (commentsIntoMoveText && (thisComment = strippedMoveComment(StartPly+PlyNumber))) {
       if (commentsOnSeparateLines) { text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>'; }

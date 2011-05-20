@@ -62,7 +62,8 @@ body {
   color: black;
   font-family: 'pgn4web ChessSansPiratf', 'pgn4web Liberation Sans', sans-serif;
   line-height: 1.3em;
-  text-decoration: none;   
+  text-decoration: none;
+  position: relative; /* fixes IE offsetTop issue */
 }
 
 .moveOn {
@@ -90,7 +91,7 @@ body {
 
 </head>
 
-<body>
+<body onresize="autoScrollToCurrentMoveIfEnabled();">
 
 <!-- paste your PGN below and make sure you dont specify an external source with SetPgnUrl() -->
 <form style="display: none;"><textarea style="display: none;" id="pgnText">
@@ -991,6 +992,8 @@ function customFunctionOnPgnTextLoad() {
     }
   }
 
+  autoScrollToCurrentMoveIfEnabled();
+
   if (gup("showHeightWidth") !== "") { 
     myAlert("info: board width=" + boardWidth + " height=" + boardHeight, false);
   }
@@ -1083,6 +1086,45 @@ function customFunctionOnPgnGameLoad() {
 //     }
 //   }
 
+  autoScrollToCurrentMoveIfEnabled();
+}
+
+function customFunctionOnMove() {
+  autoScrollToCurrentMoveIfEnabled();
+}
+
+var autoScrollToCurrentMoveFlag = true;
+function enableAutoScrollToCurrentMoveFlag() { autoScrollToCurrentMoveFlag = true; }
+function disableAutoScrollToCurrentMoveFlag() { autoScrollToCurrentMoveFlag = false; }
+function toggleAutoScrollToCurrentMoveFlag() { autoScrollToCurrentMoveFlag = !autoScrollToCurrentMoveFlag; }
+
+// G5
+boardShortcut("G5", "toggle auto-scroll moves text to current move", toggleAutoScrollToCurrentMoveFlag);
+// H5
+boardShortcut("H5", "scroll moves text to current move", autoScrollToCurrentMove);
+
+function objectOffsetVeryTop(object) {
+  for (offset = object.offsetTop; object = object.offsetParent; offset += object.offsetTop + object.clientTop) {}
+  return offset;
+}
+
+function autoScrollToCurrentMoveIfEnabled() {
+  if (autoScrollToCurrentMoveFlag) { autoScrollToCurrentMove(); }
+}
+
+function autoScrollToCurrentMove() {
+  if (theContainerObject = document.getElementById("headerMoves")) {
+    if (CurrentPly == StartPly) { theContainerObject.scrollTop = 0; }
+    else if (theMoveObject = document.getElementById('Mv' + CurrentPly)) {
+      theContainerObjectOffsetVeryTop = objectOffsetVeryTop(theContainerObject);
+      theMoveObjectOffsetVeryTop = objectOffsetVeryTop(theMoveObject);
+      if ((theMoveObjectOffsetVeryTop + theMoveObject.offsetHeight >
+           theContainerObjectOffsetVeryTop + theContainerObject.scrollTop + theContainerObject.clientHeight) ||
+          (theMoveObjectOffsetVeryTop < theContainerObjectOffsetVeryTop + theContainerObject.scrollTop)) {
+        theContainerObject.scrollTop = theMoveObjectOffsetVeryTop - theContainerObjectOffsetVeryTop;
+      }
+    }
+  }
 }
 
 var boardGeneratorWin=null;
