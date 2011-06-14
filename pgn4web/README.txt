@@ -428,7 +428,11 @@ from the http://ficsgames.com database, in turn likely based on code from the
 LT PGN viewer at http://www.lutanho.net/pgn/pgnviewer.html
 
 PNG images from http://ixian.com/chess/jin-piece-sets (creative commons 
-attribution-share alike 3.0 unported license)
+attribution-share alike 3.0 unported license) by Eric De Mund.
+SVG images from http://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
+by Colin M.L. Burnett; licensed under GFDL (www.gnu.org/copyleft/fdl.html),
+CC-BY-SA-3.0 (www.creativecommons.org/licenses/by-sa/3.0/) or
+GPL (www.gnu.org/licenses/gpl.html)], via Wikimedia Commons.
 
 The figurine fonts are derived from the Liberation Sans font (released under
 GNU General Public License, see https://fedorahosted.org/liberation-fonts/)
@@ -447,7 +451,20 @@ The jscolor javascript code is  maintained by Honza Odvarko
 (http://www.gnu.org/copyleft/lesser.html)
 See http://jscolor.com/
 
+The SWFObject javascript library (http://code.google.com/p/swfobject/) is
+released under the MIT License
+(http://www.opensource.org/licenses/mit-license.php).
+
+The js-unzip.js library (https://github.com/augustl/js-unzip) is 
+Copyright (c) 2010 August Lilleaas.
+The js-inflate.js library (https://github.com/augustl/js-inflate) is
+Copyright (c) 2010 August Lilleaas and Copyright (c) 1999 Masanao Izumo.
+Both are released under the MIT License
+(http://www.opensource.org/licenses/mit-license.php).
+
+
 The above items remains subject to their original licenses (if any).
+
 
 Remaining pgn4web code is copyright (C) 2009, 2011 Paolo Casaschi
 

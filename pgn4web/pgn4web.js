@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.23';
+var pgn4web_version = '2.24';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -33,7 +33,7 @@ function customFunctionOnMove() {}
 function customFunctionOnAlert(msg) {}
 function customFunctionOnCheckLiveBroadcastStatus() {}
 
-// API to parse custom header tags in customFunctionOnPgnGameLoad()
+//custom header tags APIs for customFunctionOnPgnGameLoad()
 
 function customPgnHeaderTag(customTagString, htmlElementIdString, gameNum) {
   customTagString = customTagString.replace(/\W+/g, "");
@@ -47,7 +47,7 @@ function customPgnHeaderTag(customTagString, htmlElementIdString, gameNum) {
   return tagValue;
 }
 
-// API to parse custom comment tags in customFunctionOnMove()
+// custom comment tags APIS for customFunctionOnMove()
 
 function customPgnCommentTag(customTagString, htmlElementIdString, plyNum) {
   customTagString = customTagString.replace(/\W+/g, "");
@@ -113,7 +113,7 @@ function myAlert(msg, fatalError) {
   alertNumSinceReset++;
   if (fatalError) { fatalErrorNumSinceReset++; }
   alertLast = (alertLast + 1) % alertLog.length;
-  alertLog[alertLast] = msg;
+  alertLog[alertLast] = msg  + "\n" + (new Date()).toLocaleString();
   boardShortcut(debugShortcutSquare, 
     "pgn4web v" + pgn4web_version + " debug info, " + alertNum + " alert" + (alertNum > 1 ? "s" : "")); 
 
@@ -201,8 +201,8 @@ function handlekey(e) {
 
   if (e.altKey || e.ctrlKey || e.metaKey) { return true; }
 
-  // escape always enabled: help and toggle shortcut keys
-  if ((keycode != 27) && (shortcutKeysEnabled === false)) { return true; }
+  // shift-escape always enabled: toggle shortcut keys
+  if (!shortcutKeysEnabled && !(keycode == 27 && e.shiftKey)) { return true; }
 
   switch(keycode) {
 
@@ -1318,6 +1318,13 @@ function HighlightLastMove() {
     if (clockString === null) {
       clockString = showThisMove+1 > StartPly ? 
         clockFromComment(showThisMove+1) : initialLastMoverClock;
+      if (!clockString && (CurrentPly === StartPly+PlyNumber)) {
+        // support for time info in the last comment as { White Time: 0h:12min Black Time: 1h:23min }
+        clockRegExp = new RegExp((whiteToMove ? "Black" : "White") + " Time:\\s*(\\S+)", "i");
+        if (clockMatch = strippedMoveComment(StartPly+PlyNumber).match(clockRegExp)) {
+          clockString = clockMatch[1];
+        }
+      }
     }
     lastMoverClockObject.innerHTML = clockString;
   }
@@ -1328,6 +1335,13 @@ function HighlightLastMove() {
     if (clockString === null) {
       clockString = showThisMove > StartPly ?
         clockFromComment(showThisMove) : initialBeforeLastMoverClock;
+      if (!clockString && (CurrentPly === StartPly+PlyNumber)) {
+        // support for time info in the last comment as { White Time: 0h:12min Black Time: 1h:23min }
+        clockRegExp = new RegExp((whiteToMove ? "White" : "Black") + " Time:\\s*(\\S+)", "i");
+        if (clockMatch = strippedMoveComment(StartPly+PlyNumber).match(clockRegExp)) {
+          clockString = clockMatch[1];
+        }
+      }
     }
     beforeLastMoverClockObject.innerHTML = clockString;
   }
@@ -1475,6 +1489,44 @@ function pgnGameFromPgnText(pgnText) {
   return (gameIndex >= 0);
 }
 
+function pgnGameFromHttpRequest(httpResponseData) {
+
+  if (pgnUrl && pgnUrl.match(/\.zip(\?|#|$)/i)) {
+    var unzippedPgnText = "";
+    try {
+      // requires loading js-unzip/js-unzip.js and js-unzip/js-inflate.js
+      var unzipper = new JSUnzip(httpResponseData);
+      if (unzipper.isZipFile()) {
+        unzipper.readEntries();
+        for (u in unzipper.entries) {
+          if (unzipper.entries[u].fileName.match(/\.pgn$/i)) {
+            switch (unzipper.entries[u].compressionMethod) {
+              case 0:
+                unzippedPgnText += "\n" + unzipper.entries[u].data + "\n";
+                break;
+              case 8:
+                unzippedPgnText += "\n" + JSInflate.inflate(unzipper.entries[u].data) + "\n";
+                break;
+              default:
+                myAlert("warning: unsupported compression method " + unzipper.entries[u].compressionMethod + " for ZIP archive at URL\n" + pgnUrl, false);
+                break;
+            }
+          }
+        }
+        if (!unzippedPgnText) { myAlert("error: no PGN games found in ZIP archive at URL\n" + pgnUrl, true); }
+      } else { myAlert("error: invalid ZIP archive at URL\n" + pgnUrl, true); }
+      if (!unzippedPgnText) { unzippedPgnText = alertPgnHeader; }
+    } catch(e) {
+      myAlert("error: missing unzip library or unzip error for ZIP archive at URL\n" + pgnUrl, true);
+      unzippedPgnText = httpResponseData; // passing through the data for backward compatibility
+    }
+  } else {
+    unzippedPgnText = httpResponseData;
+  }
+
+  return pgnGameFromPgnText(unzippedPgnText);
+}
+
 var http_request_last_processed_id = 0;
 function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
 
@@ -1489,7 +1541,7 @@ function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
       if (LiveBroadcastDelay > 0) {
         loadPgnFromPgnUrlResult = LOAD_PGN_UNMODIFIED;
       } else { 
-        myAlert('error: unmodified PGN URL when not in live mode\n' + (new Date()).toLocaleString());
+        myAlert('error: unmodified PGN URL when not in live mode');
         loadPgnFromPgnUrlResult = LOAD_PGN_FAIL;
       }
 
@@ -1500,10 +1552,10 @@ function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
 // end of dirty hack
 
     } else if (! this_http_request.responseText) {
-      myAlert('error: no data received from PGN URL\n' + pgnUrl + '\n' + (new Date()).toLocaleString(), true); 
+      myAlert('error: no data received from PGN URL\n' + pgnUrl, true); 
       loadPgnFromPgnUrlResult = LOAD_PGN_FAIL;
-    } else if (! pgnGameFromPgnText(this_http_request.responseText)) {
-      myAlert('error: no games found at PGN URL\n' + pgnUrl + '\n' + (new Date()).toLocaleString(), true); 
+    } else if (! pgnGameFromHttpRequest(this_http_request.responseText)) {
+      myAlert('error: no games found at PGN URL\n' + pgnUrl, true); 
       loadPgnFromPgnUrlResult = LOAD_PGN_FAIL;
     } else {
       if (LiveBroadcastDelay > 0) {
@@ -1518,7 +1570,7 @@ function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
     }
 
   } else { 
-    myAlert('error: failed reading PGN URL\n' + pgnUrl + '\n' + (new Date()).toLocaleString(), true);
+    myAlert('error: failed reading PGN URL\n' + pgnUrl, true);
     loadPgnFromPgnUrlResult = LOAD_PGN_FAIL;
   }
 
@@ -1642,7 +1694,7 @@ function loadPgnFromPgnUrl(pgnUrl){
   if (window.XMLHttpRequest) { // not IE
     http_request = new XMLHttpRequest();
     if (http_request.overrideMimeType) {
-      http_request.overrideMimeType('text/plain');
+      http_request.overrideMimeType('text/plain; charset=x-user-defined');
     }
   } else if (window.ActiveXObject) { // IE
     try { http_request = new ActiveXObject("Msxml2.XMLHTTP"); }
@@ -1664,7 +1716,9 @@ function loadPgnFromPgnUrl(pgnUrl){
 
   try {
     // anti-caching #1: add random parameter, only to plain URLs
-    urlRandomizer = ((LiveBroadcastDelay > 0) && (pgnUrl.indexOf("?") == -1) && (pgnUrl.indexOf("#") == -1)) ? "?nocahce=" + Math.random() : "";
+    if ((LiveBroadcastDelay > 0) && (pgnUrl.indexOf("?") == -1) && (pgnUrl.indexOf("#") == -1)) {
+      urlRandomizer = "?noCache=" + (0x1000000000 + Math.floor((Math.random() * 0xF000000000))).toString(16).toUpperCase();
+    } else { urlRandomizer = ""; }
     http_request.open("GET", pgnUrl + urlRandomizer);
     // anti-caching #2: add header option
     if (LiveBroadcastDelay > 0) {
@@ -1681,8 +1735,6 @@ function loadPgnFromPgnUrl(pgnUrl){
 
 function SetPgnUrl(url) {
   pgnUrl = url;
-  // hidden link for the chrome extension to detect
-  if (url) { document.write("<a style='display:none;' href=" + url + "></a>"); }
 }
 
 
@@ -2625,6 +2677,7 @@ function ParsePGNGameString(gameString) {
   }
 }
 
+
 var NAG = new Array();
 NAG[0] = '';       
 NAG[1] = '!';  // 'good move'        
@@ -2641,131 +2694,70 @@ NAG[11] = 'equal chances, quiet position';
 NAG[12] = 'equal chances, active position';
 NAG[13] = 'unclear position';
 NAG[14] = 'White has a slight advantage';
-NAG[15] = 'Black has a slight advantage';
 NAG[16] = 'White has a moderate advantage';
-NAG[17] = 'Black has a moderate advantage';
 NAG[18] = 'White has a decisive advantage';
-NAG[19] = 'Black has a decisive advantage';
 NAG[20] = 'White has a crushing advantage';
-NAG[21] = 'Black has a crushing advantage';
 NAG[22] = 'White is in zugzwang';
-NAG[23] = 'Black is in zugzwang';
 NAG[24] = 'White has a slight space advantage';
-NAG[25] = 'Black has a slight space advantage';
 NAG[26] = 'White has a moderate space advantage';
-NAG[27] = 'Black has a moderate space advantage';
 NAG[28] = 'White has a decisive space advantage';
-NAG[29] = 'Black has a decisive space advantage';
 NAG[30] = 'White has a slight time (development) advantage';
-NAG[31] = 'Black has a slight time (development) advantage';
 NAG[32] = 'White has a moderate time (development) advantage';
-NAG[33] = 'Black has a moderate time (development) advantage';
 NAG[34] = 'White has a decisive time (development) advantage';
-NAG[35] = 'Black has a decisive time (development) advantage';
 NAG[36] = 'White has the initiative';
-NAG[37] = 'Black has the initiative';
 NAG[38] = 'White has a lasting initiative';
-NAG[39] = 'Black has a lasting initiative';
 NAG[40] = 'White has the attack';
-NAG[41] = 'Black has the attack';
 NAG[42] = 'White has insufficient compensation for material deficit';
-NAG[43] = 'Black has insufficient compensation for material deficit';
 NAG[44] = 'White has sufficient compensation for material deficit';
-NAG[45] = 'Black has sufficient compensation for material deficit';
 NAG[46] = 'White has more than adequate compensation for material deficit';
-NAG[47] = 'Black has more than adequate compensation for material deficit';
 NAG[48] = 'White has a slight center control advantage';
-NAG[49] = 'Black has a slight center control advantage';
 NAG[50] = 'White has a moderate center control advantage';
-NAG[51] = 'Black has a moderate center control advantage';
 NAG[52] = 'White has a decisive center control advantage';
-NAG[53] = 'Black has a decisive center control advantage';
 NAG[54] = 'White has a slight kingside control advantage';
-NAG[55] = 'Black has a slight kingside control advantage';
 NAG[56] = 'White has a moderate kingside control advantage';
-NAG[57] = 'Black has a moderate kingside control advantage';
 NAG[58] = 'White has a decisive kingside control advantage';
-NAG[59] = 'Black has a decisive kingside control advantage';
 NAG[60] = 'White has a slight queenside control advantage';
-NAG[61] = 'Black has a slight queenside control advantage';
 NAG[62] = 'White has a moderate queenside control advantage';
-NAG[63] = 'Black has a moderate queenside control advantage';
 NAG[64] = 'White has a decisive queenside control advantage';
-NAG[65] = 'Black has a decisive queenside control advantage';
 NAG[66] = 'White has a vulnerable first rank';
-NAG[67] = 'Black has a vulnerable first rank';
 NAG[68] = 'White has a well protected first rank';
-NAG[69] = 'Black has a well protected first rank';
 NAG[70] = 'White has a poorly protected king';
-NAG[71] = 'Black has a poorly protected king';
 NAG[72] = 'White has a well protected king';
-NAG[73] = 'Black has a well protected king';
 NAG[74] = 'White has a poorly placed king';
-NAG[75] = 'Black has a poorly placed king';
 NAG[76] = 'White has a well placed king';
-NAG[77] = 'Black has a well placed king';
 NAG[78] = 'White has a very weak pawn structure';
-NAG[79] = 'Black has a very weak pawn structure';
 NAG[80] = 'White has a moderately weak pawn structure';
-NAG[81] = 'Black has a moderately weak pawn structure';
 NAG[82] = 'White has a moderately strong pawn structure';
-NAG[83] = 'Black has a moderately strong pawn structure';
 NAG[84] = 'White has a very strong pawn structure';
-NAG[85] = 'Black has a very strong pawn structure';
 NAG[86] = 'White has poor knight placement';
-NAG[87] = 'Black has poor knight placement';
 NAG[88] = 'White has good knight placement';
-NAG[89] = 'Black has good knight placement';
 NAG[90] = 'White has poor bishop placement';
-NAG[91] = 'Black has poor bishop placement';
 NAG[92] = 'White has good bishop placement';
-NAG[93] = 'Black has good bishop placement';
-NAG[84] = 'White has poor rook placement';
-NAG[85] = 'Black has poor rook placement';
-NAG[86] = 'White has good rook placement';
-NAG[87] = 'Black has good rook placement';
+NAG[94] = 'White has poor rook placement';
+NAG[96] = 'White has good rook placement';
 NAG[98] = 'White has poor queen placement';
-NAG[99] = 'Black has poor queen placement';
 NAG[100] = 'White has good queen placement';
-NAG[101] = 'Black has good queen placement';
 NAG[102] = 'White has poor piece coordination';
-NAG[103] = 'Black has poor piece coordination';
 NAG[104] = 'White has good piece coordination';
-NAG[105] = 'Black has good piece coordination';
 NAG[106] = 'White has played the opening very poorly';
-NAG[107] = 'Black has played the opening very poorly';
 NAG[108] = 'White has played the opening poorly';
-NAG[109] = 'Black has played the opening poorly';
 NAG[110] = 'White has played the opening well';
-NAG[111] = 'Black has played the opening well';
 NAG[112] = 'White has played the opening very well';
-NAG[113] = 'Black has played the opening very well';
 NAG[114] = 'White has played the middlegame very poorly';
-NAG[115] = 'Black has played the middlegame very poorly';
 NAG[116] = 'White has played the middlegame poorly';
-NAG[117] = 'Black has played the middlegame poorly';
 NAG[118] = 'White has played the middlegame well';
-NAG[119] = 'Black has played the middlegame well';
 NAG[120] = 'White has played the middlegame very well';
-NAG[121] = 'Black has played the middlegame very well';
 NAG[122] = 'White has played the ending very poorly';
-NAG[123] = 'Black has played the ending very poorly';
 NAG[124] = 'White has played the ending poorly';
-NAG[125] = 'Black has played the ending poorly';
 NAG[126] = 'White has played the ending well';
-NAG[127] = 'Black has played the ending well';
 NAG[128] = 'White has played the ending very well';
-NAG[129] = 'Black has played the ending very well';
 NAG[130] = 'White has slight counterplay';
-NAG[131] = 'Black has slight counterplay';
 NAG[132] = 'White has moderate counterplay';
-NAG[133] = 'Black has moderate counterplay';
 NAG[134] = 'White has decisive counterplay';
-NAG[135] = 'Black has decisive counterplay';
 NAG[136] = 'White has moderate time control pressure';
-NAG[137] = 'Black has moderate time control pressure';
 NAG[138] = 'White has severe time control pressure';
-NAG[139] = 'Black has severe time control pressure';
+
+for (ii = 14; ii <= 138; ii += 2) { NAG[ii+1] = "Black" + NAG[ii].substr(5); }
 
 function translateNAGs(comment) {
   var jj, ii = 0;
@@ -3479,5 +3471,3 @@ function sign(nn) {
 function SquareOnBoard(col, row) {
   return col >= 0 && col <= 7 && row >= 0 && row <= 7;
 }
-
-
