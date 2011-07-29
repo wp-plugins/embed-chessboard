@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.24';
+var pgn4web_version = '2.25';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -61,7 +61,7 @@ function customPgnCommentTag(customTagString, htmlElementIdString, plyNum) {
   return tagValue;
 }
 
-var basicNAGs = /^[\?!+#\s]*/;
+var basicNAGs = /^[\?!+#\s]*(\s|$)/;
 function strippedMoveComment(plyNum) {
   if (!MoveComments[plyNum]) { return ""; }
   return MoveComments[plyNum].replace(/\[%[^\]]*\]\s*/g,'').replace(basicNAGs, '').replace(/^\s+$/,'');
@@ -699,8 +699,8 @@ function CurrentFEN() {
   currentFEN += CurrentPly%2 === 0 ? " w" : " b";
 
   // castling availability
-  CastlingShortFEN = CastlingShort;
-  CastlingLongFEN = CastlingLong;
+  CastlingShortFEN = new Array(CastlingShort[0], CastlingShort[1]);
+  CastlingLongFEN = new Array(CastlingLong[0], CastlingLong[1]);
   for (var thisPly = StartPly; thisPly < CurrentPly; thisPly++) {
     SideToMoveFEN = thisPly%2;
     BackrowSideToMoveFEN = SideToMoveFEN * 7;
@@ -3224,7 +3224,7 @@ function PrintHTML() {
         if (commentsOnSeparateLines && (ii > StartPly)) { 
           text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>';
         }
-        text += '<SPAN CLASS="comment">' + thisComment + '</SPAN><SPAN CLASS="move"> </SPAN>';
+        text += '<SPAN CLASS="comment">' + thisComment + '</SPAN><SPAN CLASS="move notranslate"> </SPAN>';
         if (commentsOnSeparateLines) { 
           text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>';
         }
@@ -3233,19 +3233,19 @@ function PrintHTML() {
       var moveCount = Math.floor(ii/2)+1;
       text += '<SPAN STYLE="white-space: nowrap;">';
       if (ii%2 === 0){
-        text += '<SPAN CLASS="move">' + moveCount + '.&nbsp;</SPAN>';
+        text += '<SPAN CLASS="move notranslate">' + moveCount + '.&nbsp;</SPAN>';
       } else {
-        if ((printedComment) || (ii == StartPly)) { text += '<SPAN CLASS="move">' + moveCount + '...&nbsp;</SPAN>'; }
+        if ((printedComment) || (ii == StartPly)) { text += '<SPAN CLASS="move notranslate">' + moveCount + '...&nbsp;</SPAN>'; }
       }
       jj = ii+1;
-      text += '<A HREF="javascript:GoToMove(' + jj + ')" CLASS="move" ID="Mv' + jj +  
+      text += '<A HREF="javascript:GoToMove(' + jj + ')" CLASS="move notranslate" ID="Mv' + jj +  
         '" ONFOCUS="this.blur()">' + Moves[ii];
       if (commentsIntoMoveText) { text += basicNAGsMoveComment(jj); }
-      text += '</A></SPAN>' + '<SPAN CLASS="move"> </SPAN>';
+      text += '</A></SPAN>' + '<SPAN CLASS="move notranslate"> </SPAN>';
     }
     if (commentsIntoMoveText && (thisComment = strippedMoveComment(StartPly+PlyNumber))) {
       if (commentsOnSeparateLines) { text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>'; }
-      text += '<SPAN CLASS="comment">' + thisComment + '</SPAN><SPAN CLASS="move"> </SPAN>';
+      text += '<SPAN CLASS="comment">' + thisComment + '</SPAN><SPAN CLASS="move notranslate"> </SPAN>';
     }
     text += '</SPAN>';
 
