@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.27';
+var pgn4web_version = '2.28+';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -15,11 +15,10 @@ if (pgn4web_project_email === undefined) { pgn4web_project_email = 'pgn4web@casa
 
 var helpWin=null;
 function displayHelp(section){
-  if (!section) { section = "top"; }
+  if (!section) { section = "user_interface"; }
   if (helpWin && !helpWin.closed) { helpWin.close(); }
-  helpWin = window.open(detectHelpLocation() + "?" + 
-   (Math.floor(900 * Math.random()) + 100) + "#" + section, "pgn4web_help",
-   "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
+  helpWin = window.open(detectHelpLocation() + "?" + section, "pgn4web_help",
+    "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
   if ((helpWin !== null) && (window.focus)) { helpWin.focus(); }
 }
 
@@ -451,13 +450,13 @@ boardShortcut("C8", "show this game PGN source data", function(){ displayPgnData
 // D8
 boardShortcut("D8", "show full PGN source data", function(){ displayPgnData(true); });
 // E8
-boardShortcut("E8", "search help", function(){ displayHelp("search"); });
+boardShortcut("E8", "search help", function(){ displayHelp("search_tool"); });
 // F8
-boardShortcut("F8", "shortcut keys help", function(){ displayHelp("keys"); });
+boardShortcut("F8", "shortcut keys help", function(){ displayHelp("shortcut_keys"); });
 // G8
-boardShortcut("G8", "shortcut squares help", function(){ displayHelp("squares"); });
+boardShortcut("G8", "shortcut squares help", function(){ displayHelp("shortcut_squares"); });
 // H8
-boardShortcut("H8", "pgn4web help", function(){ displayHelp(); });
+boardShortcut("H8", "pgn4web help", function(){ displayHelp("user_interface"); });
 // A7
 boardShortcut("A7", "pgn4web website", function(){ window.open(pgn4web_project_url); });
 // B7
@@ -591,7 +590,7 @@ function detectJavascriptLocation() {
 }
 
 function detectHelpLocation() {
-  return detectJavascriptLocation().replace(/(pgn4web|pgn4web-compacted)\.js/, "help.html"); 
+  return detectJavascriptLocation().replace(/(pgn4web|pgn4web-compacted)\.js/, "pgn4web-help.html"); 
 }
 
 function detectBaseLocation() {
@@ -2383,7 +2382,7 @@ function LoadGameHeaders(){
 }
 
 
-function MoveBackward(diff) {
+function MoveBackward(diff, scanOnly) {
 
   // CurrentPly counts from 1, starting position 0
   var goFromPly  = CurrentPly - 1;
@@ -2428,6 +2427,8 @@ function MoveBackward(diff) {
     } 
   }
 
+  if (scanOnly) { return; }
+
   // old position reconstructed: refresh board
   RefreshBoard();
   HighlightLastMove(); 
@@ -2441,7 +2442,7 @@ function MoveBackward(diff) {
   customFunctionOnMove();
 }
 
-function MoveForward(diff) {
+function MoveForward(diff, scanOnly) {
 
   // CurrentPly counts from 1, starting position 0
   goToPly = CurrentPly + parseInt(diff,10);
@@ -2459,8 +2460,11 @@ function MoveForward(diff) {
     MoveColor = 1-MoveColor; 
   }
 
-  // new position: refresh board and update ply count
+  // new position: update ply count, then refresh board
   CurrentPly = thisPly;
+
+  if (scanOnly) { return; }
+
   RefreshBoard();
   HighlightLastMove(); 
 
@@ -2666,46 +2670,46 @@ function ParsePGNGameString(gameString) {
 
 
 var NAG = new Array();
-NAG[0] = '';       
-NAG[1] = '!';  // 'good move'        
-NAG[2] = '?';  // 'bad move'        
-NAG[3] = '!!'; // 'very good move'       
-NAG[4] = '??'; // 'very bad move'       
-NAG[5] = '!?'; // 'speculative move'        
-NAG[6] = '?!'; // 'questionable move'        
-NAG[7] = 'forced move';
-NAG[8] = 'singular move';
-NAG[9] = 'worst move';
-NAG[10] = 'drawish position';
-NAG[11] = 'equal chances, quiet position';
-NAG[12] = 'equal chances, active position';
-NAG[13] = 'unclear position';
-NAG[14] = 'White has a slight advantage';
-NAG[16] = 'White has a moderate advantage';
-NAG[18] = 'White has a decisive advantage';
-NAG[20] = 'White has a crushing advantage';
-NAG[22] = 'White is in zugzwang';
-NAG[24] = 'White has a slight space advantage';
-NAG[26] = 'White has a moderate space advantage';
-NAG[28] = 'White has a decisive space advantage';
-NAG[30] = 'White has a slight time (development) advantage';
-NAG[32] = 'White has a moderate time (development) advantage';
-NAG[34] = 'White has a decisive time (development) advantage';
-NAG[36] = 'White has the initiative';
-NAG[38] = 'White has a lasting initiative';
-NAG[40] = 'White has the attack';
+NAG[0] = '';
+NAG[1] = '!';  // 'good move';
+NAG[2] = '?';  // 'bad move';
+NAG[3] = '!!'; // 'very good move';
+NAG[4] = '??'; // 'very bad move';
+NAG[5] = '!?'; // 'speculative move';
+NAG[6] = '?!'; // 'questionable move';
+NAG[7] = 'forced move'; // '[]';
+NAG[8] = 'singular move'; // '[]';
+NAG[9] = 'worst move'; // '??';
+NAG[10] = 'drawish position'; // '=';
+NAG[11] = 'equal chances, quiet position'; // '=';
+NAG[12] = 'equal chances, active position'; // '=';
+NAG[13] = 'unclear position'; // '~~';
+NAG[14] = 'White has a slight advantage'; // NAG[15] = '=/+';
+NAG[16] = 'White has a moderate advantage'; // NAG[17] = '-/+';
+NAG[18] = 'White has a decisive advantage'; // NAG[19] = '-+';
+NAG[20] = 'White has a crushing advantage'; // NAG[21] = '-+';
+NAG[22] = 'White is in zugzwang'; // NAG[23] = '(.)';
+NAG[24] = 'White has a slight space advantage'; // NAG[25] = '()';
+NAG[26] = 'White has a moderate space advantage'; // NAG[27] = '()';
+NAG[28] = 'White has a decisive space advantage'; // NAG[29] = '()';
+NAG[30] = 'White has a slight time (development) advantage'; // NAG[31] = '@';
+NAG[32] = 'White has a moderate time (development) advantage'; // NAG[33] = '@';
+NAG[34] = 'White has a decisive time (development) advantage'; // NAG[35] = '@';
+NAG[36] = 'White has the initiative'; // NAG[37] = '|^';
+NAG[38] = 'White has a lasting initiative'; // NAG[39] = '|^';
+NAG[40] = 'White has the attack'; // NAG[41] = '->';
 NAG[42] = 'White has insufficient compensation for material deficit';
-NAG[44] = 'White has sufficient compensation for material deficit';
-NAG[46] = 'White has more than adequate compensation for material deficit';
-NAG[48] = 'White has a slight center control advantage';
-NAG[50] = 'White has a moderate center control advantage';
-NAG[52] = 'White has a decisive center control advantage';
-NAG[54] = 'White has a slight kingside control advantage';
-NAG[56] = 'White has a moderate kingside control advantage';
-NAG[58] = 'White has a decisive kingside control advantage';
-NAG[60] = 'White has a slight queenside control advantage';
-NAG[62] = 'White has a moderate queenside control advantage';
-NAG[64] = 'White has a decisive queenside control advantage';
+NAG[44] = 'White has sufficient compensation for material deficit'; // NAG[45] = '~/=';
+NAG[46] = 'White has more than adequate compensation for material deficit'; // NAG[47] = '~/=';
+NAG[48] = 'White has a slight center control advantage'; // NAG[49] = '[+]';
+NAG[50] = 'White has a moderate center control advantage'; // NAG[51] = '[+]';
+NAG[52] = 'White has a decisive center control advantage'; // NAG[53] = '[+]';
+NAG[54] = 'White has a slight kingside control advantage'; // NAG[55] = '>>';
+NAG[56] = 'White has a moderate kingside control advantage'; // NAG[57] = '>>';
+NAG[58] = 'White has a decisive kingside control advantage'; // NAG[59] = '>>';
+NAG[60] = 'White has a slight queenside control advantage'; // NAG[61] = '<<';
+NAG[62] = 'White has a moderate queenside control advantage'; // NAG[63] = '<<';
+NAG[64] = 'White has a decisive queenside control advantage'; // NAG[65] = '<<';
 NAG[66] = 'White has a vulnerable first rank';
 NAG[68] = 'White has a well protected first rank';
 NAG[70] = 'White has a poorly protected king';
@@ -2738,13 +2742,13 @@ NAG[122] = 'White has played the ending very poorly';
 NAG[124] = 'White has played the ending poorly';
 NAG[126] = 'White has played the ending well';
 NAG[128] = 'White has played the ending very well';
-NAG[130] = 'White has slight counterplay';
-NAG[132] = 'White has moderate counterplay';
-NAG[134] = 'White has decisive counterplay';
-NAG[136] = 'White has moderate time control pressure';
-NAG[138] = 'White has severe time control pressure';
+NAG[130] = 'White has slight counterplay'; // NAG[131] = '<=>';
+NAG[132] = 'White has moderate counterplay'; // NAG[133] = '<=>';
+NAG[134] = 'White has decisive counterplay'; // NAG[135] = '<=>';
+NAG[136] = 'White has moderate time control pressure'; // NAG[137] = '(+)';
+NAG[138] = 'White has severe time control pressure'; // NAG[139] = '(+)';
 
-for (ii = 14; ii <= 138; ii += 2) { NAG[ii+1] = "Black" + NAG[ii].substr(5); }
+for (ii = 14; ii < 139; ii += 2) { NAG[ii+1] = NAG[ii].replace("White", "Black"); }
 
 function translateNAGs(comment) {
   var jj, ii = 0;
