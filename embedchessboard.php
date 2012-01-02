@@ -7,7 +7,7 @@ Description: Embeds a javascript chessboard in wordpress articles for replaying 
 Version: 1.52
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
-Copyright: copyright (C) 2009, 2011 Paolo Casaschi
+Copyright: copyright (C) 2009, 2012 Paolo Casaschi
 
 ChangeLog:
   1.00  - initial release, based on pgn4web version 1.88 and 
