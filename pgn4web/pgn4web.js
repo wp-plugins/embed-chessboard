@@ -1,11 +1,11 @@
 /*
  *  pgn4web javascript chessboard
- *  copyright (C) 2009, 2011 Paolo Casaschi
+ *  copyright (C) 2009, 2012 Paolo Casaschi
  *  see README file and http://pgn4web.casaschi.net
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.33';
+var pgn4web_version = '2.34';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -3104,7 +3104,7 @@ function PrintHTML() {
           'ONCHANGE="this.blur(); if(this.value >= 0) { Init(this.value); this.value = -1; }" ' +
           'ONFOCUS="disableShortcutKeysAndStoreStatus();" ONBLUR="restoreShortcutKeysStatus();" ' +
           '> ' +
-          '<OPTION value=-1>';
+          '<OPTION CLASS="optionSelectControl" value=-1>';
 
         blanks = ''; for (ii=0; ii<32; ii++) { blanks += ' '; }
         if (gameSelectorNum) { 
@@ -3116,7 +3116,7 @@ function PrintHTML() {
         text += gameSelectorHeadDisplay.replace(/ /g, '&nbsp;'); 
 
         for (ii=0; ii<numberOfGames; ii++){
-          textSelectOptions += '<OPTION value=' + ii + '>';
+          textSelectOptions += '<OPTION CLASS="optionSelectControl" value=' + ii + '>';
           textSO = '';
           if (gameSelectorNum) {
             numText = ' ' + (ii+1);

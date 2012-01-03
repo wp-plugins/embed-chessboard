@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Embeds a javascript chessboard in wordpress articles for replaying chess games. Use plugin options to blend the chessboard with the site template; use tag parameters to customize each chessboard. Insert chess games in PGN format into your wordpress article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. For more info on plugin options and tag parameters please <a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress">read the tutorial</a>.
-Version: 1.52
+Version: 1.53
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 Copyright: copyright (C) 2009, 2012 Paolo Casaschi
@@ -67,6 +67,7 @@ ChangeLog:
   1.50  - upgraded pgn4web to 2.31
   1.51  - upgraded pgn4web to 2.32
   1.52  - minor bug fix and upgraded pgn4web to 2.33
+  1.53  - added undocumented global extended options setting and upgraded pgn4web to 2.34
 */
 
 class pgnBBCode {
@@ -107,11 +108,41 @@ class pgnBBCode {
 		elseif ( isset($atts[0]) ) { $height = $atts[0]; } // compatibility with v < 1.09
 		else { $height = get_option_with_default('embedchessboard_height'); }
 
+		$skipParameters = array('layout', 'l', 'showmoves', 'sm', 'height', 'h', 'initialgame', 'ig', 'initialhalfmove', 'ih', 'autoplaymode', 'am', 'extendedoptions', 'eo');
+		$pgnParameters = array('pgntext', 'pt', 'pgnencoded', 'pe', 'fenstring', 'fs', 'pgnid', 'pi', 'pgndata', 'pd');
+		$pgnSourceOverride = false;
+		$extendedOptionsString = get_option_with_default('embedchessboard_extended_options');
+                if ($extendedOptionsString != '') {
+			$extendedOptionsString = preg_replace('/^\s+/', '', $extendedOptionsString);
+			$extendedOptionsString = preg_replace('/\s+$/', '', $extendedOptionsString);
+			$extendedOptionsString = preg_replace('/(^|\s+)/', '&', $extendedOptionsString);
+			foreach ($skipParameters as $value) {
+				$extendedOptionsString = preg_replace('/&' . $value . '=[^&]*/', '', $extendedOptionsString);
+			}
+			foreach ($pgnParameters  as $value) {
+				if (preg_match('/&' . $value . '=[^&]*/', $extendedOptionsString)) {
+					$pgnSourceOverride = true;
+					break;
+				}
+			}
+			$extendedOptionsString = preg_replace('/&/', '&amp;', $extendedOptionsString);
+                }
+		if ( isset($atts['extendedoptions']) ) { $extendedOptions = $atts['extendedoptions']; }
+		elseif ( isset($atts['eo']) ) { $extendedOptions = htmlspecialchars($atts['eo']); }
+		else { $extendedOptions = 'false'; }
+		if (($extendedOptions == 'true') || ($extendedOptions == 't')) {
+			foreach ($atts as $key => $value) {
+				if (in_array(strtolower($key), $skipParameters)) { continue; }
+				if (in_array(strtolower($key), $pgnParameters)) { $pgnSourceOverride = true;  }
+				$extendedOptionsString .= '&amp;' . rawurlencode($key) . '=' . rawurlencode($value);
+			}
+		}
+
 		if (($height == "auto") || (strlen($height) == 0)) {
 			$height = 268; // 26*8 squares + 3*2 border + 13*2 padding + 28 buttons
 			// guessing if one game or multiple games are supplied
 			$multiGamesRegexp = '/\s*\[\s*\w+\s*"[^"]*"\s*\]\s*[^\s\[\]]+[\s\S]*\[\s*\w+\s*"[^"]*"\s*\]\s*/';
-			if (preg_match($multiGamesRegexp, $pgnText) > 0) { $height += 34; }
+			if ($pgnSourceOverride || (preg_match($multiGamesRegexp, $pgnText) > 0)) { $height += 34; }
 			if ($horizontalLayout == "t") {
 				$frameHeight = "b";
 			} else {
@@ -134,21 +165,6 @@ class pgnBBCode {
 		if ( isset($atts['autoplaymode']) ) { $autoplayMode = $atts['autoplaymode']; }
 		elseif ( isset($atts['am']) ) { $autoplayMode = $atts['am']; }
 		else { $autoplayMode = get_option_with_default('embedchessboard_autoplay_mode'); }
-
-		$pgnSourceOverride = false;
-		$extendedOptionsString = '';
-		if ( isset($atts['extendedoptions']) ) { $extendedOptions = $atts['extendedoptions']; }
-		elseif ( isset($atts['eo']) ) { $extendedOptions = htmlspecialchars($atts['eo']); }
-		else { $extendedOptions = 'false'; }
-		if (($extendedOptions == 'true') || ($extendedOptions == 't')) {
-			$skipParameters = array('layout', 'l', 'showmoves', 'sm', 'height', 'h', 'initialgame', 'ig', 'initialhalfmove', 'ih', 'autoplaymode', 'am', 'extendedoptions', 'eo');
-			$pgnParameters = array('pgntext', 'pt', 'pgnencoded', 'pe', 'fenstring', 'fs', 'pgnid', 'pi', 'pgndata', 'pd');
-			foreach ($atts as $key => $value) {
-				if (in_array(strtolower($key), $skipParameters)) { continue; }
-				if (in_array(strtolower($key), $pgnParameters)) { $pgnSourceOverride = true;  }
-				$extendedOptionsString .= '&amp;' . rawurlencode($key) . '=' . rawurlencode($value);
-			}
-		}
 
 		$pgnId = "pgn4web_" . dechex(crc32($pgnText));
 
@@ -232,6 +248,7 @@ function register_mysettings() {
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_comments_text_color' );
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_autoplay_mode' );
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_container_style' );
+	register_setting( 'embedchessboard-settings-group', 'embedchessboard_extended_options' );
 }
 
 function get_option_with_default($optionName) {
@@ -282,6 +299,9 @@ function get_option_with_default($optionName) {
 				$retVal = 'l';
 				break;
 			case 'embedchessboard_container_style':
+				$retVal = '';
+				break;
+			case 'embedchessboard_extended_options':
 				$retVal = '';
 				break;
 			default:
@@ -425,6 +445,12 @@ leave blank values to reset to defaults
 		<th scope="row"><label for="embedchessboard_container_style">CSS style for the HTML DIV container of the plugin frame</label></th>
 		<td><input type="text" name="embedchessboard_container_style" value="<?php echo get_option_with_default('embedchessboard_container_style'); ?>" /></td>
 		<td><small>normally left blank, it can be used to fix layout issues with certain wordpress templates; for instance, if the chessboard frame is constraint too narrow, setting this parameter as <b>width:500px;</b> might improve the layout</small></td>
+		</tr>
+
+		<tr valign="top">
+		<th scope="row"><label for="embedchessboard_extended_options">extended options</label></th>
+		<td><input type="text" name="embedchessboard_extended_options" value="<?php echo get_option_with_default('embedchessboard_extended_options'); ?>" /></td>
+		<td><small>normally left blank, undocumented feature: improper use will break the chessboard display</small></td>
 		</tr>
 
 		<tr><td colspan=3></td></tr>
