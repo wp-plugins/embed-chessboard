@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Embeds a javascript chessboard in wordpress articles for replaying chess games. Use plugin options to blend the chessboard with the site template; use tag parameters to customize each chessboard. Insert chess games in PGN format into your wordpress article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. For more info on plugin options and tag parameters please <a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress">read the tutorial</a>.
-Version: 1.54
+Version: 1.55
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 Copyright: copyright (C) 2009, 2012 Paolo Casaschi
@@ -69,6 +69,7 @@ ChangeLog:
   1.52  - minor bug fix and upgraded pgn4web to 2.33
   1.53  - added undocumented global extended options setting and upgraded pgn4web to 2.34
   1.54  - upgraded pgn4web to 2.35
+  1.55  - minor bug fix for IE9 and upgraded pgn4web to 2.36
 */
 
 class pgnBBCode {
