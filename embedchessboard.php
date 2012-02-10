@@ -91,7 +91,7 @@ class pgnBBCode {
 	function shortcode_pgn( $atts = array(), $content = NULL ) {
 		if ( NULL === $content ) return '';
 
-		// [pgn height=auto showMoves=justified initialGame=1 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
+		// [pgn height=auto showMoves=figurine initialGame=1 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
 
 		$pgnText = preg_replace("@(<.*?>|\n)@", " ", $content);
 
@@ -107,7 +107,7 @@ class pgnBBCode {
 
 		if ( isset($atts['showmoves']) ) { $movesDisplay = $atts['showmoves']; }
 		elseif ( isset($atts['sm']) ) { $movesDisplay = $atts['sm']; }
-		else { $movesDisplay = 'j'; }
+		else { $movesDisplay = 'f'; }
 
 		if ( isset($atts['height']) ) { $height = $atts['height']; }
 		elseif ( isset($atts['h']) ) { $height = $atts['h']; } 
