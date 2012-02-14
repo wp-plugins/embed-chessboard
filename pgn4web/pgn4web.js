@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.40+';
+var pgn4web_version = '2.41';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -1267,7 +1267,7 @@ function HighlightLastMove() {
   if (showThisMove > StartPly + PlyNumber) { showThisMove = StartPly + PlyNumber; }
 
   if (theShowCommentTextObject = document.getElementById("GameLastComment")) {
-    theShowCommentTextObject.innerHTML = strippedMoveComment(showThisMove+1);
+    theShowCommentTextObject.innerHTML = fixCommentForDisplay(strippedMoveComment(showThisMove+1));
   }
   
   // show side to move
@@ -2992,6 +2992,10 @@ function searchPgnGameForm() {
   { searchPgnGame(document.getElementById('searchPgnExpression').value); }
 }
 
+function fixCommentForDisplay(comment) {
+  chessMovesRegExp = new RegExp("((\\d+(\\.|\\.\\.\\.|)\\s*|)(([KQRBNP]|)([a-h1-8]|)(x|)[a-h][1-8](=[QRNB]|)|O-O-O|O-O)([+#]|))", "g");
+  return comment.replace(chessMovesRegExp, '<SPAN STYLE="white-space: nowrap;"><SPAN CLASS="variation">$1</SPAN></SPAN>');
+}
 
 var tableSize = 0;
 function PrintHTML() {
@@ -3209,7 +3213,7 @@ function PrintHTML() {
         if (commentsOnSeparateLines && (ii > StartPly)) { 
           text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>';
         }
-        text += '<SPAN CLASS="comment">' + thisComment + '</SPAN><SPAN CLASS="move notranslate"> </SPAN>';
+        text += '<SPAN CLASS="comment">' + fixCommentForDisplay(thisComment) + '</SPAN><SPAN CLASS="move notranslate"> </SPAN>';
         if (commentsOnSeparateLines) { 
           text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>';
         }
@@ -3230,7 +3234,7 @@ function PrintHTML() {
     }
     if (commentsIntoMoveText && (thisComment = strippedMoveComment(StartPly+PlyNumber))) {
       if (commentsOnSeparateLines) { text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>'; }
-      text += '<SPAN CLASS="comment">' + thisComment + '</SPAN><SPAN CLASS="move notranslate"> </SPAN>';
+      text += '<SPAN CLASS="comment">' + fixCommentForDisplay(thisComment) + '</SPAN><SPAN CLASS="move notranslate"> </SPAN>';
     }
     text += '</SPAN>';
 

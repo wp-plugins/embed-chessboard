@@ -188,13 +188,14 @@ or into your CSS file:
   @import url("fonts/pgn4web-font-LiberationSans.css");
   @import url("fonts/pgn4web-font-ChessSansPiratf.css");
 
-Then set the font-family for the .move class to the chess font of your choice and 
-the rest of the page to the Liberation Sans font. For example in your CSS file:
+Then set the font-family for the .move and .variation classes to the chess font
+of your choice and the rest of the page to the Liberation Sans font. For example
+in your CSS file:
 
-  .body {
+  body {
     font-family: 'pgn4web Liberation Sans', sans-serif;
   }  
-  .move {
+  .move, .variation {
     font-family: 'pgn4web ChessSansPiratf', 'pgn4web Liberation Sans', sans-serif;
   }
 
@@ -463,10 +464,10 @@ Informant publishing company (http://www.chessinformant.rs). The chess ole
 figurin font is from the ChessOLE project (http://www.chessole.de, David Frank).
  
 Some of the PGN files for the examples are coming from "The Week in Chess" at 
-http://www.chesscenter.com/twic/twic.html (files wch08ak.pgn and twic765.pgn) 
-and from the scid project at http://scid.sourceforge.net (file tactics.pgn).
-The chess informant sample PGN file is from the Chess Informant publishing
-company (http://www.chessinformant.rs).
+http://www.chesscenter.com/twic/twic.html (files wch08ak.pgn and twic765.pgn), 
+from the scid project at http://scid.sourceforge.net (file tactics.pgn), and
+from the Chess Informant publishing company at http://www.chessinformant.rs
+(file chess-informant-sample.pgn).
 
 The jscolor javascript code is  maintained by Honza Odvarko 
 (http://odvarko.cz/) and released under the GNU Lesser General Public License 
