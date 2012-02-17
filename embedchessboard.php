@@ -10,13 +10,13 @@ Author URI: http://pgn4web.casaschi.net
 Copyright: copyright (C) 2009, 2012 Paolo Casaschi
 
 ChangeLog:
-  1.00  - initial release, based on pgn4web version 1.88 and 
+  1.00  - initial release, based on pgn4web version 1.88 and
           on the Embed Iframe plugin of Deskera (http://deskera.com)
   1.01  - minor modifications for hosting on wordpress.org/extend/plugins
   1.02  - fixing the "Cannot modify header information" warning
   1.03  - properly detecting wordpress address URI
   1.04  - minor fix
-  1.05  - major rewrite simplyfying the plugin core (replacing the Embed Iframe template 
+  1.05  - major rewrite simplyfying the plugin core (replacing the Embed Iframe template
           with a template from the bbcode plugin of Viper007Bond http://www.viper007bond.com/)
           added the option to configure chessboard colors (see settings submenu)
   1.06  - minor fix
@@ -30,7 +30,7 @@ ChangeLog:
   1.13  - bug fixes and upgraded pgn4web to 1.92
   1.14  - bug fixes
   1.15  - more bug fixes and upgraded pgn4web to 1.93
-  1.16  - upgraded pgn4web to 1.94 with search tool addition 
+  1.16  - upgraded pgn4web to 1.94 with search tool addition
   1.17  - minor bug fix
   1.18  - upgraded pgn4web to 1.95 and minor bug fix
   1.19  - upgraded pgn4web to 1.96 and minor bug fix
@@ -102,7 +102,7 @@ class pgnBBCode {
 			if (($layout == "horizontal") || ($layout == "h")) { $horizontalLayout = "t"; }
 			elseif (($layout == "vertical") || ($layout == "v")) { $horizontalLayout = "f"; }
 			else { $horizontalLayout = "f"; }
-		} else { 
+		} else {
 			$horizontalLayout = get_option_with_default('embedchessboard_horizontal_layout');
 		}
 
@@ -111,7 +111,7 @@ class pgnBBCode {
 		else { $movesDisplay = 'f'; }
 
 		if ( isset($atts['height']) ) { $height = $atts['height']; }
-		elseif ( isset($atts['h']) ) { $height = $atts['h']; } 
+		elseif ( isset($atts['h']) ) { $height = $atts['h']; }
 		elseif ( isset($atts[0]) ) { $height = $atts[0]; } // compatibility with v < 1.09
 		else { $height = get_option_with_default('embedchessboard_height'); }
 
@@ -178,7 +178,7 @@ class pgnBBCode {
 		$containerStyle = get_option_with_default('embedchessboard_container_style');
 		if ($containerStyle == '') { $replacement  = "<div class='chessboard-wrapper'>"; }
 		else { $replacement  = "<div style='" . $containerStyle . "' class='chessboard-wrapper'>"; }
-		
+
 		$replacement .= "<textarea id='" . $pgnId . "' style='display:none;' cols='40' rows='8'>";
 		$replacement .= $pgnText;
 		$replacement .= "</textarea>";
@@ -260,7 +260,7 @@ function register_mysettings() {
 
 function get_option_with_default($optionName) {
 	$retVal = get_option($optionName);
-	
+
 	if (strlen(trim($retVal)) == 0) {
 		switch ($optionName) {
 			case 'embedchessboard_horizontal_layout':
@@ -362,9 +362,9 @@ leave blank values to reset to defaults
 		<td><input class="color {required:false}" type="text" name="embedchessboard_background_color" value="<?php echo get_option_with_default('embedchessboard_background_color'); ?>" /></td>
 		<td></td>
 		</tr>
-        
+
 		<tr><td colspan=3></td></tr>
-		
+
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_light_squares_color">light squares color</label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_light_squares_color" value="<?php echo get_option_with_default('embedchessboard_light_squares_color'); ?>" /></td>
@@ -382,7 +382,7 @@ leave blank values to reset to defaults
 		<td><input class="color {required:false}" type="text" name="embedchessboard_board_border_color" value="<?php echo get_option_with_default('embedchessboard_board_border_color'); ?>" /></td>
 		<td></td>
 		</tr>
-	
+
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_square_highlight_color">square highlight color</label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_square_highlight_color" value="<?php echo get_option_with_default('embedchessboard_square_highlight_color'); ?>" /></td>
@@ -430,7 +430,7 @@ leave blank values to reset to defaults
 		</tr>
 
 		<tr><td colspan=3></td></tr>
-	
+
 		<tr><td colspan=3><h3>Autoplay Mode</h3></td></tr>
 
 		<tr valign="top">
@@ -463,7 +463,7 @@ leave blank values to reset to defaults
 		<tr><td colspan=3></td></tr>
 
 	</table>
-    
+
 	<p class="submit">
 	<input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
 	</p>

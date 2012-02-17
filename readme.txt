@@ -14,7 +14,7 @@ Embed Chessboard is a plugin that allows for the insertion of a chessboard displ
 
 Use following tag to insert a chessboard:
 
-`[pgn parameter=value ...] 
+`[pgn parameter=value ...]
 ... chess games in PGN format ...
 [/pgn]`
 
