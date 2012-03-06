@@ -94,7 +94,7 @@ class pgnBBCode {
 	function shortcode_pgn( $atts = array(), $content = NULL ) {
 		if ( NULL === $content ) return '';
 
-		// [pgn height=auto showMoves=figurine initialGame=1 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
+		// [pgn height=auto showMoves=figurine initialGame=1 initialVariation=0 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
 
 		$pgnText = preg_replace("@(<.*?>|\n)@", " ", $content);
 
@@ -117,7 +117,7 @@ class pgnBBCode {
 		elseif ( isset($atts[0]) ) { $height = $atts[0]; } // compatibility with v < 1.09
 		else { $height = get_option_with_default('embedchessboard_height'); }
 
-		$skipParameters = array('layout', 'l', 'showmoves', 'sm', 'height', 'h', 'initialgame', 'ig', 'initialhalfmove', 'ih', 'autoplaymode', 'am', 'extendedoptions', 'eo');
+		$skipParameters = array('layout', 'l', 'showmoves', 'sm', 'height', 'h', 'initialgame', 'ig', 'initialVariation', 'iv', 'initialhalfmove', 'ih', 'autoplaymode', 'am', 'extendedoptions', 'eo');
 		$pgnParameters = array('pgntext', 'pt', 'pgnencoded', 'pe', 'fenstring', 'fs', 'pgnid', 'pi', 'pgndata', 'pd');
 		$pgnSourceOverride = false;
 		$extendedOptionsString = get_option_with_default('embedchessboard_extended_options');
@@ -167,6 +167,10 @@ class pgnBBCode {
 		elseif ( isset($atts['ig']) ) { $initialGame = $atts['ig']; }
 		else { $initialGame = 'f'; }
 
+		if ( isset($atts['initialvariation']) ) { $initialVariation = $atts['initialvariation']; }
+		elseif ( isset($atts['iv']) ) { $initialVariation = $atts['iv']; }
+		else { $initialVariation = '0'; }
+
 		if ( isset($atts['initialhalfmove']) ) { $initialHalfmove = $atts['initialhalfmove']; }
 		elseif ( isset($atts['ih']) ) { $initialHalfmove = $atts['ih']; }
 		else { $initialHalfmove = 's'; }
@@ -188,6 +192,7 @@ class pgnBBCode {
 		$replacement .= "am=" . rawurlencode($autoplayMode);
 		$replacement .= "&amp;d=3000";
 		$replacement .= "&amp;ig=" . rawurlencode($initialGame);
+		$replacement .= "&amp;iv=" . rawurlencode($initialVariation);
 		$replacement .= "&amp;ih=" . rawurlencode($initialHalfmove);
 		$replacement .= "&amp;ss=26&amp;ps=d&amp;pf=d";
 		$replacement .= "&amp;lch=" . rawurlencode(get_option_with_default('embedchessboard_light_squares_color'));

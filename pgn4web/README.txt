@@ -36,6 +36,7 @@ Contact email: pgn4web@casaschi.net
 Features:
 - display chess games form a PGN file on a dynamic chessboard on your
   webpage or blog
+- full support for viewing comments and browsing game variations
 - shortcut keys for navigating through the game, for selecting the
   game from the file and much more; also uses chessboard squares as
   input buttons (hit escape for help)
@@ -55,8 +56,6 @@ Features:
 - allows for live broadcast of games
 
 Limitations:
-- variations are displayed as comment, it's not possible to display
-  in the chessboard positions from variations
 - only one chessboard for html file (use frames if you need to display
   more in the same view)
 
@@ -120,6 +119,7 @@ Example:
     SetAutostartAutoplay(false);
     SetAutoplayNextGame(false); // if set, move to the next game at the end of the current game during autoplay
     SetInitialGame(1); // number of game to be shown at load, from 1 (default); values (keep the quotes) of "first", "last", "random" are accepted; other string values assumed as PGN search string
+    SetInitialVariation(0); // halfmove number to be shown at load, 0 (default) for main variation
     SetInitialHalfmove(0,false); // halfmove number to be shown at load, 0 (default) for start position; values (keep the quotes) of "start", "end", "random" and "comment" (go to first comment) are also accepted. Second parameter if true applies the setting to every selected game instead of startup only
     SetShortcutKeysEnabled(false);
 

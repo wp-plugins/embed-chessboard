@@ -24,6 +24,7 @@ Tag parameters:
  * height=auto|*number*
  * showMoves=figurine|text|hidden
  * initialGame=first|last|random|*number*
+ * initialVariation=*number*
  * initialHalfmove=start|end|random|comment|*number*
  * autoplayMode=game|loop|none
 

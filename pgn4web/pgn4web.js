@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.43';
+var pgn4web_version = '2.44+';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -48,10 +48,11 @@ function customPgnHeaderTag(customTagString, htmlElementIdString, gameNum) {
 
 // custom comment tags APIS for customFunctionOnMove()
 
-function customPgnCommentTag(customTagString, htmlElementIdString, plyNum) {
+function customPgnCommentTag(customTagString, htmlElementIdString, plyNum, varId) {
   customTagString = customTagString.replace(/\W+/g, "");
-  if (plyNum === undefined) { plyNum = CurrentPly; }
-  if ((MoveComments[plyNum]) && (tagValues = MoveComments[plyNum].match('\\[%' + customTagString + '\\s*([^\\]]+)\\s*\\]'))) {
+  if (typeof(varId) == "undefined") { varId = 0; }
+  if (typeof(plyNum) == "undefined") { plyNum = CurrentPly; }
+  if ((MoveCommentsVar[varId][plyNum]) && (tagValues = MoveCommentsVar[varId][plyNum].match('\\[%' + customTagString + '\\s*([^\\]]+)\\s*\\]'))) {
     tagValue = tagValues[1];
   } else { tagValue = ""; }
   if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (theObject.innerHTML !== null)) {
@@ -60,17 +61,6 @@ function customPgnCommentTag(customTagString, htmlElementIdString, plyNum) {
   return tagValue;
 }
 
-var basicNAGs = /^[\?!+#\s]*(\s|$)/;
-function strippedMoveComment(plyNum) {
-  if (!MoveComments[plyNum]) { return ""; }
-  return MoveComments[plyNum].replace(/\[%[^\]]*\]\s*/g,'').replace(basicNAGs, '').replace(/^\s+$/,'');
-}
-
-function basicNAGsMoveComment(plyNum) {
-  if (!MoveComments[plyNum]) { return ""; }
-  thisBasicNAGs = MoveComments[plyNum].replace(/\[%[^\]]*\]\s*/g,'').match(basicNAGs, '');
-  return thisBasicNAGs ? thisBasicNAGs[0].replace(/\s+(?!class=)/gi,'') : '';
-}
 
 window.onload = start_pgn4web;
 
@@ -233,22 +223,26 @@ function handlekey(e) {
 
     case 37: // left-arrow
     case 74: // j
-      MoveBackward(1);
+      if (e.shiftKey) { MoveBackward(CurrentPly - StartPlyVar[CurrentVar]); }
+      else { MoveBackward(1); }
       return stopKeyProp(e);
 
     case 38: // up-arrow
     case 72: // h
-      GoToMove(StartPly);
+      if (e.shiftKey) { GoToMove(StartPlyVar[CurrentVar] + 1); }
+      else { GoToMove(StartPlyVar[0], 0); }
       return stopKeyProp(e);
 
     case 39: // right-arrow
     case 75: // k
-      MoveForward(1);
+      if (e.shiftKey) { goToNextVariationSibling(); }
+      else { MoveForward(1); }
       return stopKeyProp(e);
 
     case 40: // down-arrow
     case 76: // l
-      GoToMove(StartPly + PlyNumber);
+      if (e.shiftKey) { GoToMove(StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]); }
+      else { GoToMove(StartPlyVar[0] + PlyNumberVar[0], 0); }
       return stopKeyProp(e);
 
     case 85: // u
@@ -389,16 +383,18 @@ function handlekey(e) {
 
     case 79: // o
       SetCommentsOnSeparateLines(!commentsOnSeparateLines);
-      oldPly = CurrentPly;
+      var oldPly = CurrentPly;
+      var oldVar = CurrentVar;
       Init();
-      GoToMove(oldPly);
+      GoToMove(oldPly, oldVar);
       return stopKeyProp(e);
 
     case 80: // p
       SetCommentsIntoMoveText(!commentsIntoMoveText);
-      oldPly = CurrentPly;
+      var oldPly = CurrentPly;
+      var oldVar = CurrentVar;
       Init();
-      GoToMove(oldPly);
+      GoToMove(oldPly, oldVar);
       return stopKeyProp(e);
 
     default:
@@ -423,6 +419,7 @@ function clearShortcutSquares(cols, rows) {
 }
 
 function boardShortcut(square, title, functionPointer) {
+  var theObject;
   if (square.charCodeAt === null) { return; }
   var col = square.charCodeAt(0) - 65; // 65="A"
   if ((col < 0) || (col > 7)) { return; }
@@ -460,9 +457,9 @@ boardShortcut("H8", "pgn4web help", function(){ displayHelp(); });
 // A7
 boardShortcut("A7", "pgn4web website", function(){ window.open(pgn4web_project_url); });
 // B7
-boardShortcut("B7", "toggle show comments in game text", function(){ SetCommentsIntoMoveText(!commentsIntoMoveText); oldPly = CurrentPly; Init(); GoToMove(oldPly); });
+boardShortcut("B7", "toggle show comments in game text", function(){ SetCommentsIntoMoveText(!commentsIntoMoveText); var oldPly = CurrentPly; var oldVar = CurrentVar; Init(); GoToMove(oldPly, oldVar); });
 // C7
-boardShortcut("C7", "toggle show comments on separate lines in game text", function(){ SetCommentsOnSeparateLines(!commentsOnSeparateLines); oldPly = CurrentPly; Init(); GoToMove(oldPly); });
+boardShortcut("C7", "toggle show comments on separate lines in game text", function(){ SetCommentsOnSeparateLines(!commentsOnSeparateLines); var oldPly = CurrentPly; var oldVar = CurrentVar; Init(); GoToMove(oldPly, oldVar); });
 // D7
 boardShortcut("D7", "toggle highlight last move", function(){ SetHighlight(!highlightOption); });
 // E7
@@ -554,7 +551,7 @@ boardShortcut("G2", "autoplay 10 seconds", function(){ SetAutoplayDelayAndStart(
 // H2
 boardShortcut("H2", "autoplay 30 seconds", function(){ SetAutoplayDelayAndStart(30*1000); });
 // A1
-boardShortcut("A1", "go to game start", function(){ GoToMove(StartPly); });
+boardShortcut("A1", "go to game start", function(){ GoToMove(StartPlyVar[0], 0); });
 // B1
 boardShortcut("B1", "go to previous comment", function(){ MoveToPrevComment(); });
 // C1
@@ -568,7 +565,7 @@ boardShortcut("F1", "move 6 half-moves forward", function(){ MoveForward(6); });
 // G1
 boardShortcut("G1", "go to next comment", function(){ MoveToNextComment(); });
 // H1
-boardShortcut("H1", "go to game end", function(){ GoToMove(StartPly + PlyNumber); });
+boardShortcut("H1", "go to game end", function(){ GoToMove(StartPlyVar[0] + PlyNumberVar[0], 0); });
 
 
 var deciles = new Array(11);
@@ -621,7 +618,8 @@ function displayDebugInfo() {
     // pgn4web up to 1.77 used <span> for pgnText
   }
   debugInfo += '\n\n' +
-    'GAMES: current=' + (currentGame+1) + ' number=' + numberOfGames + '\n' +
+    'GAME: current=' + (currentGame+1) + ' number=' + numberOfGames + '\n' +
+    'VARIATION: current=' + CurrentVar + ' number=' + (numberOfVars-1) + '\n' +
     'PLY: start=' + StartPly + ' current=' + CurrentPly + ' number=' + PlyNumber + '\n' +
     'AUTOPLAY: ' + (isAutoPlayOn ? 'delay=' + Delay + 'ms' + ' autoplaynext=' + autoplayNextGame : 'off') +
     '\n\n' +
@@ -733,14 +731,14 @@ function displayFenData() {
 
   currentMovesString = "";
   lastLineStart = 0;
-  for(var thisPly = CurrentPly; thisPly <= StartPly + PlyNumber; thisPly++) {
+  for(var thisPly = CurrentPly; thisPly <= StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]; thisPly++) {
     addToMovesString = "";
-    if (thisPly == StartPly + PlyNumber) {
-      if ((gameResult[currentGame]) && (gameResult[currentGame] != "*")) {
+    if (thisPly == StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]) {
+      if (CurrentVar === 0 && gameResult[currentGame] && gameResult[currentGame] != "*") {
         addToMovesString = gameResult[currentGame];
       }
     } else {
-      if ((thisPly%2) === 0) { addToMovesString = (Math.floor(thisPly/2)+1) + ". "; }
+      if (thisPly%2 === 0) { addToMovesString = (Math.floor(thisPly/2)+1) + ". "; }
       else if (thisPly == CurrentPly) {
         addToMovesString = (Math.floor(thisPly/2)+1) + "... ";
       }
@@ -800,7 +798,7 @@ var gameInitialWhiteClock = new Array();
 var gameInitialBlackClock = new Array();
 var gameVariant = new Array();
 
-var oldAnchor = -1;
+var oldAnchorName = "";
 
 var isAutoPlayOn = false;
 var AutoPlayInterval = null;
@@ -809,6 +807,7 @@ var autostartAutoplay = false;
 var autoplayNextGame = false;
 
 var initialGame = 1;
+var initialVariation = 0;
 var initialHalfmove = 0;
 var alwaysInitialHalfmove = false;
 
@@ -832,8 +831,6 @@ var gameDemoLength = new Array();
 var LiveBroadcastSteppingMode = false;
 
 var ParseLastMoveError = false;
-
-var MaxMove = 500;
 
 var castleRook = -1;
 var mvCapture =  0;
@@ -861,6 +858,7 @@ HistCol = new Array(3);
 HistRow = new Array(3);
 HistPieceId = new Array(2);
 HistType = new Array(2);
+HistVar = new Array();
 
 PieceCol = new Array(2);
 PieceRow = new Array(2);
@@ -872,18 +870,18 @@ for(i=0; i<2; ++i){
   PieceRow[i] = new Array(16);
   PieceType[i] = new Array(16);
   PieceMoveCounter[i] = new Array(16);
-  HistType[i] = new Array(MaxMove);
-  HistPieceId[i] = new Array(MaxMove);
+  HistType[i] = new Array();
+  HistPieceId[i] = new Array();
 }
 
 for(i=0; i<3; ++i){
-  HistCol[i] = new Array(MaxMove);
-  HistRow[i] = new Array(MaxMove);
+  HistCol[i] = new Array();
+  HistRow[i] = new Array();
 }
 
-HistEnPassant = new Array(MaxMove);
+HistEnPassant = new Array();
 HistEnPassant[0] = false;
-HistEnPassantCol = new Array(MaxMove);
+HistEnPassantCol = new Array();
 HistEnPassantCol[0] = -1;
 
 var FenPieceName = "KQRBNP";
@@ -912,8 +910,8 @@ var pgnUrl = '';
 
 CastlingLong  = new Array(2);
 CastlingShort = new Array(2);
-Moves = new Array(MaxMove);
-MoveComments = new Array(MaxMove);
+Moves = new Array();
+MoveComments = new Array();
 
 var MoveColor;
 var MoveCount;
@@ -981,7 +979,7 @@ function CheckLegality(what, plyCount) {
   }
   if ((mvCapture) && (Color(Board[mvToCol][mvToRow]) != 1-MoveColor)) {
     if ((mvPiece != 6) || (!HistEnPassant[plyCount-1]) || (HistEnPassantCol[plyCount-1] != mvToCol) ||
-	(mvToRow != 5-3*MoveColor)) { return false; }
+      (mvToRow != 5-3*MoveColor)) { return false; }
   }
   if (mvIsPromotion) {
     if (mvPiece     != 6) { return false; }
@@ -1000,12 +998,12 @@ function CheckLegality(what, plyCount) {
       else if (mvPiece == 5) { retVal = CheckLegalityKnight(pieceId); }
       else if (mvPiece == 6) { retVal = CheckLegalityPawn(pieceId); }
       if (retVal) {
-	mvPieceId = pieceId;
+        mvPieceId = pieceId;
         // board updated: king check?
         StoreMove(plyCount);
         isCheck = IsCheck(PieceCol[MoveColor][0], PieceRow[MoveColor][0], MoveColor);
-	if (!isCheck) { return true; }
-	else { UndoMove(plyCount); }
+        if (!isCheck) { return true; }
+        else { UndoMove(plyCount); }
       }
     }
   }
@@ -1183,8 +1181,8 @@ function ClearMove(move) {
     cc = move.charCodeAt(ii);
     if ((cc == 45) || ((cc >= 48) && (cc <= 57)) || (cc == 61) ||
 //        (cc == 35) || (cc == 43) || // patch this to pass through '+' and '#' signs
-	((cc >= 65) && (cc <= 90)) || ((cc >=97) && (cc <= 122))) {
-	  mm += move.charAt(ii);
+        ((cc >= 65) && (cc <= 90)) || ((cc >=97) && (cc <= 122))) {
+      mm += move.charAt(ii);
     }
     ++ii;
   }
@@ -1193,10 +1191,26 @@ function ClearMove(move) {
   return mm;
 }
 
-function GoToMove(thisMove) {
-  var diff = thisMove - CurrentPly;
-  if (diff > 0) { MoveForward(diff); }
-  else { MoveBackward(-diff); }
+function GoToMove(thisPly, thisVar) {
+  if (typeof(thisVar) == "undefined") { thisVar = CurrentVar; }
+  if (thisVar === CurrentVar) {
+    var diff = thisPly - CurrentPly;
+    if (diff > 0) { MoveForward(diff); }
+    else { MoveBackward(-diff); }
+  } else {
+    backStart = StartPly;
+loopCommonPredecessor:
+    for (var ii = PredecessorsVars[CurrentVar].length - 1; ii >= 0; ii--) {
+      for (var jj = PredecessorsVars[thisVar].length - 1; jj >= 0; jj--) {
+        if (PredecessorsVars[CurrentVar][ii] === PredecessorsVars[thisVar][jj]) {
+          backStart = Math.min(PredecessorsVars[CurrentVar][ii+1] ? StartPlyVar[PredecessorsVars[CurrentVar][ii+1]] : CurrentPly, PredecessorsVars[thisVar][jj+1] ? StartPlyVar[PredecessorsVars[thisVar][jj+1]] : thisPly);
+          break loopCommonPredecessor;
+        }
+      }
+    }
+    MoveBackward(CurrentPly - backStart, true);
+    MoveForward(thisPly - backStart, thisVar);
+  }
 }
 
 function SetShortcutKeysEnabled(onOff) {
@@ -1234,9 +1248,12 @@ function SetInitialHalfmove(number_or_string, always) {
   if ((initialHalfmove = parseInt(initialHalfmove,10)) == NaN) { initialHalfmove = 0; }
 }
 
+function SetInitialVariation(number) {
+  initialVariation = isNaN(number = parseInt(number, 10)) ? 0 : number;
+}
+
 function SetInitialGame(number_or_string) {
-  if (number_or_string === undefined) { initialGame = 1; }
-  else { initialGame = number_or_string; }
+  initialGame = typeof(number_or_string) == "undefined" ? 1 : number_or_string;
 }
 
 // clock detection: check DGT sequence [%clk 01:02]
@@ -1256,18 +1273,20 @@ function HighlightLastMove() {
   var anchorName;
 
   // remove highlighting from old anchor
-  if (oldAnchor >= 0){
-    anchorName = 'Mv'+oldAnchor;
-    theAnchor = document.getElementById(anchorName);
-    if (theAnchor !== null) { theAnchor.className = 'move'; }
+  if (oldAnchorName){
+    if (theObject = document.getElementById(oldAnchorName)) {
+      theObject.className = ( oldAnchorName.match(/Var0Mv/) ? 'move' : 'variation') + ' notranslate';
+    }
   }
 
   // find halfmove to be highlighted, negative for starting position (nothing to highlight)
   var showThisMove = CurrentPly - 1;
-  if (showThisMove > StartPly + PlyNumber) { showThisMove = StartPly + PlyNumber; }
+  if (showThisMove > StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]) { showThisMove = StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]; }
 
   if (theShowCommentTextObject = document.getElementById("GameLastComment")) {
-    theShowCommentTextObject.innerHTML = fixCommentForDisplay(strippedMoveComment(showThisMove+1));
+    variationTextDepth = CurrentVar === 0 ? 0 : 1;
+    theShowCommentTextObject.innerHTML = '<SPAN CLASS="comment">' +
+      strippedMoveComment(showThisMove+1, CurrentVar, true).replace(/\sID="[^"]*"/g, '') + '</SPAN>';
   }
 
   // show side to move
@@ -1325,8 +1344,10 @@ function HighlightLastMove() {
   // show next move
   var theShowMoveTextObject = document.getElementById("GameNextMove");
   if (theShowMoveTextObject !== null) {
-    if (showThisMove + 1 >= StartPly + PlyNumber) {
+    if (CurrentVar === 0 && showThisMove + 1 >= StartPly + PlyNumber) {
       text = gameResult[currentGame];
+    } else if (typeof(Moves[showThisMove+1]) == "undefined") {
+      text = "";
     } else {
       text = (Math.floor((showThisMove+1)/2) + 1) +
         ((showThisMove+1) % 2 === 0 ? '. ' : '... ') + Moves[showThisMove+1];
@@ -1348,11 +1369,12 @@ function HighlightLastMove() {
     theShowMoveTextObject.style.whiteSpace = 'nowrap';
   }
 
-  if (showThisMove >= (StartPly-1)) {
-    anchorName = 'Mv' + (showThisMove + 1);
-    theAnchor = document.getElementById(anchorName);
-    if (theAnchor !== null) { theAnchor.className = 'move moveOn'; }
-    oldAnchor = showThisMove + 1;
+  if (showThisMove >= (StartPlyVar[CurrentVar]-1)) {
+    anchorName = 'Var' + CurrentVar + 'Mv' + (showThisMove + 1);
+    if (theObject = document.getElementById(anchorName)) {
+      theObject.className = (CurrentVar ? 'variation variationOn' : 'move moveOn') + ' notranslate';
+    }
+    oldAnchorName = anchorName;
 
     if (highlightOption) {
       if (showThisMove < StartPly) {
@@ -1580,8 +1602,9 @@ function loadPgnCheckingLiveStatus(loadPgnResult) {
 
           initialGame = currentGame + 1;
 
+          LiveBroadcastOldCurrentVar = CurrentVar;
           LiveBroadcastOldCurrentPly = CurrentPly;
-          LiveBroadcastOldCurrentPlyLast = (CurrentPly === StartPly + PlyNumber);
+          LiveBroadcastOldCurrentPlyLast = (CurrentVar === 0 && CurrentPly === StartPlyVar[0] + PlyNumberVar[0]);
 
           oldAutoplay = isAutoPlayOn;
           if (isAutoPlayOn) { SetAutoPlay(false); }
@@ -1598,7 +1621,9 @@ function loadPgnCheckingLiveStatus(loadPgnResult) {
           if (LiveBroadcastFoundOldGame) { initialGame = ii + 1; }
 
           if (LiveBroadcastFoundOldGame) {
+            oldInitialVariation = initialVariation;
             oldInitialHalfmove = initialHalfmove;
+            initialVariation = CurrentVar;
             if (LiveBroadcastSteppingMode) {
               initialHalfmove = (LiveBroadcastOldCurrentPlyLast || oldParseLastMoveError) ?
                 LiveBroadcastOldCurrentPly+1 : LiveBroadcastOldCurrentPly;
@@ -1615,6 +1640,7 @@ function loadPgnCheckingLiveStatus(loadPgnResult) {
       if (LiveBroadcastDelay > 0) {
         if (LiveBroadcastFoundOldGame) {
           initialHalfmove = oldInitialHalfmove;
+          initialVariation = oldInitialVariation;
         }
         checkLiveBroadcastStatus();
       }
@@ -1782,7 +1808,6 @@ function checkLiveBroadcastStatus() {
 function restartLiveBroadcastTimeout() {
   if (LiveBroadcastDelay === 0) { return; }
   if (LiveBroadcastInterval) { clearTimeout(LiveBroadcastInterval); LiveBroadcastInterval = null; }
-  checkLiveBroadcastStatus();
   needRestart = (!LiveBroadcastEnded);
   if ((needRestart === true) && (!LiveBroadcastPaused)) {
     LiveBroadcastInterval = setTimeout("refreshPgnSource()", LiveBroadcastDelay * 60000);
@@ -1791,6 +1816,7 @@ function restartLiveBroadcastTimeout() {
 }
 
 var LiveBroadcastFoundOldGame = false;
+var LiveBroadcastOldCurrentVar;
 var LiveBroadcastOldCurrentPly;
 var LiveBroadcastOldCurrentPlyLast = false;
 function refreshPgnSource() {
@@ -1908,13 +1934,13 @@ function setCurrentGameFromInitialGame() {
 function GoToInitialHalfmove() {
   switch (initialHalfmove) {
     case "start":
-      GoToMove(0);
+      GoToMove(0, initialVariation);
       break;
     case "end":
-      GoToMove(StartPly + PlyNumber);
+      GoToMove(StartPlyVar[initialVariation] + PlyNumberVar[initialVariation], initialVariation);
       break;
     case "random":
-      GoToMove(StartPly + Math.floor(Math.random()*(StartPly + PlyNumber)));
+      GoToMove(StartPlyVar[initialVariation] + Math.floor(Math.random()*(StartPlyVar[initialVariation] + PlyNumberVar[initialVariation])), initialVariation);
       break;
     case "comment":
       GoToMove(0);
@@ -1925,10 +1951,10 @@ function GoToInitialHalfmove() {
       initialHalfmove = parseInt(initialHalfmove,10);
       initialHalfmove = initialHalfmove < 0 ? -Math.floor(-initialHalfmove) : Math.floor(initialHalfmove);
       if (initialHalfmove < -3) { initialHalfmove = 0; }
-      if (initialHalfmove == -3) { GoToMove(StartPly + PlyNumber); }
-      else if (initialHalfmove == -2) { GoToMove(0); MoveToNextComment(); }
-      else if (initialHalfmove == -1) { GoToMove(StartPly + Math.floor(Math.random()*(StartPly + PlyNumber))); }
-      else { GoToMove(Math.floor(initialHalfmove)); }
+      if (initialHalfmove == -3) { GoToMove(StartPlyVar[initialVariation] + PlyNumberVar[initialVariation], initialVariation); }
+      else if (initialHalfmove == -2) { GoToMove(0, initialVariation); MoveToNextComment(); }
+      else if (initialHalfmove == -1) { GoToMove(StartPlyVar[initialVariation] + Math.floor(Math.random()*(StartPlyVar[initialVariation] + PlyNumberVar[initialVariation])), initialVariation); }
+      else { GoToMove(Math.floor(initialHalfmove), initialVariation); }
       break;
   }
 }
@@ -1954,17 +1980,23 @@ function Init(nextGame){
 
   OpenGame(currentGame);
 
-  RefreshBoard();
   CurrentPly = StartPly;
-  HighlightLastMove();
   if (firstStart || alwaysInitialHalfmove) { GoToInitialHalfmove(); }
-  else { customFunctionOnMove(); }
+  else {
+    autoScrollToCurrentMoveIfEnabled();
+    synchMoves();
+    customFunctionOnMove();
+  }
   // customFunctionOnMove here for consistency: null move starting new game
+
+  RefreshBoard();
+  HighlightLastMove();
 
   if ((firstStart) && (autostartAutoplay)) { SetAutoPlay(true); }
 
   customFunctionOnPgnGameLoad();
 
+  initialVariation = 0;
   firstStart = false;
 }
 
@@ -2007,6 +2039,7 @@ function InitFEN(startingFEN) {
         Board[col][row] = (1-2*color)*PieceType[color][ii];
       }
     }
+    HistVar[StartPly] = 0;
   } else {
     var cc, kk, ll, nn, mm;
     for (ii = 0; ii < 2; ii++) {
@@ -2137,10 +2170,10 @@ function InitFEN(startingFEN) {
     for (color = 0; color < 2; ++color) {
       for (ii = 0; ii < 16; ii++) {
         if (PieceType[color][ii] != -1) {
-   	  col = PieceCol[color][ii];
-	  row = PieceRow[color][ii];
-	  Board[col][row] = (1-2*color)*(PieceType[color][ii]);
-	}
+          col = PieceCol[color][ii];
+          row = PieceRow[color][ii];
+          Board[col][row] = (1-2*color)*(PieceType[color][ii]);
+        }
       }
     }
 
@@ -2249,6 +2282,7 @@ function InitFEN(startingFEN) {
 
     HistEnPassant[StartPly-1] = newEnPassant;
     HistEnPassantCol[StartPly-1] = newEnPassantCol;
+    HistVar[StartPly] = 0;
   }
 }
 
@@ -2290,10 +2324,10 @@ function IsCheck(col, row, color) {
   for (ii = -2; ii <= 2; ii += 4) {
     for(jj = -1; jj <= 1; jj += 2) {
       if (SquareOnBoard(col+ii, row+jj)) {
-	if (Board[col+ii][row+jj] == sign*5) { return true; }
+        if (Board[col+ii][row+jj] == sign*5) { return true; }
       }
       if (SquareOnBoard(col+jj, row+ii)) {
-	if (Board[col+jj][row+ii] == sign*5) { return true; }
+        if (Board[col+jj][row+ii] == sign*5) { return true; }
       }
     }
   }
@@ -2309,21 +2343,21 @@ function IsCheck(col, row, color) {
   for (ii = -1; ii <= 1; ++ii) {
     for (jj = -1; jj <= 1; ++jj) {
       if ((ii !== 0) || (jj !== 0)) {
-	var checkCol  = col+ii;
-	var checkRow  = row+jj;
-	var thisPiece = 0;
+        var checkCol  = col+ii;
+        var checkRow  = row+jj;
+        var thisPiece = 0;
 
-	while (SquareOnBoard(checkCol, checkRow) && (thisPiece === 0)) {
-	  thisPiece = Board[checkCol][checkRow];
-	  if (thisPiece === 0){
-	    checkCol += ii;
-	    checkRow += jj;
-	  } else {
-	    if (thisPiece  == sign*2) { return true; }
-	    if ((thisPiece == sign*3) && ((ii === 0) || (jj === 0))) { return true; }
-	    if ((thisPiece == sign*4) && ((ii !== 0) && (jj !== 0))) { return true; }
-	  }
-	}
+        while (SquareOnBoard(checkCol, checkRow) && (thisPiece === 0)) {
+          thisPiece = Board[checkCol][checkRow];
+          if (thisPiece === 0){
+            checkCol += ii;
+            checkRow += jj;
+          } else {
+            if (thisPiece  == sign*2) { return true; }
+            if ((thisPiece == sign*3) && ((ii === 0) || (jj === 0))) { return true; }
+            if ((thisPiece == sign*4) && ((ii !== 0) && (jj !== 0))) { return true; }
+          }
+        }
       }
     }
   }
@@ -2425,39 +2459,71 @@ function MoveBackward(diff, scanOnly) {
       PieceRow[1-MoveColor][chgPiece] = HistRow[1][thisPly];
       PieceMoveCounter[1-MoveColor][chgPiece]--;
     }
+
+    CurrentVar = HistVar[thisPly];
   }
 
   if (scanOnly) { return; }
+
+  synchMoves();
 
   // old position reconstructed: refresh board
   RefreshBoard();
   HighlightLastMove();
 
+  autoScrollToCurrentMoveIfEnabled();
+
   // autoplay: restart timeout
   if (AutoPlayInterval) { clearTimeout(AutoPlayInterval); AutoPlayInterval = null; }
   if (isAutoPlayOn) {
-    if(goToPly >= StartPly) { AutoPlayInterval=setTimeout("MoveBackward(1)", Delay); }
+    if(goToPly >= StartPlyVar[CurrentVar]) { AutoPlayInterval=setTimeout("MoveBackward(1)", Delay); }
     else { SetAutoPlay(false); }
   }
+
   customFunctionOnMove();
 }
 
-function MoveForward(diff, scanOnly) {
+function MoveForward(diff, targetVar, scanOnly) {
+
+  if (typeof(targetVar) == "undefined") { targetVar = CurrentVar; }
 
   // CurrentPly counts from 1, starting position 0
   goToPly = CurrentPly + parseInt(diff,10);
 
-  if (goToPly > (StartPly + PlyNumber)) { goToPly = StartPly + PlyNumber; }
+  if (goToPly > StartPlyVar[targetVar] + PlyNumberVar[targetVar]) {
+    goToPly = StartPlyVar[targetVar] + PlyNumberVar[targetVar];
+  }
 
   // reach to selected move checking legality
   for(var thisPly = CurrentPly; thisPly < goToPly; ++thisPly) {
-    var move = Moves[thisPly];
+
+    if (targetVar !== CurrentVar) {
+      for (var ii = 0; ii < PredecessorsVars[targetVar].length; ii++) {
+        if (PredecessorsVars[targetVar][ii] === CurrentVar) { break; }
+      }
+      if (ii === PredecessorsVars[targetVar].length) {
+        myAlert("error: dont know how to reach variation " + targetVar + " from " + CurrentVar, true);
+        return;
+      } else {
+        nextVarStartPly = StartPlyVar[PredecessorsVars[targetVar][ii + 1]];
+        for (ii = ii+1; ii < PredecessorsVars[targetVar].length - 1; ii++) {
+          if (StartPlyVar[PredecessorsVars[targetVar][ii+1]] !== StartPlyVar[PredecessorsVars[targetVar][ii]] ) { break; }
+        }
+        nextVar = PredecessorsVars[targetVar][ii];
+      }
+    } else { nextVar = nextVarStartPly = -1; }
+
+    if (thisPly === nextVarStartPly) { CurrentVar = nextVar; }
+
+    if (typeof(move = MovesVar[CurrentVar][thisPly]) == "undefined") { break; }
+
     if (ParseLastMoveError = !ParseMove(move, thisPly)) {
       text = (Math.floor(thisPly / 2) + 1) + ((thisPly % 2) === 0 ? '. ' : '... ');
       myAlert('error: invalid ply ' + text + move + ' in game ' + (currentGame+1), true);
       break;
     }
     MoveColor = 1-MoveColor;
+
   }
 
   // new position: update ply count, then refresh board
@@ -2465,23 +2531,58 @@ function MoveForward(diff, scanOnly) {
 
   if (scanOnly) { return; }
 
+  synchMoves();
+
   RefreshBoard();
   HighlightLastMove();
+
+  autoScrollToCurrentMoveIfEnabled();
 
   // autoplay: restart timeout
   if (AutoPlayInterval) { clearTimeout(AutoPlayInterval); AutoPlayInterval = null; }
   if (ParseLastMoveError) { SetAutoPlay(false); }
   else if (thisPly == goToPly) {
     if (isAutoPlayOn) {
-      if (goToPly < StartPly + PlyNumber) {
+      if (goToPly < StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]) {
         AutoPlayInterval=setTimeout("MoveForward(1)", Delay);
       } else {
-        if (autoplayNextGame) { AutoPlayInterval=setTimeout("AutoplayNextGame()", Delay); }
+        if (autoplayNextGame && (CurrentVar === 0)) { AutoPlayInterval=setTimeout("AutoplayNextGame()", Delay); }
         else { SetAutoPlay(false); }
       }
     }
   }
+
   customFunctionOnMove();
+}
+
+lastSynchCurrentVar = -1;
+function synchMoves() {
+  if (CurrentVar === lastSynchCurrentVar) { return; }
+  Moves = new Array();
+  MoveComments = new Array();
+  for (var ii = 0; ii < PredecessorsVars[CurrentVar].length; ii++) {
+    start = StartPlyVar[PredecessorsVars[CurrentVar][ii]];
+    if (ii < PredecessorsVars[CurrentVar].length - 1) {
+      end = StartPlyVar[PredecessorsVars[CurrentVar][ii+1]];
+    } else {
+      end = StartPlyVar[PredecessorsVars[CurrentVar][ii]] + PlyNumberVar[PredecessorsVars[CurrentVar][ii]];
+    }
+    for (var jj = start; jj < end; jj++) {
+      Moves[jj] = MovesVar[PredecessorsVars[CurrentVar][ii]][jj];
+      if (theComment = MoveCommentsVar[PredecessorsVars[CurrentVar][ii]][jj]) {
+        MoveComments[jj] = theComment;
+      } else {
+        MoveComments[jj] = "";
+      }
+    }
+  }
+  if (theComment = MoveCommentsVar[PredecessorsVars[CurrentVar][ii-1]][jj]) {
+    MoveComments[jj] = theComment;
+  } else {
+    MoveComments[jj] = "";
+  }
+  PlyNumber = StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar] - StartPly;
+  lastSynchCurrentVar = CurrentVar;
 }
 
 function AutoplayNextGame() {
@@ -2498,7 +2599,7 @@ function AutoplayNextGame() {
 }
 
 function MoveToNextComment() {
-  for(ii=CurrentPly+1; ii<=StartPly+PlyNumber; ii++) {
+  for(ii=CurrentPly+1; ii<=StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]; ii++) {
     if (strippedMoveComment(ii)) { GoToMove(ii); break; }
   }
 }
@@ -2516,23 +2617,121 @@ function OpenGame(gameId) {
   ParseLastMoveError = false;
 
   if (LiveBroadcastDemo) {
-    if (gameDemoMaxPly[gameId] <= PlyNumber) { PlyNumber = gameDemoMaxPly[gameId]; }
+    if (gameDemoMaxPly[gameId] <= PlyNumber) { PlyNumber = PlyNumberVar[0] = gameDemoMaxPly[gameId]; }
   }
 
   PrintHTML();
 }
 
+var CurrentVar = -1;
+var lastVarWithNoMoves;
+var numberOfVars;
+var MovesVar;
+var MoveCommentsVar;
+var StartPlyVar;
+var PlyNumberVar;
+var CurrentVarStack;
+var PlyNumberStack;
+var PredecessorsVars;
+
+function initVar () {
+  MovesVar = new Array();
+  MoveCommentsVar = new Array();
+  StartPlyVar = new Array();
+  PlyNumberVar = new Array();
+  CurrentVar = -1;
+  lastVarWithNoMoves = false;
+  numberOfVars = 0;
+  CurrentVarStack = new Array();
+  PlyNumber = 1;
+  PlyNumberStack = new Array();
+  PredecessorsVars = new Array();
+  startVar();
+}
+
+function startVar() {
+  if (CurrentVar >= 0) {
+    CurrentVarStack.push(CurrentVar);
+    PlyNumberStack.push(PlyNumber);
+  }
+  CurrentVar = numberOfVars++;
+  PredecessorsVars[CurrentVar] = CurrentVarStack.slice(0);
+  PredecessorsVars[CurrentVar].push(CurrentVar);
+  MovesVar[CurrentVar] = new Array();
+  MoveCommentsVar[CurrentVar] = new Array();
+  if (lastVarWithNoMoves) {
+    myAlert("warning: malformed PGN data with variant " + CurrentVar + " starting before parent", true);
+  } else {
+    lastVarWithNoMoves = true;
+    PlyNumber -= 1;
+  }
+  MoveCommentsVar[CurrentVar][StartPly + PlyNumber] = "";
+  StartPlyVar[CurrentVar] = StartPly + PlyNumber;
+}
+
+function closeVar() {
+  if (StartPly + PlyNumber ===  StartPlyVar[CurrentVar]) {
+    lastVarWithNoMoves = false;
+    myAlert("warning: empty variation " + CurrentVar, false);
+  }
+  PlyNumberVar[CurrentVar] = StartPly + PlyNumber - StartPlyVar[CurrentVar];
+  for (var ii=StartPlyVar[CurrentVar]; ii<=StartPlyVar[CurrentVar]+PlyNumberVar[CurrentVar]; ii++) {
+    if (MoveCommentsVar[CurrentVar][ii]) {
+      MoveCommentsVar[CurrentVar][ii] = MoveCommentsVar[CurrentVar][ii].replace(/\s+/g, ' ');
+      MoveCommentsVar[CurrentVar][ii] = translateNAGs(MoveCommentsVar[CurrentVar][ii]);
+      MoveCommentsVar[CurrentVar][ii] = MoveCommentsVar[CurrentVar][ii].replace(/\s+$/g, '');
+    } else {
+      MoveCommentsVar[CurrentVar][ii] = '';
+    }
+  }
+  if (CurrentVarStack.length) {
+    CurrentVar = CurrentVarStack.pop();
+    PlyNumber = PlyNumberStack.pop();
+  } else {
+    myAlert("error: closeVar error", true);
+  }
+}
+
+function realParentVar(childVar) {
+  for (ii = PredecessorsVars[childVar].length - 1; ii > 0; ii--) {
+    if (StartPlyVar[PredecessorsVars[childVar][ii]] !== StartPlyVar[PredecessorsVars[childVar][ii-1]]) {
+      return PredecessorsVars[childVar][ii-1];
+    }
+  }
+  return -1;
+}
+
+function goToNextVariationSibling() {
+  if (CurrentPly === StartPly) { return; }
+  parentCurrentVar = realParentVar(CurrentVar);
+  for (var thisVar = (CurrentVar + 1) % numberOfVars; thisVar !== CurrentVar; thisVar = (thisVar + 1) % numberOfVars) {
+    if (StartPlyVar[CurrentVar] === CurrentPly -1 && PlyNumberVar[CurrentVar] > 0 && thisVar === parentCurrentVar) {
+      GoToMove(CurrentPly, thisVar);
+      break;
+    }
+    if (StartPlyVar[thisVar] === CurrentPly - 1) {
+      parentThisVar = realParentVar(thisVar);
+      if ((parentThisVar === CurrentVar || parentThisVar === parentCurrentVar) && PlyNumberVar[thisVar]) {
+        GoToMove(CurrentPly, thisVar);
+        break;
+      }
+    }
+  }
+}
+
 function ParsePGNGameString(gameString) {
 
-  var ss = gameString;
-  // remove PGN tags and spaces at the end
+  var ssRep, ss = gameString;
+  ss = ss.replace(/\[%pgn4web_variation (\d+)\]/g, "[%pgn4web_variation_ $1]");
   ss = ss.replace(pgnHeaderTagRegExpGlobal, '');
+  // replace empty variations with comments
+  while ((ssRep = ss.replace(/\((([\?!+#\s\r\n]|\$\d+|{[^}]*})*)\)/g, ' $1 ')) !== ss) { ss = ssRep; }
   ss = ss.replace(/^\s/, '');
   ss = ss.replace(/\s$/, '');
 
+  initVar ();
+
   PlyNumber = 0;
-  for (ii=0; ii<StartPly; ii++) { Moves[ii]=''; }
-  MoveComments[StartPly+PlyNumber]='';
 
   for (start=0; start<ss.length; start++) {
 
@@ -2553,9 +2752,9 @@ function ParsePGNGameString(gameString) {
           commentEnd++;
           if (commentEnd == ss.length) { break; }
         }
-        if (MoveComments[StartPly+PlyNumber].length>0) { MoveComments[StartPly+PlyNumber] += ' '; }
-        MoveComments[StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
-        start = commentEnd;
+        if (MoveCommentsVar[CurrentVar][StartPly+PlyNumber]) { MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' '; }
+        MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
+        start = commentEnd - 1;
         break;
 
       case '!':
@@ -2566,19 +2765,19 @@ function ParsePGNGameString(gameString) {
           commentEnd++;
           if (commentEnd == ss.length) { break; }
         }
-        if (MoveComments[StartPly+PlyNumber].length>0) { MoveComments[StartPly+PlyNumber] += ' '; }
-        MoveComments[StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
-        start = commentEnd;
+        if (MoveCommentsVar[CurrentVar][StartPly+PlyNumber]) { MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' '; }
+        MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
+        start = commentEnd - 1;
         break;
 
       case '{':
         commentStart = start+1;
         commentEnd = ss.indexOf('}',start+1);
         if (commentEnd > 0){
-          if (MoveComments[StartPly+PlyNumber].length>0) { MoveComments[StartPly+PlyNumber] += ' '; }
-          MoveComments[StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
+          if (MoveCommentsVar[CurrentVar][StartPly+PlyNumber]) { MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' '; }
+          MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
           start = commentEnd;
-        }else{
+        } else {
           myAlert('error: missing end comment char } while parsing game ' + (currentGame+1), true);
           return;
         }
@@ -2591,8 +2790,8 @@ function ParsePGNGameString(gameString) {
         commentEnd = ss.indexOf('\n',start+1);
         if (commentEnd < 0) { commentEnd = ss.length; }
         // dont store % lines as comments
-        // if (MoveComments[StartPly+PlyNumber].length>0) { MoveComments[StartPly+PlyNumber] += ' '; }
-        // MoveComments[StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
+        // if (MoveCommentsVar[CurrentVar][StartPly+PlyNumber]) { MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' '; }
+        // MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
         start = commentEnd;
         break;
 
@@ -2600,33 +2799,18 @@ function ParsePGNGameString(gameString) {
         commentStart = start+1;
         commentEnd = ss.indexOf('\n',start+1);
         if (commentEnd < 0) { commentEnd = ss.length; }
-        if (MoveComments[StartPly+PlyNumber].length>0) { MoveComments[StartPly+PlyNumber] += ' '; }
-        MoveComments[StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
+        if (MoveCommentsVar[CurrentVar][StartPly+PlyNumber]) { MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' '; }
+        MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
         start = commentEnd;
         break;
 
       case '(':
-        openVariation = 1;
-        variationStart = start;
-        variationEnd = start+1;
-        while ((openVariation > 0) && (variationEnd<ss.length)) {
-          nextOpen = ss.indexOf('(', variationEnd);
-          nextClosed = ss.indexOf(')', variationEnd);
-          if (nextClosed < 0) {
-            myAlert('error: missing end variation char ) while parsing game ' + (currentGame+1), true);
-            return;
-          }
-          if ((nextOpen >= 0) && (nextOpen < nextClosed)) {
-            openVariation++;
-            variationEnd = nextOpen+1;
-          } else {
-            openVariation--;
-            variationEnd = nextClosed+1;
-          }
-        }
-        if (MoveComments[StartPly+PlyNumber].length>0) { MoveComments[StartPly+PlyNumber] += ' '; }
-        MoveComments[StartPly+PlyNumber] += ss.substring(variationStart, variationEnd).replace(/([({])\s+/g, '$1').replace(/\s+([)}])/g, '$1');
-        start = variationEnd-1;
+        MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += '[%pgn4web_variation ' + numberOfVars + ']';
+        startVar();
+        break;
+
+      case ')':
+        closeVar();
         break;
 
       default:
@@ -2635,7 +2819,7 @@ function ParsePGNGameString(gameString) {
         for (ii=0; ii<searchThis.length; ii++) {
           if (ss.indexOf(searchThis[ii],start)==start) {
             start += searchThis[ii].length;
-            MoveComments[StartPly+PlyNumber] += ss.substring(start, ss.length).replace(/^\s*\{(.*)\}\s*$/, '$1');
+            MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ss.substring(start, ss.length).replace(/^\s*\{(.*)\}\s*$/, '$1');
             start = ss.length;
             break;
           }
@@ -2649,23 +2833,33 @@ function ParsePGNGameString(gameString) {
           while ((ss.charAt(start) == '.') || (ss.charAt(start) == ' ') || (ss.charAt(start) == '\n') || (ss.charAt(start) == '\r')){start++;}
         }
 
-        if ((end = start + ss.substr(start).search(/[\s${;(!?]/)) < start) { end = ss.length; }
+        if ((end = start + ss.substr(start).search(/[\s${;!?()]/)) < start) { end = ss.length; }
         move = ss.substring(start,end);
-        Moves[StartPly+PlyNumber] = ClearMove(move);
+        MovesVar[CurrentVar][StartPly+PlyNumber] = ClearMove(move);
+        lastVarWithNoMoves = false;
         if (ss.charAt(end) == ' ') { start = end; }
         else { start = end - 1; }
-        if (Moves[StartPly+PlyNumber] !== '') { // to cope with misformed PGN data
+        if (MovesVar[CurrentVar][StartPly+PlyNumber] !== '') { // to cope with misformed PGN data
           PlyNumber++;
-          MoveComments[StartPly+PlyNumber] = '';
+          MoveCommentsVar[CurrentVar][StartPly+PlyNumber] = '';
         }
         break;
     }
   }
   for (ii=StartPly; ii<=StartPly+PlyNumber; ii++) {
-    MoveComments[ii] = MoveComments[ii].replace(/\s+/g, ' ');
-    MoveComments[ii] = translateNAGs(MoveComments[ii]);
-    MoveComments[ii] = MoveComments[ii].replace(/\s+$/g, '');
+    if (MoveCommentsVar[CurrentVar][ii]) {
+      MoveCommentsVar[CurrentVar][ii] = MoveCommentsVar[CurrentVar][ii].replace(/\s+/g, ' ');
+      MoveCommentsVar[CurrentVar][ii] = translateNAGs(MoveCommentsVar[CurrentVar][ii]);
+      MoveCommentsVar[CurrentVar][ii] = MoveCommentsVar[CurrentVar][ii].replace(/\s+$/g, '');
+    } else {
+      MoveCommentsVar[CurrentVar][ii] = '';
+    }
   }
+
+  StartPlyVar[CurrentVar] = StartPly;
+  PlyNumberVar[CurrentVar] = PlyNumber;
+
+  lastSynchCurrentVar = -1;
 }
 
 
@@ -2799,7 +2993,7 @@ function ParseMove(move, plyCount) {
     if ((move.indexOf('O') >= 0) || (move.indexOf('o') >= 0) || (move.indexOf('0') >= 0)) {
       // long castling first: looking for o-o will get o-o-o too
       if (move.match('^[Oo0]-?[Oo0]-?[Oo0]$') !== null) {
-	mvIsCastling = 1;
+        mvIsCastling = 1;
         mvPiece = 1;
         mvPieceId = 0;
         mvPieceOnTo = 1;
@@ -2814,11 +3008,11 @@ function ParseMove(move, plyCount) {
         mvPiece = 1;
         mvPieceId = 0;
         mvPieceOnTo = 1;
-	mvFromCol = 4;
-	mvToCol = 6;
+        mvFromCol = 4;
+        mvToCol = 6;
         mvFromRow = 7*MoveColor;
         mvToRow = 7*MoveColor;
-	return CheckLegality('O-O', plyCount);
+        return CheckLegality('O-O', plyCount);
       }
       return false;
     } else { return false; }
@@ -2856,7 +3050,7 @@ function ParseMove(move, plyCount) {
   else {
     if ((mvPiece == 6) && (HistEnPassant[plyCount-1]) &&
         (mvToCol == HistEnPassantCol[plyCount-1]) &&
-	(mvToRow == 5-3*MoveColor)) {
+        (mvToRow == 5-3*MoveColor)) {
       mvCapture = 1;
     }
   }
@@ -2881,19 +3075,19 @@ function ParseMove(move, plyCount) {
     mvCapturedId = 15;
     while((mvCapturedId >= 0) && (mvCaptured < 0)) {
       if ((PieceType[1-MoveColor][mvCapturedId] >  0) &&
-	(PieceCol[1-MoveColor][mvCapturedId] == mvToCol) &&
-	(PieceRow[1-MoveColor][mvCapturedId] == mvToRow)) {
-	mvCaptured = PieceType[1-MoveColor][mvCapturedId];
+          (PieceCol[1-MoveColor][mvCapturedId] == mvToCol) &&
+          (PieceRow[1-MoveColor][mvCapturedId] == mvToRow)) {
+        mvCaptured = PieceType[1-MoveColor][mvCapturedId];
       } else { --mvCapturedId; }
     }
     if ((mvPiece == 6) && (mvCapturedId < 1) && (HistEnPassant[plyCount-1])) {
       mvCapturedId = 15;
       while((mvCapturedId >= 0) && (mvCaptured < 0)){
         if ((PieceType[1-MoveColor][mvCapturedId] == 6) &&
-	  (PieceCol[1-MoveColor][mvCapturedId] == mvToCol) &&
-	  (PieceRow[1-MoveColor][mvCapturedId] == 4-MoveColor)) {
-	  mvCaptured = PieceType[1-MoveColor][mvCapturedId];
-	} else { --mvCapturedId; }
+            (PieceCol[1-MoveColor][mvCapturedId] == mvToCol) &&
+            (PieceRow[1-MoveColor][mvCapturedId] == 4-MoveColor)) {
+          mvCaptured = PieceType[1-MoveColor][mvCapturedId];
+        } else { --mvCapturedId; }
       }
     }
   }
@@ -2994,13 +3188,14 @@ function searchPgnGameForm() {
 
 function fixCommentForDisplay(comment) {
   chessMovesRegExp = new RegExp("((\\d+(\\.|\\.\\.\\.|)\\s*|)(([KQRBNP]|)([a-h1-8]|)(x|)[a-h][1-8](=[QRNB]|)|O-O-O|O-O)([+#]|))", "g");
-  return comment.replace(chessMovesRegExp, '<SPAN STYLE="white-space: nowrap;"><SPAN CLASS="variation">$1</SPAN></SPAN>');
+  return comment.replace(chessMovesRegExp, '</SPAN><SPAN STYLE="white-space: nowrap;"><SPAN CLASS="variation">$1</SPAN></SPAN><SPAN CLASS="comment">');
 }
 
 var tableSize = 0;
 function PrintHTML() {
   var ii, jj;
   var text;
+  var theObject;
 
   // 8x8 table chessboard
 
@@ -3053,14 +3248,14 @@ function PrintHTML() {
       '<INPUT ID="startButton" TYPE="BUTTON" VALUE="&lt;&lt;" STYLE="';
     if (buttonSize > 0) { text += 'width: ' + buttonSize + 'px;'; }
     text += '"; CLASS="buttonControl" TITLE="go to game start" ' +
-      ' ID="btnGoToStart" onClick="javascript:GoToMove(StartPly)" ONFOCUS="this.blur()">' +
+      ' ID="btnGoToStart" onClick="GoToMove(StartPly);" ONFOCUS="this.blur();">' +
       '</TD>' +
       '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
       '</TD><TD>' +
       '<INPUT ID="backButton" TYPE="BUTTON" VALUE="&lt;" STYLE="';
     if (buttonSize > 0) { text += 'width: ' + buttonSize + 'px;'; }
     text += '"; CLASS="buttonControl" TITLE="move backward" ' +
-      ' ID="btnMoveBackward1" onClick="javascript:MoveBackward(1)" ONFOCUS="this.blur()">' +
+      ' ID="btnMoveBackward1" onClick="MoveBackward(1);" ONFOCUS="this.blur();">' +
       '</TD>' +
       '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
       '</TD><TD>';
@@ -3070,21 +3265,21 @@ function PrintHTML() {
     text += isAutoPlayOn ?
       '"; CLASS="buttonControlStop" TITLE="toggle autoplay (stop)" ' :
       '"; CLASS="buttonControlPlay" TITLE="toggle autoplay (start)" ';
-    text += ' ID="btnPlay" NAME="AutoPlay" onClick="javascript:SwitchAutoPlay()" ONFOCUS="this.blur()">' +
+    text += ' ID="btnPlay" NAME="AutoPlay" onClick="SwitchAutoPlay();" ONFOCUS="this.blur();">' +
       '</TD>' +
       '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
       '</TD><TD>' +
       '<INPUT ID="forwardButton" TYPE="BUTTON" VALUE="&gt;" STYLE="';
     if (buttonSize > 0) { text += 'width: ' + buttonSize + 'px;'; }
     text += '"; CLASS="buttonControl" TITLE="move forward" ' +
-      ' ID="btnMoveForward1" onClick="javascript:MoveForward(1)" ONFOCUS="this.blur()">' +
+      ' ID="btnMoveForward1" onClick="MoveForward(1);" ONFOCUS="this.blur();">' +
       '</TD>' +
       '<TD CLASS="buttonControlSpace" WIDTH="' + spaceSize + '">' +
       '</TD><TD>' +
       '<INPUT ID="endButton" TYPE="BUTTON" VALUE="&gt;&gt;" STYLE="';
     if (buttonSize > 0) { text += 'width: ' + buttonSize + 'px;'; }
     text += '"; CLASS="buttonControl" TITLE="go to game end" ' +
-      ' ID="btnGoToEnd" onClick="javascript:GoToMove(StartPly + PlyNumber)" ONFOCUS="this.blur()">' +
+      ' ID="btnGoToEnd" onClick="GoToMove(StartPlyVar[0] + PlyNumberVar[0], 0);" ONFOCUS="this.blur();">' +
       '</TD></TR></TABLE></FORM>';
 
     theObject.innerHTML = text;
@@ -3206,38 +3401,8 @@ function PrintHTML() {
   // game text
 
   if (theObject = document.getElementById("GameText")) {
-    text = '<SPAN ID="ShowPgnText">';
-    for (ii = StartPly; ii < StartPly+PlyNumber; ++ii) {
-      printedComment = false;
-      if (commentsIntoMoveText && (thisComment = strippedMoveComment(ii))) {
-        if (commentsOnSeparateLines && (ii > StartPly)) {
-          text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>';
-        }
-        text += '<SPAN CLASS="comment">' + fixCommentForDisplay(thisComment) + '</SPAN><SPAN CLASS="move notranslate"> </SPAN>';
-        if (commentsOnSeparateLines) {
-          text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>';
-        }
-        printedComment = true;
-      }
-      var moveCount = Math.floor(ii/2)+1;
-      text += '<SPAN STYLE="white-space: nowrap;">';
-      if (ii%2 === 0){
-        text += '<SPAN CLASS="move notranslate">' + moveCount + '.&nbsp;</SPAN>';
-      } else {
-        if ((printedComment) || (ii == StartPly)) { text += '<SPAN CLASS="move notranslate">' + moveCount + '...&nbsp;</SPAN>'; }
-      }
-      jj = ii+1;
-      text += '<A HREF="javascript:void(0);" ONCLICK="GoToMove(' + jj + ')" ' +
-        'CLASS="move notranslate" ID="Mv' + jj + '" ONFOCUS="this.blur()">' + Moves[ii];
-      if (commentsIntoMoveText) { text += basicNAGsMoveComment(jj); }
-      text += '</A></SPAN>' + '<SPAN CLASS="move notranslate"> </SPAN>';
-    }
-    if (commentsIntoMoveText && (thisComment = strippedMoveComment(StartPly+PlyNumber))) {
-      if (commentsOnSeparateLines) { text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>'; }
-      text += '<SPAN CLASS="comment">' + fixCommentForDisplay(thisComment) + '</SPAN><SPAN CLASS="move notranslate"> </SPAN>';
-    }
-    text += '</SPAN>';
-
+    variationTextDepth = -1;
+    text = '<SPAN ID="ShowPgnText">' + variationTextFromId(0); + '</SPAN>';
     theObject.innerHTML = text;
   }
 
@@ -3263,6 +3428,119 @@ function PrintHTML() {
       theObject.innerHTML = text;
       theObject = document.getElementById('searchPgnExpression');
       if (theObject) { theObject.value = lastSearchPgnExpression; }
+    }
+  }
+}
+
+var basicNAGs = /^[\?!+#\s]+/;
+function strippedMoveComment(plyNum, varId, addHtmlTags) {
+  if (typeof(addHtmlTags) == "undefined") { addHtmlTags = false; }
+  if (typeof(varId) == "undefined") { varId = CurrentVar; }
+  if (!MoveCommentsVar[varId][plyNum]) { return ""; }
+  return fixCommentForDisplay(MoveCommentsVar[varId][plyNum]).replace(/\[%pgn4web_variation \d+\]/g, function (m) { return variationTextFromTag(m, addHtmlTags); }).replace(/\[%[^\]]*\]\s*/g,'').replace(basicNAGs, '').replace(/^\s+$/,'');
+}
+
+function basicNAGsMoveComment(plyNum, varId) {
+  if (typeof(varId) == "undefined") { varId = CurrentVar; }
+  if (!MoveCommentsVar[varId][plyNum]) { return ""; }
+  thisBasicNAGs = MoveCommentsVar[varId][plyNum].replace(/\[%[^\]]*\]\s*/g,'').match(basicNAGs, '');
+  return thisBasicNAGs ? thisBasicNAGs[0].replace(/\s+(?!class=)/gi,'') : '';
+}
+
+function variationTextFromTag(variationTag, addHtmlTags) {
+  if (typeof(addHtmlTags) == "undefined") { addHtmlTags = false; }
+  var varId = variationTag.replace(/(\[%pgn4web_variation |\])/g, "");
+  if (isNaN(varId)) {
+    myAlert("error: issue parsing variation tag " + variationTag, true);
+    return "";
+  }
+  var text = variationTextFromId(varId);
+  if (text) {
+    if (addHtmlTags) { text = '</SPAN>' + text + '<SPAN CLASS="comment">'; }
+  } else { text = ''; }
+  return text;
+}
+
+var variationTextDepth;
+function variationTextFromId(varId) {
+  if (isNaN(varId) || varId < 0 || varId >= numberOfVars || typeof(StartPlyVar[varId]) == "undefined" || typeof(PlyNumberVar[varId]) == "undefined") {
+    myAlert("error: issue parsing variation id " + varId, true);
+    return "";
+  }
+  var text = ++variationTextDepth ? ('<SPAN CLASS="variation">' + (printedVariation ? ' ' : '') + (variationTextDepth > 1 ? '(' : '[')) + '</SPAN>' : '';
+  printedVariation = false;
+  for (var ii = StartPlyVar[varId]; ii < StartPlyVar[varId] + PlyNumberVar[varId]; ii++) {
+    printedComment = false;
+    if (commentsIntoMoveText && (thisComment = strippedMoveComment(ii, varId, true))) {
+      if (commentsOnSeparateLines && variationTextDepth === 0 && ii > StartPlyVar[varId]) {
+        text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>';
+      }
+      if (printedVariation) { text += '<SPAN CLASS="variation"> </SPAN>'; }
+      else { printedVariation = variationTextDepth > 0; }
+      text += '<SPAN CLASS="comment">' + thisComment + '</SPAN>';
+      if (commentsOnSeparateLines && variationTextDepth === 0) {
+        text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>';
+      }
+      printedComment = true;
+    }
+    if (printedComment || printedVariation) { text += '<SPAN CLASS="variation"> </SPAN>'; }
+    printedVariation = true;
+    text += '<SPAN STYLE="white-space: nowrap;">';
+    moveCount = Math.floor(ii/2)+1;
+    if (ii%2 === 0){
+      text += '<SPAN CLASS="' + (variationTextDepth > 0 ? 'variation' : 'move') + ' notranslate">' + moveCount + '.&nbsp;</SPAN>';
+    } else {
+      if ((printedComment) || (ii == StartPlyVar[varId])) {
+        text += '<SPAN CLASS="' + (variationTextDepth > 0 ? 'variation' : 'move') + ' notranslate">' + moveCount + '...&nbsp;</SPAN>';
+      }
+    }
+    var jj = ii+1;
+    text += '<A HREF="javascript:void(0);" ONCLICK="GoToMove(' + jj + ', ' + varId + ')" ' +
+      'CLASS="' + (variationTextDepth > 0 ? 'variation' : 'move') + ' notranslate"' +
+      'ID="Var' + varId + 'Mv' + jj + '" ONFOCUS="this.blur()">' + MovesVar[varId][ii];
+    if (commentsIntoMoveText) { text += basicNAGsMoveComment(jj, varId); }
+    text += '</A></SPAN>';
+  }
+  if (commentsIntoMoveText && (thisComment = strippedMoveComment(StartPlyVar[varId] + PlyNumberVar[varId], varId, true))) {
+    if (commentsOnSeparateLines && variationTextDepth === 0) {
+      text += '<DIV CLASS="comment" STYLE="line-height: 33%;">&nbsp;</DIV>';
+    }
+    text += (printedVariation ? '<SPAN CLASS="notranslate"> </SPAN>' : '') + '<SPAN CLASS="comment">' + thisComment + '</SPAN>';
+    printedComment = true;
+  }
+  text += variationTextDepth-- ? ('<SPAN CLASS="variation">' + (variationTextDepth ? ')' : ']') + '</SPAN>') : '';
+  printedVariation = true;
+  return text;
+}
+
+
+// undocumented API to autoscroll gane text to show current move
+// enable with "enableAutoScrollToCurrentMove(objectId)", with objectId as the game text container
+// add onresize="autoScrollToCurrentMoveIfEnabled" to the body tag for autoscrolling on page resize
+
+function enableAutoScrollToCurrentMove(objectId) { autoScrollToCurrentMove_objectId = objectId; }
+function disableAutoScrollToCurrentMove() { autoScrollToCurrentMove_objectId = ""; }
+function toggleAutoScrollToCurrentMove(objectId) { autoScrollToCurrentMove_objectId = autoScrollToCurrentMove_objectId ? "" : objectId; }
+
+var autoScrollToCurrentMove_objectId = "";
+function autoScrollToCurrentMoveIfEnabled() { autoScrollToCurrentMove(autoScrollToCurrentMove_objectId); }
+
+function objectOffsetVeryTop(object) {
+  for (offset = object.offsetTop; object = object.offsetParent; /* */) { offset += object.offsetTop + object.clientTop; }
+  return offset;
+}
+
+function autoScrollToCurrentMove(objectId) {
+  if (objectId && (theContainerObject = document.getElementById(objectId))) {
+    if (CurrentPly == StartPly) { theContainerObject.scrollTop = 0; }
+    else if (theMoveObject = document.getElementById('Var' + CurrentVar + 'Mv' + CurrentPly)) {
+      theContainerObjectOffsetVeryTop = objectOffsetVeryTop(theContainerObject);
+      theMoveObjectOffsetVeryTop = objectOffsetVeryTop(theMoveObject);
+      if ((theMoveObjectOffsetVeryTop + theMoveObject.offsetHeight >
+           theContainerObjectOffsetVeryTop + theContainerObject.scrollTop + theContainerObject.clientHeight) ||
+          (theMoveObjectOffsetVeryTop < theContainerObjectOffsetVeryTop + theContainerObject.scrollTop)) {
+        theContainerObject.scrollTop = theMoveObjectOffsetVeryTop - theContainerObjectOffsetVeryTop;
+      }
     }
   }
 }
@@ -3311,9 +3589,9 @@ function SetAutoPlay(vv) {
         document.GameButtonsForm.AutoPlay.className = "buttonControlStop";
       }
     }
-    if (CurrentPly < StartPly+PlyNumber) { AutoPlayInterval=setTimeout("MoveForward(1)", Delay); }
+    if (CurrentPly < StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]) { AutoPlayInterval=setTimeout("MoveForward(1)", Delay); }
     else {
-      if (autoplayNextGame) { AutoPlayInterval=setTimeout("AutoplayNextGame()", Delay); }
+      if (autoplayNextGame && (CurrentVar === 0)) { AutoPlayInterval=setTimeout("AutoplayNextGame()", Delay); }
       else { SetAutoPlay(false); }
     }
   } else {
@@ -3389,6 +3667,8 @@ function StoreMove(thisPly) {
   } else {
     HistPieceId[1][thisPly] = -1;
   }
+
+  HistVar[thisPly+1] = CurrentVar;
 
   // update "square from" and captured square (not necessarily "square to" e.g. en-passant)
   Board[PieceCol[MoveColor][mvPieceId]][PieceRow[MoveColor][mvPieceId]] = 0;

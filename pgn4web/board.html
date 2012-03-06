@@ -66,24 +66,25 @@ body {
 }
 
 .move,
-.moveOn,
+.variation,
 .lastMove {
   line-height: 1.4em;
   text-decoration: none;
 }
 
-.move,
-.moveOn {
+.move {
   color: black;
 }
 
-.moveOn {
-  background: #DAF4D7;
-}
-
-.comment {
+.comment,
+.variation {
   color: gray;
   line-height: 1.4em;
+}
+
+.moveOn,
+.variationOn {
+  background: #DAF4D7;
 }
 
 </style>
@@ -193,7 +194,7 @@ var pieceSizeOptions = new Array(20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
 function defaultPieceSize(squareSize) {
   targetPieceSize = Math.floor(0.8 * squareSize);
   for (ii=(pieceSizeOptions.length-1); ii>=0; ii--) {
-	  if (pieceSizeOptions[ii] <= targetPieceSize) { return pieceSizeOptions[ii]; }
+    if (pieceSizeOptions[ii] <= targetPieceSize) { return pieceSizeOptions[ii]; }
   }
   return pieceSizeOptions[0];
 }
@@ -395,6 +396,11 @@ if ((init_Game = gup("initialGame")) === "") {
 }
 SetInitialGame(init_Game);
 
+// use init_Variation to avoid overlap with existing global var initialVariation in pgn4web.js
+if ((init_Variation = gup("initialVariation")) !== "") {
+  SetInitialVariation(init_Variation);
+}
+
 // use init_Halfmove to avoid overlap with existing global var initialHalfmove in pgn4web.js
 always_Halfmove = false;
 if ((init_Halfmove = gup("initialHalfmove")) === "") {
@@ -539,7 +545,7 @@ if ((pgnData = gup("pgnData")) !== "") {
 }
 
 if ((pgnData !== "") && ((newPgnEncoded !== "") || (newPgnText !== "") ||
-			 (fenString !== "") || (newPgnId !==""))) {
+  (fenString !== "") || (newPgnId !==""))) {
   myAlert("warning: pgnData value superseeds pgnEncoded, pgnText, pgnId and/or fenString values.", false);
 }
 
@@ -577,26 +583,31 @@ if ((textMargin = gup("textMargin")) === "") { textMargin = 0; }
 else { textMargin = parseInt(textMargin, 10); }
 
 frameHeight = gup("frameHeight");
-// next statement is for compatibility with older version of board/board-generator
-if (frameHeight.match("pct") || frameHeight.match("p")) { frameHeight = ""; textHeight = "100%"; }
 switch (frameHeight) {
   case "b":
   case "board":
     frameHeight = "";
     fixFrameHeightToBoard = true;
     break;
+  case "p":
+  case "page":
+    if (window.innerHeight) { frameHeight = window.innerHeight; }
+    else if (document.documentElement && document.documentElement.clientHeight) { frameHeight = document.documentElement.clientHeight; }
+    else if (document.body && document.body.clientHeight) { frameHeight = document.body.clientHeight; }
+    else { frameHeight = ""; }
+    fixFrameHeightToBoard = false;
+    break;
   case "":
     fixFrameHeightToBoard = false;
     break;
   default:
     frameHeight = parseInt(frameHeight, 10);
+    if (isNaN(frameHeight)) { frameHeight = ""; }
     fixFrameHeightToBoard = false;
     break;
 }
 
 frameWidth = gup("frameWidth");
-// next statement is for compatibility with older version of board/board-generator
-if (frameWidth.match("pct") || frameWidth.match("p")) { frameWidth = "page"; }
 switch (frameWidth) {
   case "b":
   case "board":
@@ -614,6 +625,7 @@ switch (frameWidth) {
     break;
   default:
     frameWidth = parseInt(frameWidth, 10);
+    if (isNaN(frameWidth)) { frameWidth = ""; }
     fixFrameWidthToBoard = false;
     break;
 }
@@ -631,7 +643,7 @@ else {
   testMinutes = refreshMinutes + "";
   if ((testMinutes.match(/[^0-9\.]/)) || (refreshMinutes === 0)) {
     myAlert("error: refreshMinutes parameter must be a positive number.\n" +
-	    "Supplied " + testMinutes + "; live refresh disabled.", true);
+      "Supplied " + testMinutes + "; live refresh disabled.", true);
     refreshMinutes = 0;
   }
 }
@@ -666,6 +678,7 @@ if (gup("help") !== "") {
   document.write(" - refreshDemo = if set true sets live demo mode (default false)\n");
   document.write("\n");
   document.write(" - initialGame = first | last | random | a number | a search expression (default first)\n");
+  document.write(" - initialVariation = a number (default 0)\n");
   document.write(" - initialHalfmove = start | end | random | comment | a number (default start)\n");
   document.write("\n");
   document.write(" - autoplayMode = game (autoplay first game once) | loop (loops through games continiously) | none (default game)\n");
@@ -701,7 +714,7 @@ if (gup("help") !== "") {
   document.write("\n");
   document.write(" - backgroundColorHex = page background color hex code, like FF0000, 'transparent' to use the parent's background color (default FFFFFF)\n");
   document.write(" - horizontalLayout = if set true, shows header/moves text at the right of the board, below otherwise (default false)\n");
-  document.write(" - frameHeight = set height of the overall frame, as a number or as 'board' overriding textHeight (default not set)\n");
+  document.write(" - frameHeight = set height of the overall frame, as a number, as 'board' or as 'page', overriding textHeight (default not set)\n");
   document.write(" - frameWidth = set width of the overall frame, as a number, as 'board' or as 'page', overriding textWidth (default not set)\n");
   document.write(" - framePadding = padding within the frame (default 0)\n");
   document.write("\n");
@@ -725,7 +738,7 @@ newStyleSheet = '<style type="text/css"> \n';
 
 if ((movesDisplay == "figurine") || (movesDisplay == "nosymbols")) {
   newStyleSheet += 'body, .header, .comment { font-family: \'pgn4web Liberation Sans\', sans-serif; } \n';
-  newStyleSheet += '.move, .moveOn, .variation, .lastMove { font-family: \'pgn4web ChessSansPiratf\', \'pgn4web Liberation Sans\', sans-serif; } \n';
+  newStyleSheet += '.move, .variation, .lastMove { font-family: \'pgn4web ChessSansPiratf\', \'pgn4web Liberation Sans\', sans-serif; } \n';
 }
 
 newStyleSheet += 'body { background: ' + backgroundColor + '; padding: ' + framePadding + '; } \n';
@@ -806,22 +819,20 @@ if (highlightMode == 'border') {
       '} \n';
   }
 
-  if (!fontMovesSize.match(/[^0-9]/)) { fontMovesSize += 'px'; }
-  newStyleSheet += '.move { color: ' + fontMovesColor + '; font-size: ' + fontMovesSize + '; } \n';
-
-  if (!fontMovesSize.match(/[^0-9]/)) { fontMovesSize += 'px'; }
-  newStyleSheet += '.moveOn { ' +
-                   ' background: ' + (highlightMoveColor == 'none' ? backgroundColor : highlightMoveColor) + '; ' +
-                   ' color: ' + fontMovesColor + '; font-size: ' + fontMovesSize + '; ' +
-                   '} \n';
-
   if (!fontHeaderSize.match(/[^0-9]/)) { fontHeaderSize += 'px'; }
   newStyleSheet += '.header { color: ' + fontHeaderColor + '; font-size: ' + fontHeaderSize + '; } \n';
 
+  if (!fontMovesSize.match(/[^0-9]/)) { fontMovesSize += 'px'; }
+  newStyleSheet += '.move { color: ' + fontMovesColor + '; font-size: ' + fontMovesSize + '; } \n';
+
   if (!fontCommentsSize.match(/[^0-9]/)) { fontCommentsSize += 'px'; }
-  newStyleSheet += '.comment { ' +
-                   'color: ' + fontCommentsColor +
-                   '; font-size: ' + (fontCommentsSize == 'moves' ? fontMovesSize : fontCommentsSize) + '; ' +
+  newStyleSheet += '.comment, .variation { ' +
+                   ' color: ' + fontCommentsColor + ';' +
+                   ' font-size: ' + (fontCommentsSize == 'moves' ? fontMovesSize : fontCommentsSize) + '; ' +
+                   '} \n';
+
+  newStyleSheet += '.moveOn, .variationOn { ' +
+                   ' background: ' + (highlightMoveColor == 'none' ? backgroundColor : highlightMoveColor) + '; ' +
                    '} \n';
 
   if ((controlBackgroundColor != 'default') && (controlBackgroundColor != '#default')) {
@@ -926,7 +937,7 @@ function display_header_moves() {
                    "; margin-right: 3%;' id=GameResult></div>");
     document.write("</td><td align=right>");
     document.write("<div class='header headerLive' style='white-space: nowrap; margin-right: " + textMargin +
-		   "; margin-left: 3%;'><span class='lastMove'>&nbsp;<span class='NAGs'>&nbsp;</span><span id=GameLastMove></span></span></div>");
+                   "; margin-left: 3%;'><span class='lastMove'>&nbsp;<span class='NAGs'>&nbsp;</span><span id=GameLastMove></span></span></div>");
     document.write("</td></tr></table>");
   }
 
@@ -957,7 +968,7 @@ function display_header_moves() {
                    "; margin-right: 3%;' id=GameResult></div>");
     document.write("</td><td align=right>");
     document.write("<div class='header' style='white-space: nowrap; margin-right: " + textMargin +
-		    "; margin-left: 3%;'><span id=GameEvent></span><span id=roundDetails></span></div>");
+                   "; margin-left: 3%;'><span id=GameEvent></span><span id=roundDetails></span></div>");
     document.write("</td></tr></table>");
   }
 
@@ -1049,7 +1060,7 @@ function customFunctionOnPgnTextLoad() {
       if (frameHeight === "") { theObject.style.height = textHeight; }
       else {
        boardHeadermovesPaddingHeight = document.getElementById("boardHeadermovesPadding") ? document.getElementById("boardHeadermovesPadding").offsetHeight : 0;
-	theObject.style.height = frameHeight - boardHeight - 2 * framePadding - boardHeadermovesPaddingHeight;
+       theObject.style.height = frameHeight - boardHeight - 2 * framePadding - boardHeadermovesPaddingHeight;
       }
     }
   }
@@ -1065,8 +1076,6 @@ function customFunctionOnPgnTextLoad() {
       GoToInitialHalfmove();
     }
   }
-
-  autoScrollToCurrentMoveIfEnabled();
 
   if (gup("showHeightWidth") !== "") {
     myAlert("info: board width=" + boardWidth + " height=" + boardHeight, false);
@@ -1124,9 +1133,9 @@ function customFunctionOnPgnGameLoad() {
            ((gameBlack[currentGame] != undefined) && (gameBlack[currentGame] !== ""))   ||
            ((gameResult[currentGame] != undefined) && (gameResult[currentGame] !== "")) )  &&
          ( ((gameEvent[currentGame] != undefined) && (gameEvent[currentGame] !== ""))   ||
-	   ((gameRound[currentGame] != undefined) && (gameRound[currentGame] !== "") &&
-	    (gameRound[currentGame] != "?") && (gameRound[currentGame] != "*"))        ||
-	   ((gameSite[currentGame] != undefined) && (gameSite[currentGame] !== ""))     ||
+           ((gameRound[currentGame] != undefined) && (gameRound[currentGame] !== "") &&
+            (gameRound[currentGame] != "?") && (gameRound[currentGame] != "*"))        ||
+           ((gameSite[currentGame] != undefined) && (gameSite[currentGame] !== ""))     ||
            ((gameDate[currentGame] != undefined) && (gameDate[currentGame] !== "")) ) ) {
       theObject.style.paddingBottom = "0.33em";
     } else {
@@ -1139,9 +1148,9 @@ function customFunctionOnPgnGameLoad() {
          ((gameBlack[currentGame] != undefined) && (gameBlack[currentGame] !== ""))   ||
          ((gameResult[currentGame] != undefined) && (gameResult[currentGame] !== "")) ||
          ((gameEvent[currentGame] != undefined) && (gameEvent[currentGame] !== ""))   ||
-	 ((gameRound[currentGame] != undefined) && (gameRound[currentGame] !== "") &&
-	  (gameRound[currentGame] != "?") && (gameRound[currentGame] != "*"))         ||
-	 ((gameSite[currentGame] != undefined) && (gameSite[currentGame] !== ""))     ||
+         ((gameRound[currentGame] != undefined) && (gameRound[currentGame] !== "") &&
+          (gameRound[currentGame] != "?") && (gameRound[currentGame] != "*"))         ||
+         ((gameSite[currentGame] != undefined) && (gameSite[currentGame] !== ""))     ||
          ((gameDate[currentGame] != undefined) && (gameDate[currentGame] !== "")) ) {
       theObject.style.display = "inline";
     } else {
@@ -1160,46 +1169,14 @@ function customFunctionOnPgnGameLoad() {
 //     }
 //   }
 
-  autoScrollToCurrentMoveIfEnabled();
 }
 
-function customFunctionOnMove() {
-  autoScrollToCurrentMoveIfEnabled();
-}
-
-var autoScrollToCurrentMoveFlag = true;
-function enableAutoScrollToCurrentMoveFlag() { autoScrollToCurrentMoveFlag = true; }
-function disableAutoScrollToCurrentMoveFlag() { autoScrollToCurrentMoveFlag = false; }
-function toggleAutoScrollToCurrentMoveFlag() { autoScrollToCurrentMoveFlag = !autoScrollToCurrentMoveFlag; }
+enableAutoScrollToCurrentMove("headerMoves");
 
 // G5
-boardShortcut("G5", "toggle auto-scroll moves text to current move", toggleAutoScrollToCurrentMoveFlag);
+boardShortcut("G5", "toggle auto-scroll moves text to current move", function(){ toggleAutoScrollToCurrentMove('headerMoves'); });
 // H5
-boardShortcut("H5", "scroll moves text to current move", autoScrollToCurrentMove);
-
-function objectOffsetVeryTop(object) {
-  for (offset = object.offsetTop; object = object.offsetParent; offset += object.offsetTop + object.clientTop) {}
-  return offset;
-}
-
-function autoScrollToCurrentMoveIfEnabled() {
-  if (autoScrollToCurrentMoveFlag) { autoScrollToCurrentMove(); }
-}
-
-function autoScrollToCurrentMove() {
-  if (theContainerObject = document.getElementById("headerMoves")) {
-    if (CurrentPly == StartPly) { theContainerObject.scrollTop = 0; }
-    else if (theMoveObject = document.getElementById('Mv' + CurrentPly)) {
-      theContainerObjectOffsetVeryTop = objectOffsetVeryTop(theContainerObject);
-      theMoveObjectOffsetVeryTop = objectOffsetVeryTop(theMoveObject);
-      if ((theMoveObjectOffsetVeryTop + theMoveObject.offsetHeight >
-           theContainerObjectOffsetVeryTop + theContainerObject.scrollTop + theContainerObject.clientHeight) ||
-          (theMoveObjectOffsetVeryTop < theContainerObjectOffsetVeryTop + theContainerObject.scrollTop)) {
-        theContainerObject.scrollTop = theMoveObjectOffsetVeryTop - theContainerObjectOffsetVeryTop;
-      }
-    }
-  }
-}
+boardShortcut("H5", "scroll moves text to current move", function(){ autoScrollToCurrentMove('headerMoves'); });
 
 var boardGeneratorWin=null;
 function customShortcutKey_Shift_0() {
