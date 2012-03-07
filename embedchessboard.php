@@ -207,11 +207,11 @@ class pgnBBCode {
 		$replacement .= "&amp;md=" . rawurlencode($movesDisplay);
 		$replacement .= "&amp;tm=13";
 		$replacement .= "&amp;fhch=" . rawurlencode(get_option_with_default('embedchessboard_header_text_color'));
-		$replacement .= "&amp;fhs=80p";
+		$replacement .= "&amp;fhs=14";
 		$replacement .= "&amp;fmch=" . rawurlencode(get_option_with_default('embedchessboard_moves_text_color'));
 		$replacement .= "&amp;fcch=" . rawurlencode(get_option_with_default('embedchessboard_comments_text_color'));
 		$replacement .= "&amp;hmch=" . rawurlencode(get_option_with_default('embedchessboard_move_highlight_color'));
-		$replacement .= "&amp;fms=80p&amp;fcs=m&amp;cd=i";
+		$replacement .= "&amp;fms=14&amp;fcs=m&amp;cd=i";
 		$replacement .= "&amp;bch=" . rawurlencode(get_option_with_default('embedchessboard_background_color'));
 		$replacement .= "&amp;fp=13";
 		$replacement .= "&amp;hl=" . rawurlencode($horizontalLayout);
