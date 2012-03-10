@@ -22,7 +22,7 @@ Tag parameters:
 
  * display=horizontal|vertical
  * height=auto|*number*
- * showMoves=figurine|text|hidden
+ * showMoves=figurine|text|puzzle|hidden
  * initialGame=first|last|random|*number*
  * initialVariation=*number*
  * initialHalfmove=start|end|random|comment|*number*

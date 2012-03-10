@@ -36,7 +36,7 @@ Contact email: pgn4web@casaschi.net
 Features:
 - display chess games form a PGN file on a dynamic chessboard on your
   webpage or blog
-- full support for viewing comments and browsing game variations
+- full support for browsing game variations and reviewing comments
 - shortcut keys for navigating through the game, for selecting the
   game from the file and much more; also uses chessboard squares as
   input buttons (hit escape for help)
@@ -120,7 +120,7 @@ Example:
     SetAutoplayNextGame(false); // if set, move to the next game at the end of the current game during autoplay
     SetInitialGame(1); // number of game to be shown at load, from 1 (default); values (keep the quotes) of "first", "last", "random" are accepted; other string values assumed as PGN search string
     SetInitialVariation(0); // halfmove number to be shown at load, 0 (default) for main variation
-    SetInitialHalfmove(0,false); // halfmove number to be shown at load, 0 (default) for start position; values (keep the quotes) of "start", "end", "random" and "comment" (go to first comment) are also accepted. Second parameter if true applies the setting to every selected game instead of startup only
+    SetInitialHalfmove(0,false); // halfmove number to be shown at load, 0 (default) for start position; values (keep the quotes) of "start", "end", "random", "comment" (go to first comment or variation), "variation" (go to the first variation) are also accepted. Second parameter if true applies the setting to every selected game instead of startup only
     SetShortcutKeysEnabled(false);
 
     SetLiveBroadcast(1, false, false, false); // set live broadcast; parameters are delay (refresh delay in minutes, 0 means no broadcast, default 0) alertFlag (if true, displays debug error messages, default false) demoFlag (if true starts broadcast demo mode, default false) stepFlag (if true, autoplays updates in steps, default false)
@@ -418,6 +418,9 @@ specifically:
   running clock
 - allows parsing of generic comment tags using the function
   customPgnCommentTag()
+
+pgn4web also support null moves in the "--" representation used by a number
+of chess softwares such as scid and chessbase.
 
 Please email me for review any PGN file that pgn4web fails parsing correctly.
 

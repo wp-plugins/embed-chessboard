@@ -201,8 +201,6 @@ function handlekey(e) {
     case 17: // ctrl
     case 18: // alt
     case 32: // space
-    case 33: // page-up
-    case 34: // page-down
     case 35: // end
     case 36: // home
     case 45: // insert
@@ -245,12 +243,14 @@ function handlekey(e) {
       else { GoToMove(StartPlyVar[0] + PlyNumberVar[0], 0); }
       return stopKeyProp(e);
 
+    case 33: // page-up
     case 85: // u
-      MoveToPrevComment();
+      MoveToPrevComment(e.shiftKey);
       return stopKeyProp(e);
 
+    case 34: // page-down
     case 73: // i
-      MoveToNextComment();
+      MoveToNextComment(e.shiftKey);
       return stopKeyProp(e);
 
     case 83: // s
@@ -527,7 +527,7 @@ boardShortcut("C3", "load previous game", function(){ Init(currentGame - 1); });
 // D3
 boardShortcut("D3", "load random game", function(){ if (numberOfGames > 1) { Init(Math.floor(Math.random()*numberOfGames)); } });
 // E3
-boardShortcut("E3", "load random game at random position", function(){ Init(Math.floor(Math.random()*numberOfGames)); GoToMove(StartPly + Math.floor(Math.random()*(StartPly + PlyNumber + 1))); });
+boardShortcut("E3", "load random game at random position", function(){ Init(Math.floor(Math.random()*numberOfGames)); GoToMove(StartPlyVar[0] + Math.floor(Math.random()*(StartPlyVar[0] + PlyNumberVar[0] + 1)), 0); });
 // F3
 boardShortcut("F3", "load next game", function(){ Init(currentGame + 1); });
 // G3
@@ -547,13 +547,13 @@ boardShortcut("E2", "autoplay 3 seconds", function(){ SetAutoplayDelayAndStart( 
 // F2
 boardShortcut("F2", "autoplay 5 seconds", function(){ SetAutoplayDelayAndStart( 5*1000); });
 // G2
-boardShortcut("G2", "autoplay 10 seconds", function(){ SetAutoplayDelayAndStart(10*1000); });
+boardShortcut("G2", "cycle through alternative variations", function(){ goToNextVariationSibling(); });
 // H2
-boardShortcut("H2", "autoplay 30 seconds", function(){ SetAutoplayDelayAndStart(30*1000); });
+boardShortcut("H2", "autoplay 15 seconds", function(){ SetAutoplayDelayAndStart(15*1000); });
 // A1
 boardShortcut("A1", "go to game start", function(){ GoToMove(StartPlyVar[0], 0); });
 // B1
-boardShortcut("B1", "go to previous comment", function(){ MoveToPrevComment(); });
+boardShortcut("B1", "go to previous comment or variation", function(){ MoveToPrevComment(); });
 // C1
 boardShortcut("C1", "move 6 half-moves backward", function(){ MoveBackward(6); });
 // D1
@@ -563,7 +563,7 @@ boardShortcut("E1", "move forward", function(){ MoveForward(1); });
 // F1
 boardShortcut("F1", "move 6 half-moves forward", function(){ MoveForward(6); });
 // G1
-boardShortcut("G1", "go to next comment", function(){ MoveToNextComment(); });
+boardShortcut("G1", "go to next comment or variation", function(){ MoveToNextComment(); });
 // H1
 boardShortcut("H1", "go to game end", function(){ GoToMove(StartPlyVar[0] + PlyNumberVar[0], 0); });
 
@@ -845,6 +845,7 @@ var mvPieceId = -1;
 var mvPieceOnTo = -1;
 var mvCaptured = -1;
 var mvCapturedId = -1;
+var mvIsNull = 0;
 
 Board = new Array(8);
 for(i=0; i<8; ++i) { Board[i] = new Array(8); }
@@ -883,6 +884,9 @@ HistEnPassant = new Array();
 HistEnPassant[0] = false;
 HistEnPassantCol = new Array();
 HistEnPassantCol[0] = -1;
+
+HistNull = new Array();
+HistNull[0] = 0;
 
 var FenPieceName = "KQRBNP";
 var PieceCode = new Array(); // IE needs an array to work with [index]
@@ -928,6 +932,9 @@ var emptyPgnHeader = '[Event ""]\n[Site ""]\n[Date ""]\n[Round ""]\n[White ""]\n
 var templatePgnHeader = '[Event "?"]\n[Site "?"]\n[Date "?"]\n[Round "?"]\n[White "?"]\n[Black "?"]\n[Result "?"]\n';
 var alertPgnHeader = '[Event ""]\n[Site ""]\n[Date ""]\n[Round ""]\n[White ""]\n[Black ""]\n[Result ""]\n\n{error: click on the top left chessboard square for debug info}';
 
+var pgn4webVariationRegExp       = /\[%pgn4web_variation (\d+)\]/;
+var pgn4webVariationRegExpGlobal = /\[%pgn4web_variation (\d+)\]/g;
+
 var gameSelectorHead = ' ...';
 var gameSelectorMono = true;
 var gameSelectorNum = false;
@@ -945,6 +952,11 @@ function CheckLegality(what, plyCount) {
   var start;
   var end;
   var isCheck;
+
+  if (what == '--') {
+    StoreMove(plyCount);
+    return true;
+  }
 
   // castling move?
   if (what == 'O-O') {
@@ -1193,6 +1205,18 @@ function ClearMove(move) {
 
 function GoToMove(thisPly, thisVar) {
   if (typeof(thisVar) == "undefined") { thisVar = CurrentVar; }
+  else {
+    if (thisVar < 0) { thisVar = numberOfVars + thisVar; }
+    if (thisVar < 0) { thisVar = 0; }
+    else if (thisVar >= numberOfVars) { thisVar = numberOfVars - 1; }
+  }
+  if (thisPly < 0) { thisPly = StartPlyVar[thisVar] + PlyNumberVar[thisVar] + 1 + thisPly; }
+  if (thisPly < 0) {
+    thisPly = 0;
+  } else if (thisPly >= StartPlyVar[thisVar] + PlyNumberVar[thisVar]) {
+    thisPly = StartPlyVar[thisVar] + PlyNumberVar[thisVar];
+  }
+
   if (thisVar === CurrentVar) {
     var diff = thisPly - CurrentPly;
     if (diff > 0) { MoveForward(diff); }
@@ -1377,7 +1401,7 @@ function HighlightLastMove() {
     oldAnchorName = anchorName;
 
     if (highlightOption) {
-      if (showThisMove < StartPly) {
+      if ((showThisMove < StartPly) || HistNull[showThisMove]) {
         highlightColFrom = highlightRowFrom = -1;
         highlightColTo   = highlightRowTo   = -1;
       } else {
@@ -1943,18 +1967,13 @@ function GoToInitialHalfmove() {
       GoToMove(StartPlyVar[initialVariation] + Math.floor(Math.random()*(StartPlyVar[initialVariation] + PlyNumberVar[initialVariation])), initialVariation);
       break;
     case "comment":
-      GoToMove(0);
-      MoveToNextComment();
+    case "variation":
+      GoToMove(0, initialVariation);
+      MoveToNextComment(initialHalfmove == "variation");
       break;
     default:
-      if (isNaN(initialHalfmove)) { initialHalfmove = 0; }
-      initialHalfmove = parseInt(initialHalfmove,10);
-      initialHalfmove = initialHalfmove < 0 ? -Math.floor(-initialHalfmove) : Math.floor(initialHalfmove);
-      if (initialHalfmove < -3) { initialHalfmove = 0; }
-      if (initialHalfmove == -3) { GoToMove(StartPlyVar[initialVariation] + PlyNumberVar[initialVariation], initialVariation); }
-      else if (initialHalfmove == -2) { GoToMove(0, initialVariation); MoveToNextComment(); }
-      else if (initialHalfmove == -1) { GoToMove(StartPlyVar[initialVariation] + Math.floor(Math.random()*(StartPlyVar[initialVariation] + PlyNumberVar[initialVariation])), initialVariation); }
-      else { GoToMove(Math.floor(initialHalfmove), initialVariation); }
+      if (isNaN(initialHalfmove = parseInt(initialHalfmove, 10))) { initialHalfmove = 0; }
+      GoToMove(initialHalfmove, initialVariation);
       break;
   }
 }
@@ -1981,13 +2000,15 @@ function Init(nextGame){
   OpenGame(currentGame);
 
   CurrentPly = StartPly;
-  if (firstStart || alwaysInitialHalfmove) { GoToInitialHalfmove(); }
-  else {
-    autoScrollToCurrentMoveIfEnabled();
+  if (firstStart || alwaysInitialHalfmove) {
+    GoToInitialHalfmove();
+    setTimeout("autoScrollToCurrentMoveIfEnabled();", Math.min(666, 0.9 * Delay));
+  } else {
     synchMoves();
+    autoScrollToCurrentMoveIfEnabled();
+    // customFunctionOnMove here for consistency: null move starting new game
     customFunctionOnMove();
   }
-  // customFunctionOnMove here for consistency: null move starting new game
 
   RefreshBoard();
   HighlightLastMove();
@@ -2269,19 +2290,26 @@ function InitFEN(startingFEN) {
       myAlert("error: invalid FEN ("+ll+") missing fullmove number in game "+(currentGame+1)+"\n"+FenString, true);
       return;
     }
-    cc = FenString.substring(ll++);
-    if (isNaN(cc)) {
-      myAlert("error: invalid FEN ("+ll+") invalid fullmove number in game "+(currentGame+1)+"\n"+FenString, true);
-      return;
+
+    InitialFullMoveNumber = 0;
+    cc = FenString.charAt(ll++);
+    while (cc != " ") {
+      if (isNaN(cc)) {
+        myAlert("error: invalid FEN ("+ll+") invalid fullmove number in game "+(currentGame+1)+"\n"+FenString, true);
+        return;
+      }
+      InitialFullMoveNumber=InitialFullMoveNumber*10+parseInt(cc,10);
+      cc = ll<FenString.length ? FenString.charAt(ll++) : " ";
     }
-    if (cc <= 0) {
-      myAlert("error: invalid FEN ("+ll+") invalid fullmove number in game "+(currentGame+1)+"\n"+FenString, true);
-      return;
+    if (InitialFullMoveNumber === 0) {
+      myAlert("warning: invalid FEN ("+ll+") invalid 0 fullmove number corrected to 1 in game "+(currentGame+1)+"\n"+FenString, true);
+      InitialFullMoveNumber = 1;
     }
-    StartPly += 2*(parseInt(cc,10)-1);
+    StartPly += 2*(InitialFullMoveNumber-1);
 
     HistEnPassant[StartPly-1] = newEnPassant;
     HistEnPassantCol[StartPly-1] = newEnPassantCol;
+    HistNull[StartPly] = 0;
     HistVar[StartPly] = 0;
   }
 }
@@ -2428,6 +2456,10 @@ function MoveBackward(diff, scanOnly) {
     CurrentPly--;
     MoveColor = 1-MoveColor;
 
+    CurrentVar = HistVar[thisPly];
+
+    if (HistNull[thisPly]) { continue; }
+
     // moved piece back to original square
     var chgPiece = HistPieceId[0][thisPly];
     Board[PieceCol[MoveColor][chgPiece]][PieceRow[MoveColor][chgPiece]] = 0;
@@ -2459,8 +2491,6 @@ function MoveBackward(diff, scanOnly) {
       PieceRow[1-MoveColor][chgPiece] = HistRow[1][thisPly];
       PieceMoveCounter[1-MoveColor][chgPiece]--;
     }
-
-    CurrentVar = HistVar[thisPly];
   }
 
   if (scanOnly) { return; }
@@ -2485,6 +2515,8 @@ function MoveBackward(diff, scanOnly) {
 
 function MoveForward(diff, targetVar, scanOnly) {
 
+  var oldVar = -1;
+
   if (typeof(targetVar) == "undefined") { targetVar = CurrentVar; }
 
   // CurrentPly counts from 1, starting position 0
@@ -2502,7 +2534,7 @@ function MoveForward(diff, targetVar, scanOnly) {
         if (PredecessorsVars[targetVar][ii] === CurrentVar) { break; }
       }
       if (ii === PredecessorsVars[targetVar].length) {
-        myAlert("error: dont know how to reach variation " + targetVar + " from " + CurrentVar, true);
+        myAlert("error: unknown path to reach variation " + targetVar + " from " + CurrentVar + " in game " + (currentGame+1), true);
         return;
       } else {
         nextVarStartPly = StartPlyVar[PredecessorsVars[targetVar][ii + 1]];
@@ -2513,13 +2545,17 @@ function MoveForward(diff, targetVar, scanOnly) {
       }
     } else { nextVar = nextVarStartPly = -1; }
 
-    if (thisPly === nextVarStartPly) { CurrentVar = nextVar; }
+    if (thisPly === nextVarStartPly) {
+      oldVar = CurrentVar;
+      CurrentVar = nextVar;
+    }
 
     if (typeof(move = MovesVar[CurrentVar][thisPly]) == "undefined") { break; }
 
     if (ParseLastMoveError = !ParseMove(move, thisPly)) {
       text = (Math.floor(thisPly / 2) + 1) + ((thisPly % 2) === 0 ? '. ' : '... ');
-      myAlert('error: invalid ply ' + text + move + ' in game ' + (currentGame+1), true);
+      myAlert('error: invalid ply ' + text + move + ' in game ' + (currentGame+1) + ' variation ' + CurrentVar, true);
+      if (thisPly === nextVarStartPly) { CurrentVar = oldVar; }
       break;
     }
     MoveColor = 1-MoveColor;
@@ -2598,15 +2634,16 @@ function AutoplayNextGame() {
   SetAutoPlay(false);
 }
 
-function MoveToNextComment() {
+function MoveToNextComment(varOnly) {
   for(ii=CurrentPly+1; ii<=StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]; ii++) {
-    if (strippedMoveComment(ii)) { GoToMove(ii); break; }
+    if (MoveComments[ii].match(pgn4webVariationRegExp) || (!varOnly && strippedMoveComment(ii))) { GoToMove(ii); break; }
   }
 }
 
-function MoveToPrevComment() {
-  for(ii=(CurrentPly-1); ii>=0; ii--) {
-    if (strippedMoveComment(ii)) { GoToMove(ii); break; }
+function MoveToPrevComment(varOnly) {
+  for(ii=(CurrentPly-1); ii>=StartPly; ii--) {
+    if ((ii > 0 || CurrentVar > 0) && ii === StartPlyVar[HistVar[ii+1]]) { GoToMove(ii+1, HistVar[ii]); break; }
+    if (MoveComments[ii].match(pgn4webVariationRegExp) || (!varOnly && strippedMoveComment(ii))) { GoToMove(ii); break; }
   }
 }
 
@@ -2660,7 +2697,7 @@ function startVar() {
   MovesVar[CurrentVar] = new Array();
   MoveCommentsVar[CurrentVar] = new Array();
   if (lastVarWithNoMoves) {
-    myAlert("warning: malformed PGN data with variant " + CurrentVar + " starting before parent", true);
+    myAlert("warning: malformed PGN data in game " + (currentGame+1) + ": variant " + CurrentVar + " starting before parent", true);
   } else {
     lastVarWithNoMoves = true;
     PlyNumber -= 1;
@@ -2672,7 +2709,7 @@ function startVar() {
 function closeVar() {
   if (StartPly + PlyNumber ===  StartPlyVar[CurrentVar]) {
     lastVarWithNoMoves = false;
-    myAlert("warning: empty variation " + CurrentVar, false);
+    myAlert("warning: empty variation " + CurrentVar + " in game " + (currentGame+1), false);
   }
   PlyNumberVar[CurrentVar] = StartPly + PlyNumber - StartPlyVar[CurrentVar];
   for (var ii=StartPlyVar[CurrentVar]; ii<=StartPlyVar[CurrentVar]+PlyNumberVar[CurrentVar]; ii++) {
@@ -2688,7 +2725,7 @@ function closeVar() {
     CurrentVar = CurrentVarStack.pop();
     PlyNumber = PlyNumberStack.pop();
   } else {
-    myAlert("error: closeVar error", true);
+    myAlert("error: closeVar error" + " in game " + (currentGame+1), true);
   }
 }
 
@@ -2722,7 +2759,7 @@ function goToNextVariationSibling() {
 function ParsePGNGameString(gameString) {
 
   var ssRep, ss = gameString;
-  ss = ss.replace(/\[%pgn4web_variation (\d+)\]/g, "[%pgn4web_variation_ $1]");
+  ss = ss.replace(pgn4webVariationRegExpGlobal, "[%_pgn4web_variation_ $1]");
   ss = ss.replace(pgnHeaderTagRegExpGlobal, '');
   // replace empty variations with comments
   while ((ssRep = ss.replace(/\((([\?!+#\s\r\n]|\$\d+|{[^}]*})*)\)/g, ' $1 ')) !== ss) { ss = ssRep; }
@@ -2975,6 +3012,15 @@ function ParseMove(move, plyCount) {
   mvPieceOnTo = -1;
   mvCaptured = -1;
   mvCapturedId = -1;
+  mvIsNull = 0;
+
+  if (typeof(move) == "undefined") { return false; }
+
+  if (move == "--") {
+    mvIsNull = 1;
+    CheckLegality(move, plyCount);
+    return true;
+  }
 
   // get destination column/row remembering what's left e.g. Rdxc3 exf8=Q+
   ii = 1;
@@ -3437,7 +3483,7 @@ function strippedMoveComment(plyNum, varId, addHtmlTags) {
   if (typeof(addHtmlTags) == "undefined") { addHtmlTags = false; }
   if (typeof(varId) == "undefined") { varId = CurrentVar; }
   if (!MoveCommentsVar[varId][plyNum]) { return ""; }
-  return fixCommentForDisplay(MoveCommentsVar[varId][plyNum]).replace(/\[%pgn4web_variation \d+\]/g, function (m) { return variationTextFromTag(m, addHtmlTags); }).replace(/\[%[^\]]*\]\s*/g,'').replace(basicNAGs, '').replace(/^\s+$/,'');
+  return fixCommentForDisplay(MoveCommentsVar[varId][plyNum]).replace(pgn4webVariationRegExpGlobal, function (m) { return variationTextFromTag(m, addHtmlTags); }).replace(/\[%[^\]]*\]\s*/g,'').replace(basicNAGs, '').replace(/^\s+$/,'');
 }
 
 function basicNAGsMoveComment(plyNum, varId) {
@@ -3449,9 +3495,9 @@ function basicNAGsMoveComment(plyNum, varId) {
 
 function variationTextFromTag(variationTag, addHtmlTags) {
   if (typeof(addHtmlTags) == "undefined") { addHtmlTags = false; }
-  var varId = variationTag.replace(/(\[%pgn4web_variation |\])/g, "");
+  var varId = variationTag.replace(pgn4webVariationRegExp, "$1");
   if (isNaN(varId)) {
-    myAlert("error: issue parsing variation tag " + variationTag, true);
+    myAlert("error: issue parsing variation tag " + variationTag + " in game " + (currentGame+1), true);
     return "";
   }
   var text = variationTextFromId(varId);
@@ -3464,7 +3510,7 @@ function variationTextFromTag(variationTag, addHtmlTags) {
 var variationTextDepth;
 function variationTextFromId(varId) {
   if (isNaN(varId) || varId < 0 || varId >= numberOfVars || typeof(StartPlyVar[varId]) == "undefined" || typeof(PlyNumberVar[varId]) == "undefined") {
-    myAlert("error: issue parsing variation id " + varId, true);
+    myAlert("error: issue parsing variation id " + varId + " in game " + (currentGame+1), true);
     return "";
   }
   var text = ++variationTextDepth ? ('<SPAN CLASS="variation">' + (printedVariation ? ' ' : '') + (variationTextDepth > 1 ? '(' : '[')) + '</SPAN>' : '';
@@ -3606,7 +3652,8 @@ function SetAutoPlay(vv) {
 }
 
 function SetAutoplayDelay(vv) {
-  Delay = vv;
+  if (isNaN(vv = parseInt(vv, 10))) { return; }
+  Delay = Math.max(vv, 500);
 }
 
 function SetAutoplayDelayAndStart(vv) {
@@ -3644,6 +3691,10 @@ function SwitchAutoPlay() {
 
 function StoreMove(thisPly) {
 
+  HistVar[thisPly+1] = CurrentVar;
+
+  if(HistNull[thisPly] = mvIsNull) { return; }
+
   // "square from" history
   HistPieceId[0][thisPly] = mvPieceId;
   HistCol[0][thisPly] = PieceCol[MoveColor][mvPieceId];
@@ -3667,8 +3718,6 @@ function StoreMove(thisPly) {
   } else {
     HistPieceId[1][thisPly] = -1;
   }
-
-  HistVar[thisPly+1] = CurrentVar;
 
   // update "square from" and captured square (not necessarily "square to" e.g. en-passant)
   Board[PieceCol[MoveColor][mvPieceId]][PieceRow[MoveColor][mvPieceId]] = 0;
@@ -3701,6 +3750,8 @@ function StoreMove(thisPly) {
 }
 
 function UndoMove(thisPly) {
+
+  if (HistNull[thisPly]) { return; }
 
   // bring moved piece back
   Board[mvToCol][mvToRow] = 0;
