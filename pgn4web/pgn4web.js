@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.44+';
+var pgn4web_version = '2.46';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -37,7 +37,7 @@ function customFunctionOnCheckLiveBroadcastStatus() {}
 function customPgnHeaderTag(customTagString, htmlElementIdString, gameNum) {
   customTagString = customTagString.replace(/\W+/g, "");
   if (gameNum === undefined) { gameNum = currentGame; }
-  if ((pgnGame[gameNum]) && (tagValues = pgnGame[gameNum].match('\\[\\s*' + customTagString + '\\s*\"([^\"]+)\"\\s*\\]'))) {
+  if ((pgnHeader[gameNum]) && (tagValues = pgnHeader[gameNum].match('\\[\\s*' + customTagString + '\\s*\"([^\"]+)\"\\s*\\]'))) {
     tagValue = tagValues[1];
   } else { tagValue = ""; }
   if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (theObject.innerHTML !== null)) {
@@ -182,7 +182,7 @@ function customShortcutKey_Shift_9() {}
 
 var shortcutKeysEnabled = false;
 function handlekey(e) {
-  var keycode;
+  var keycode, oldPly, oldVar;
 
   if (!e) { e = window.event; }
 
@@ -383,16 +383,16 @@ function handlekey(e) {
 
     case 79: // o
       SetCommentsOnSeparateLines(!commentsOnSeparateLines);
-      var oldPly = CurrentPly;
-      var oldVar = CurrentVar;
+      oldPly = CurrentPly;
+      oldVar = CurrentVar;
       Init();
       GoToMove(oldPly, oldVar);
       return stopKeyProp(e);
 
     case 80: // p
       SetCommentsIntoMoveText(!commentsIntoMoveText);
-      var oldPly = CurrentPly;
-      var oldVar = CurrentVar;
+      oldPly = CurrentPly;
+      oldVar = CurrentVar;
       Init();
       GoToMove(oldPly, oldVar);
       return stopKeyProp(e);
@@ -659,8 +659,8 @@ function displayPgnData(allGames) {
   if (pgnWin !== null) {
     text = "<html><head><title>pgn4web PGN source</title>" +
       "<link rel='shortcut icon' href='pawn.ico' /></head><body>\n<pre>\n";
-    if (allGames) { for (ii = 0; ii < numberOfGames; ++ii) { text += pgnGame[ii]; } }
-    else { text += pgnGame[currentGame]; }
+    if (allGames) { for (ii = 0; ii < numberOfGames; ++ii) { text += fullPgnGame(ii) + "\n\n"; } }
+    else { text += fullPgnGame(currentGame); }
     text += "\n</pre>\n</body></html>";
     pgnWin.document.open("text/html", "replace");
     pgnWin.document.write(text);
@@ -779,6 +779,7 @@ function displayFenData() {
 }
 
 
+var pgnHeader = new Array();
 var pgnGame = new Array();
 var numberOfGames = -1;
 var currentGame   = -1;
@@ -927,6 +928,7 @@ var IsRotated = false;
 
 var pgnHeaderTagRegExp       = /\[\s*(\w+)\s*"([^"]*)"\s*\]/;
 var pgnHeaderTagRegExpGlobal = /\[\s*(\w+)\s*"([^"]*)"\s*\]/g;
+var pgnHeaderBlockRegExp     = /\s*(\[\s*\w+\s*"[^"]*"\s*\]\s*)+/;
 var dummyPgnHeader = '[x""]';
 var emptyPgnHeader = '[Event ""]\n[Site ""]\n[Date ""]\n[Round ""]\n[White ""]\n[Black ""]\n[Result ""]\n\n';
 var templatePgnHeader = '[Event "?"]\n[Site "?"]\n[Date "?"]\n[Round "?"]\n[White "?"]\n[Black "?"]\n[Result "?"]\n';
@@ -1465,7 +1467,17 @@ function fixCommonPgnMistakes(text) {
   return text;
 }
 
+function fullPgnGame(gameNum) {
+  res = pgnHeader[gameNum] ? pgnHeader[gameNum].replace(/^[^[]*/g, "") : "";
+  res = res.replace(/\[\s*(\w+)\s*"([^"]*)"\s*\][^[]*/g, '[$1 "$2"]\n');
+  res += "\n";
+  res += pgnGame[gameNum] ? pgnGame[gameNum].replace(/(^[\s]*|[\s]*$)/g, "") : "";
+  return res;
+}
+
 function pgnGameFromPgnText(pgnText) {
+
+  var headMatch, prevHead, newHead, startNew, afterNew, lastOpen, checkedGame, validHead;
 
   pgnText = fixCommonPgnMistakes(pgnText);
 
@@ -1473,43 +1485,40 @@ function pgnGameFromPgnText(pgnText) {
   pgnText = pgnText.replace(/</g, "&lt;");
   pgnText = pgnText.replace(/>/g, "&gt;");
 
-  lines = pgnText.split("\n");
-  inGameHeader = false;
-  inGameBody = false;
-  gameIndex = -1;
+  // PGN standard: lines starting with % must be ignored
+  pgnText = pgnText.replace(/(^|\n)%.*(\n|$)/g, "\n");
 
-  newPgnGame = new Array();
-
-  for(ii in lines) {
-
-    // PGN standard: lines starting with % must be ignored
-    if(lines[ii].charAt(0) == '%') { continue; }
-
-    if(pgnHeaderTagRegExp.test(lines[ii]) === true) {
-      if(!inGameHeader) {
-        gameIndex++;
-        newPgnGame[gameIndex] = '';
+  numberOfGames = 0;
+  checkedGame = "";
+  while (headMatch = pgnHeaderBlockRegExp.exec(pgnText)) {
+    newHead = headMatch[0];
+    startNew = pgnText.indexOf(newHead);
+    afterNew = startNew + newHead.length;
+    if (prevHead) {
+      checkedGame += pgnText.slice(0, startNew);
+      validHead = ((lastOpen = checkedGame.lastIndexOf("{")) < 0) || (checkedGame.lastIndexOf("}")) > lastOpen;
+      if (validHead) {
+        pgnHeader[numberOfGames] = prevHead;
+        pgnGame[numberOfGames++] = checkedGame;
+        checkedGame = "";
+      } else {
+        checkedGame += newHead;
       }
-      inGameHeader = true;
-      inGameBody = false;
     } else {
-      if(inGameHeader) {
-        inGameHeader = false;
-        inGameBody = true;
-      }
+      validHead = true;
     }
-    lines[ii] = lines[ii].replace(/^\s*/,"");
-    lines[ii] = lines[ii].replace(/\s*$/,"");
-    if (gameIndex >= 0) { newPgnGame[gameIndex] += lines[ii] + '\n'; }
+    if (validHead) { prevHead = newHead; }
+    pgnText = pgnText.slice(afterNew);
+  }
+  if (prevHead) {
+    pgnHeader[numberOfGames] = prevHead;
+    checkedGame += pgnText;
+    pgnGame[numberOfGames++] = checkedGame;
   }
 
-  if (gameIndex >= 0) {
-    pgnGame = newPgnGame;
-    numberOfGames = pgnGame.length;
-  }
-
-  return (gameIndex >= 0);
+  return (numberOfGames > 0);
 }
+
 
 function pgnGameFromHttpRequest(httpResponseData) {
 
@@ -1800,7 +1809,7 @@ function checkLiveBroadcastStatus() {
 
   // broadcast started yet?
   // check for fake LiveBroadcastPlaceholderPgn game when no PGN file is found
-  if ((LiveBroadcastStarted === false) || ((pgnGame === undefined) ||
+  if ((LiveBroadcastStarted === false) || ((pgnHeader === undefined) ||
     ((numberOfGames == 1) && (gameEvent[0] == LiveBroadcastPlaceholderEvent)))) {
     LiveBroadcastEnded = false;
     LiveBroadcastStatusString = "live broadcast yet to start";
@@ -2409,7 +2418,7 @@ function LoadGameHeaders(){
 
   pgnHeaderTagRegExpGlobal.lastIndex = 0; // resets global regular expression
   for (ii = 0; ii < numberOfGames; ++ii) {
-    var ss = pgnGame[ii];
+    var ss = pgnHeader[ii];
     gameEvent[ii] = gameSite[ii] = gameRound[ii] = gameDate[ii] = "";
     gameWhite[ii] = gameBlack[ii] = gameResult[ii] = "";
     gameInitialWhiteClock[ii] = gameInitialBlackClock[ii] = "";
@@ -2677,7 +2686,7 @@ function initVar () {
   StartPlyVar = new Array();
   PlyNumberVar = new Array();
   CurrentVar = -1;
-  lastVarWithNoMoves = false;
+  lastVarWithNoMoves = [false];
   numberOfVars = 0;
   CurrentVarStack = new Array();
   PlyNumber = 1;
@@ -2696,21 +2705,21 @@ function startVar() {
   PredecessorsVars[CurrentVar].push(CurrentVar);
   MovesVar[CurrentVar] = new Array();
   MoveCommentsVar[CurrentVar] = new Array();
-  if (lastVarWithNoMoves) {
+  if (lastVarWithNoMoves[lastVarWithNoMoves.length - 1]) {
     myAlert("warning: malformed PGN data in game " + (currentGame+1) + ": variant " + CurrentVar + " starting before parent", true);
   } else {
-    lastVarWithNoMoves = true;
     PlyNumber -= 1;
   }
+  lastVarWithNoMoves.push(true);
   MoveCommentsVar[CurrentVar][StartPly + PlyNumber] = "";
   StartPlyVar[CurrentVar] = StartPly + PlyNumber;
 }
 
 function closeVar() {
   if (StartPly + PlyNumber ===  StartPlyVar[CurrentVar]) {
-    lastVarWithNoMoves = false;
     myAlert("warning: empty variation " + CurrentVar + " in game " + (currentGame+1), false);
   }
+  lastVarWithNoMoves.pop();
   PlyNumberVar[CurrentVar] = StartPly + PlyNumber - StartPlyVar[CurrentVar];
   for (var ii=StartPlyVar[CurrentVar]; ii<=StartPlyVar[CurrentVar]+PlyNumberVar[CurrentVar]; ii++) {
     if (MoveCommentsVar[CurrentVar][ii]) {
@@ -2760,9 +2769,8 @@ function ParsePGNGameString(gameString) {
 
   var ssRep, ss = gameString;
   ss = ss.replace(pgn4webVariationRegExpGlobal, "[%_pgn4web_variation_ $1]");
-  ss = ss.replace(pgnHeaderTagRegExpGlobal, '');
   // replace empty variations with comments
-  while ((ssRep = ss.replace(/\((([\?!+#\s\r\n]|\$\d+|{[^}]*})*)\)/g, ' $1 ')) !== ss) { ss = ssRep; }
+  while ((ssRep = ss.replace(/\((([\?!+#\s]|\$\d+|{[^}]*})*)\)/g, ' $1 ')) !== ss) { ss = ssRep; }
   ss = ss.replace(/^\s/, '');
   ss = ss.replace(/\s$/, '');
 
@@ -2867,13 +2875,15 @@ function ParsePGNGameString(gameString) {
         searchThis = moveCount.toString()+'.';
         if(ss.indexOf(searchThis,start)==start) {
           start += searchThis.length;
-          while ((ss.charAt(start) == '.') || (ss.charAt(start) == ' ') || (ss.charAt(start) == '\n') || (ss.charAt(start) == '\r')){start++;}
+          while ((ss.charAt(start) == '.') || (ss.charAt(start) == ' ') ||
+                 (ss.charAt(start) == '\n') || (ss.charAt(start) == '\r'))
+            { start++; }
         }
 
         if ((end = start + ss.substr(start).search(/[\s${;!?()]/)) < start) { end = ss.length; }
         move = ss.substring(start,end);
         MovesVar[CurrentVar][StartPly+PlyNumber] = ClearMove(move);
-        lastVarWithNoMoves = false;
+        lastVarWithNoMoves[lastVarWithNoMoves.length - 1] = false;
         if (ss.charAt(end) == ' ') { start = end; }
         else { start = end - 1; }
         if (MovesVar[CurrentVar][StartPly+PlyNumber] !== '') { // to cope with misformed PGN data
@@ -3187,6 +3197,7 @@ function reset_after_click (ii, jj, originalClass, newClass) {
 
 var lastSearchPgnExpression = "";
 function gameNumberSearchPgn(searchExpression, backward, includeCurrent) {
+  var searchThis;
   lastSearchPgnExpression = searchExpression;
   if (searchExpression === "") { return false; }
   // replace newline with spaces so that we can use regexp "." on whole game
@@ -3194,14 +3205,16 @@ function gameNumberSearchPgn(searchExpression, backward, includeCurrent) {
   searchExpressionRegExp = new RegExp(searchExpression, "im");
   // at start currentGame might still be -1
   currentGameSearch = (currentGame < 0) || (currentGame >= numberOfGames) ? 0 : currentGame;
-  if (includeCurrent && pgnGame[currentGameSearch].replace(newlinesRegExp, " ").match(searchExpressionRegExp)) {
+  searchThis = fullPgnGame(currentGameSearch);
+  if (includeCurrent && searchThis.replace(newlinesRegExp, " ").match(searchExpressionRegExp)) {
     return currentGameSearch;
   }
   delta = backward ? -1 : +1;
   for (checkGame = (currentGameSearch + delta + numberOfGames) % numberOfGames;
        checkGame != currentGameSearch;
        checkGame = (checkGame + delta + numberOfGames) % numberOfGames) {
-    if (pgnGame[checkGame].replace(newlinesRegExp, " ").match(searchExpressionRegExp)) {
+    searchThis = fullPgnGame(checkGame);
+    if (searchThis.replace(newlinesRegExp, " ").match(searchExpressionRegExp)) {
       return checkGame;
     }
   }
