@@ -113,6 +113,9 @@ class pgnBBCode {
 		elseif ( isset($atts['sm']) ) { $movesDisplay = $atts['sm']; }
 		else { $movesDisplay = 'f'; }
 
+		if (($movesDisplay == 'puzzle') || ($movesDisplay == 'p')) { $headerDisplay = 'v'; }
+		else { $headerDisplay = 'j'; }
+
 		if ( isset($atts['height']) ) { $height = $atts['height']; }
 		elseif ( isset($atts['h']) ) { $height = $atts['h']; }
 		elseif ( isset($atts[0]) ) { $height = $atts[0]; } // compatibility with v < 1.09
@@ -204,7 +207,7 @@ class pgnBBCode {
 		$replacement .= "&amp;bd=c";
 		$replacement .= "&amp;cbch=" . rawurlencode(get_option_with_default('embedchessboard_control_buttons_background_color'));
 		$replacement .= "&amp;ctch=" . rawurlencode(get_option_with_default('embedchessboard_control_buttons_text_color'));
-		$replacement .= "&amp;hd=j";
+		$replacement .= "&amp;hd=" . rawurlencode($headerDisplay);
 		$replacement .= "&amp;md=" . rawurlencode($movesDisplay);
 		$replacement .= "&amp;tm=13";
 		$replacement .= "&amp;fhch=" . rawurlencode(get_option_with_default('embedchessboard_header_text_color'));
