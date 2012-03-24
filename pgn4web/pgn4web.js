@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.46+';
+var pgn4web_version = '2.47';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -202,8 +202,6 @@ function handlekey(e) {
     case 18: // alt
     case 32: // space
     case 35: // end
-    case 45: // insert
-    case 46: // delete
     case 36: // home
     case 92: // super
     case 93: // menu
@@ -222,51 +220,50 @@ function handlekey(e) {
 
     case 37: // left-arrow
     case 74: // j
-      if (e.shiftKey) { GoToMove(StartPlyVar[CurrentVar]); }
-      else { GoToMove(CurrentPly - 1); }
+      backButton(e);
       return stopKeyProp(e);
 
     case 38: // up-arrow
     case 72: // h
-      if (e.shiftKey) {
-        if (CurrentPly <= StartPlyVar[CurrentVar] + 1) {
-          GoToMove(StartPlyVar[CurrentVar]);
-        } else {
-           GoToMove(StartPlyVar[CurrentVar] + 1);
-        }
-      } else { GoToMove(StartPlyVar[0], 0); }
+      startButton(e);
       return stopKeyProp(e);
 
     case 39: // right-arrow
     case 75: // k
-      if (e.shiftKey) { if (!goToNextVariationSibling()) { GoToMove(CurrentPly + 1); } }
-      else { GoToMove(CurrentPly + 1); }
+      forwardButton(e);
       return stopKeyProp(e);
 
     case 40: // down-arrow
     case 76: // l
-      if (e.shiftKey) {
-         if (CurrentPly === StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]) {
-           goToFirstChild();
-         } else {
-           GoToMove(StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]);
-         }
-      } else { GoToMove(StartPlyVar[0] + PlyNumberVar[0], 0); }
+      endButton(e);
       return stopKeyProp(e);
 
     case 33: // page-up
-    case 85: // u
+    case 73: // i
       MoveToPrevComment(e.shiftKey);
       return stopKeyProp(e);
 
     case 34: // page-down
-    case 73: // i
+    case 79: // o
       MoveToNextComment(e.shiftKey);
       return stopKeyProp(e);
 
     case 190: // dot
       if (e.shiftKey) { goToFirstChild(); }
       else { goToNextVariationSibling(); }
+      return stopKeyProp(e);
+
+    case 85: // u
+      if (e.shiftKey) { undoStackRedo(); }
+      else { undoStackUndo(); }
+      return stopKeyProp(e);
+
+    case 45: // insert
+      undoStackRedo();
+      return stopKeyProp(e);
+
+    case 46: // delete
+      undoStackUndo();
       return stopKeyProp(e);
 
     case 83: // s
@@ -276,6 +273,11 @@ function handlekey(e) {
     case 13: // enter
       if (e.shiftKey) { searchPgnGame(lastSearchPgnExpression, true); }
       else { searchPgnGame(lastSearchPgnExpression); }
+      return stopKeyProp(e);
+
+    case 68: // d
+      if (e.shiftKey) { displayFenData(); }
+      else { displayPgnData(false); }
       return stopKeyProp(e);
 
     case 65: // a
@@ -359,22 +361,15 @@ function handlekey(e) {
       return stopKeyProp(e);
 
     case 70: // f
-      FlipBoard();
+      if (!e.shiftKey || IsRotated) { FlipBoard(); }
       return stopKeyProp(e);
 
     case 71: // g
       SetHighlight(!highlightOption);
       return stopKeyProp(e);
 
-    case 68: // d
-      if (IsRotated) { FlipBoard(); }
-      return stopKeyProp(e);
-
     case 88: // x
-      if (numberOfGames > 1) {
-        Init(Math.floor(Math.random()*numberOfGames));
-        GoToMove(StartPly + Math.floor(Math.random()*(StartPly + PlyNumber + 1)));
-      }
+      randomGameRandomPly();
       return stopKeyProp(e);
 
     case 67: // c
@@ -397,16 +392,9 @@ function handlekey(e) {
       if (numberOfGames > 1) { Init(numberOfGames - 1); }
       return stopKeyProp(e);
 
-    case 79: // o
-      SetCommentsOnSeparateLines(!commentsOnSeparateLines);
-      oldPly = CurrentPly;
-      oldVar = CurrentVar;
-      Init();
-      GoToMove(oldPly, oldVar);
-      return stopKeyProp(e);
-
     case 80: // p
-      SetCommentsIntoMoveText(!commentsIntoMoveText);
+      if (e.shiftKey) { SetCommentsOnSeparateLines(!commentsOnSeparateLines); }
+      else { SetCommentsIntoMoveText(!commentsIntoMoveText); }
       oldPly = CurrentPly;
       oldVar = CurrentVar;
       Init();
@@ -473,15 +461,15 @@ boardShortcut("H8", "pgn4web help", function(t,e){ displayHelp(); });
 // A7
 boardShortcut("A7", "pgn4web website", function(t,e){ window.open(pgn4web_project_url); });
 // B7
-boardShortcut("B7", "toggle show comments in game text", function(t,e){ SetCommentsIntoMoveText(!commentsIntoMoveText); var oldPly = CurrentPly; var oldVar = CurrentVar; Init(); GoToMove(oldPly, oldVar); });
+boardShortcut("B7", "undo last chessboard position update", function(t,e){ undoStackUndo(); });
 // C7
-boardShortcut("C7", "toggle show comments on separate lines in game text", function(t,e){ SetCommentsOnSeparateLines(!commentsOnSeparateLines); var oldPly = CurrentPly; var oldVar = CurrentVar; Init(); GoToMove(oldPly, oldVar); });
+boardShortcut("C7", "redo last undo", function(t,e){ undoStackRedo(); });
 // D7
 boardShortcut("D7", "toggle highlight last move", function(t,e){ SetHighlight(!highlightOption); });
 // E7
-boardShortcut("E7", "flip board", function(t,e){ FlipBoard(); });
+boardShortcut("E7", "flip board", function(t,e){ if (!e.shiftKey || IsRotated) { FlipBoard(); } });
 // F7
-boardShortcut("F7", "show white on bottom", function(t,e){ if (IsRotated) { FlipBoard(); } });
+boardShortcut("F7", "toggle show comments in game text", function(t,e){ if (e.shiftKey) { SetCommentsOnSeparateLines(!commentsOnSeparateLines); } else { SetCommentsIntoMoveText(!commentsIntoMoveText); } var oldPly = CurrentPly; var oldVar = CurrentVar; Init(); GoToMove(oldPly, oldVar); });
 // G7
 boardShortcut("G7", "toggle autoplay next game", function(t,e){ SetAutoplayNextGame(!autoplayNextGame); });
 // H7
@@ -543,7 +531,7 @@ boardShortcut("C3", "load previous game", function(t,e){ Init(currentGame - 1); 
 // D3
 boardShortcut("D3", "load random game", function(t,e){ if (numberOfGames > 1) { Init(Math.floor(Math.random()*numberOfGames)); } });
 // E3
-boardShortcut("E3", "load random game at random position", function(t,e){ Init(Math.floor(Math.random()*numberOfGames)); GoToMove(StartPlyVar[0] + Math.floor(Math.random()*(StartPlyVar[0] + PlyNumberVar[0] + 1)), 0); });
+boardShortcut("E3", "load random game at random position", function(t,e){ randomGameRandomPly(); });
 // F3
 boardShortcut("F3", "load next game", function(t,e){ Init(currentGame + 1); });
 // G3
@@ -567,7 +555,7 @@ boardShortcut("G2", "replay up to 6 previous half-moves, then autoplay forward",
 // H2
 boardShortcut("H2", "replay the previous half-move, then autoplay forward", function(t,e){ replayPreviousMoves(e.shiftKey ? 3 : 1); });
 // A1
-boardShortcut("A1", "go to game start", function(t,e){ if (e.shiftKey) { if (CurrentPly <= StartPlyVar[CurrentVar] + 1) { GoToMove(StartPlyVar[CurrentVar]); } else { GoToMove(StartPlyVar[CurrentVar] + 1); } } else { GoToMove(StartPlyVar[0], 0); } });
+boardShortcut("A1", "go to game start", function(t,e){ startButton(e); });
 // B1
 // see setB1C1F1G1boardShortcuts()
 // C1
@@ -581,7 +569,7 @@ boardShortcut("E1", "move forward", function(t,e){ GoToMove(CurrentPly + 1); });
 // G1
 // see setB1C1F1G1boardShortcuts()
 // H1
-boardShortcut("H1", "go to game end", function(t,e){ if (e.shiftKey) { if (CurrentPly === StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]) { goToFirstChild(); } else { GoToMove(StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]); } } else { GoToMove(StartPlyVar[0] + PlyNumberVar[0], 0); } });
+boardShortcut("H1", "go to game end", function(t,e){ endButton(e); });
 
 setB1C1F1G1boardShortcuts();
 
@@ -937,6 +925,7 @@ var PieceCode = new Array(); // IE needs an array to work with [index]
 for (i=0; i<6; i++) { PieceCode[i] = FenPieceName.charAt(i); }
 var FenStringStart = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 var columnsLetters = "ABCDEFGH";
+var InitialHalfMoveClock = 0;
 
 startingSquareSize = -1;
 startingImageSize = -1;
@@ -1324,6 +1313,17 @@ function SetInitialGame(number_or_string) {
   initialGame = typeof(number_or_string) == "undefined" ? 1 : number_or_string;
 }
 
+function randomGameRandomPly() {
+  if (numberOfGames > 1) {
+    var oldInitialHalfmove = initialHalfmove;
+    var oldAlwaysInitialHalfmove = alwaysInitialHalfmove;
+    SetInitialHalfmove("random", true);
+    Init(Math.floor(Math.random()*numberOfGames));
+    SetInitialHalfmove(oldInitialHalfmove, oldAlwaysInitialHalfmove);
+  }
+}
+
+
 // clock detection: check DGT sequence [%clk 01:02]
 
 function clockFromComment(plyNum) {
@@ -1339,6 +1339,8 @@ function clockFromHeader(whiteToMove) {
 
 function HighlightLastMove() {
   var anchorName, text;
+
+  undoStackStore();
 
   // remove highlighting from old anchor
   if (oldAnchorName){
@@ -1526,6 +1528,59 @@ function highlightSquare(col, row, on) {
   else { theObject.className = (trow+tcol)%2 === 0 ? "whiteSquare" : "blackSquare"; }
   return true;
 }
+
+var undoStackMax = 1000;
+var undoStackGame = new Array(undoStackMax);
+var undoStackVar = new Array(undoStackMax);
+var undoStackPly = new Array(undoStackMax);
+var undoStackStart = 0;
+var undoStackCurrent = 0;
+var undoStackEnd = 0;
+var undoRedoInProgress = false;
+
+function undoStackReset() {
+  undoStackGame = new Array(undoStackMax);
+  undoStackVar = new Array(undoStackMax);
+  undoStackPly = new Array(undoStackMax);
+  undoStackStart = undoStackCurrent = undoStackEnd = 0;
+}
+
+function undoStackStore() {
+  if (undoRedoInProgress) { return false; }
+  if ((undoStackStart === undoStackCurrent) ||
+      (currentGame !== undoStackGame[undoStackCurrent]) ||
+      (CurrentVar !== undoStackVar[undoStackCurrent]) ||
+      (CurrentPly !== undoStackPly[undoStackCurrent])) {
+    undoStackCurrent = (undoStackCurrent + 1) % undoStackMax;
+    undoStackGame[undoStackCurrent] = currentGame;
+    undoStackVar[undoStackCurrent] = CurrentVar;
+    undoStackPly[undoStackCurrent] = CurrentPly;
+    undoStackEnd = undoStackCurrent;
+    if (undoStackStart === undoStackCurrent) { undoStackStart = (undoStackStart + 1) % undoStackMax; }
+  }
+  return true;
+}
+
+function undoStackUndo() {
+  if ((undoStackCurrent - 1 + undoStackMax) % undoStackMax === undoStackStart) { return false; }
+  undoRedoInProgress = true;
+  undoStackCurrent = (undoStackCurrent - 1 + undoStackMax) % undoStackMax;
+  if (undoStackGame[undoStackCurrent] !== currentGame) { Init(undoStackGame[undoStackCurrent]); }
+  GoToMove(undoStackPly[undoStackCurrent], undoStackVar[undoStackCurrent]);
+  undoRedoInProgress = false;
+  return true;
+}
+
+function undoStackRedo() {
+  if (undoStackCurrent === undoStackEnd) { return false; }
+  undoRedoInProgress = true;
+  undoStackCurrent = (undoStackCurrent + 1) % undoStackMax;
+  if (undoStackGame[undoStackCurrent] !== currentGame) { Init(undoStackGame[undoStackCurrent]); }
+  GoToMove(undoStackPly[undoStackCurrent], undoStackVar[undoStackCurrent]);
+  undoRedoInProgress = false;
+  return true;
+}
+
 
 // keep this aligned with the one in chrome-extension/background.html
 function fixCommonPgnMistakes(text) {
@@ -1739,6 +1794,7 @@ function loadPgnCheckingLiveStatus(loadPgnResult) {
         }
       }
 
+      undoStackReset();
       Init();
 
       if (LiveBroadcastDelay > 0) {
@@ -1773,12 +1829,14 @@ function loadPgnCheckingLiveStatus(loadPgnResult) {
     default:
       if (LiveBroadcastDelay === 0) {
         pgnGameFromPgnText(alertPgnHeader);
+        undoStackReset();
         Init();
         customFunctionOnPgnTextLoad();
       } else { // live broadcast: wait for live show start
         if (! LiveBroadcastStarted) {
           pgnGameFromPgnText(LiveBroadcastPlaceholderPgn);
           firstStart = true;
+          undoStackReset();
           Init();
           checkLiveBroadcastStatus();
           customFunctionOnPgnTextLoad();
@@ -1948,6 +2006,7 @@ function refreshPgnSource() {
     loadPgnFromTextarea("pgnText");
   } else {
     pgnGameFromPgnText(alertPgnHeader);
+    undoStackReset();
     Init();
     customFunctionOnPgnTextLoad();
     myAlert('error: missing PGN URL location and pgnText object in the HTML file', true);
@@ -2001,6 +2060,7 @@ function createBoard(){
     loadPgnFromTextarea("pgnText");
   } else {
     pgnGameFromPgnText(alertPgnHeader);
+    undoStackReset();
     Init();
     customFunctionOnPgnTextLoad();
     myAlert('error: missing PGN URL location or pgnText in the HTML file', true);
@@ -3101,7 +3161,7 @@ function translateNAGs(comment) {
     for (var ii = 0; ii < matches.length; ii++) {
       nag = matches[ii].substr(1);
       if (NAG[nag] !== undefined) {
-        comment = comment.replace(new RegExp("\\$+" + nag + "\\b"), NAG[nag]);
+        comment = comment.replace(new RegExp("\\$+" + nag + "(?!\\d)"), NAG[nag]);
       }
     }
   }
@@ -3596,27 +3656,53 @@ function PrintHTML() {
   }
 }
 
+function startButton(e) {
+  if (e.shiftKey) {
+    if (CurrentPly <= StartPlyVar[CurrentVar] + 1) {
+      GoToMove(StartPlyVar[CurrentVar]);
+    } else {
+      GoToMove(StartPlyVar[CurrentVar] + 1);
+    }
+  } else { GoToMove(StartPlyVar[0], 0); }
+}
+
+function backButton(e) {
+  if (e.shiftKey) { GoToMove(StartPlyVar[CurrentVar]); }
+  else { GoToMove(CurrentPly - 1); }
+}
+
+function forwardButton(e) {
+  if (e.shiftKey) { if (!goToNextVariationSibling()) { GoToMove(CurrentPly + 1); } }
+  else { GoToMove(CurrentPly + 1); }
+}
+
+function endButton(e) {
+  if (e.shiftKey) {
+    if (CurrentPly === StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]) {
+      goToFirstChild();
+    } else {
+      GoToMove(StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]);
+    }
+  } else { GoToMove(StartPlyVar[0] + PlyNumberVar[0], 0); }
+}
+
 function clickedBbtn(t,e) {
   switch (t.id) {
     case "startButton":
-      if (e.shiftKey) { GoToMove(StartPlyVar[CurrentVar] + 1); }
-      else { GoToMove(StartPlyVar[0], 0); }
+      startButton(e);
       break;
     case "backButton":
-      if (e.shiftKey) { GoToMove(StartPlyVar[CurrentVar]); }
-      else { GoToMove(CurrentPly - 1); }
+      backButton(e);
       break;
     case "autoplayButton":
       if (e.shiftKey) { goToNextVariationSibling(); }
       else { SwitchAutoPlay(); }
       break;
     case "forwardButton":
-      if (e.shiftKey) { if (!goToNextVariationSibling()) { GoToMove(CurrentPly + 1); } }
-      else { GoToMove(CurrentPly + 1); }
+      forwardButton(e);
       break;
     case "endButton":
-      if (e.shiftKey) { GoToMove(StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]); }
-      else { GoToMove(StartPlyVar[0] + PlyNumberVar[0], 0); }
+      endButton(e);
       break;
     default:
       break;
