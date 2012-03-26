@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.47';
+var pgn4web_version = '2.48';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -203,6 +203,8 @@ function handlekey(e) {
     case 32: // space
     case 35: // end
     case 36: // home
+    case 33: // page-up
+    case 34: // page-down
     case 92: // super
     case 93: // menu
     case 188: // comma
@@ -238,12 +240,10 @@ function handlekey(e) {
       endButton(e);
       return stopKeyProp(e);
 
-    case 33: // page-up
     case 73: // i
       MoveToPrevComment(e.shiftKey);
       return stopKeyProp(e);
 
-    case 34: // page-down
     case 79: // o
       MoveToNextComment(e.shiftKey);
       return stopKeyProp(e);
@@ -3034,7 +3034,7 @@ function ParsePGNGameString(gameString) {
             } else {
                end = start + searchThis[ii].length;
             }
-            MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ss.substring(start, end).replace(/^\s*\{(.*)\}\s*$/, '$1');
+            MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' ' + ss.substring(start, end).replace(/^\s*\{(.*)\}\s*$/, '$1');
             start = end;
             break;
           }
