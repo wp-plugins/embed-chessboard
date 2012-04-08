@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.48';
+var pgn4web_version = '2.49';
 
 var pgn4web_project_url = 'http://pgn4web.casaschi.net';
 var pgn4web_project_author = 'Paolo Casaschi';
@@ -213,184 +213,184 @@ function handlekey(e) {
     case 27: // escape
       if (e.shiftKey) { interactivelyToggleShortcutKeys(); }
       else { displayHelp(); }
-      return stopKeyProp(e);
+      break;
 
     case 90: // z
       if (e.shiftKey) { window.open(pgn4web_project_url); }
       else { displayDebugInfo(); }
-      return stopKeyProp(e);
+      break;
 
     case 37: // left-arrow
     case 74: // j
       backButton(e);
-      return stopKeyProp(e);
+      break;
 
     case 38: // up-arrow
     case 72: // h
       startButton(e);
-      return stopKeyProp(e);
+      break;
 
     case 39: // right-arrow
     case 75: // k
       forwardButton(e);
-      return stopKeyProp(e);
+      break;
 
     case 40: // down-arrow
     case 76: // l
       endButton(e);
-      return stopKeyProp(e);
+      break;
 
     case 73: // i
       MoveToPrevComment(e.shiftKey);
-      return stopKeyProp(e);
+      break;
 
     case 79: // o
       MoveToNextComment(e.shiftKey);
-      return stopKeyProp(e);
+      break;
 
     case 190: // dot
       if (e.shiftKey) { goToFirstChild(); }
       else { goToNextVariationSibling(); }
-      return stopKeyProp(e);
+      break;
 
     case 85: // u
       if (e.shiftKey) { undoStackRedo(); }
       else { undoStackUndo(); }
-      return stopKeyProp(e);
+      break;
 
     case 45: // insert
       undoStackRedo();
-      return stopKeyProp(e);
+      break;
 
     case 46: // delete
       undoStackUndo();
-      return stopKeyProp(e);
+      break;
 
     case 83: // s
       searchPgnGamePrompt();
-      return stopKeyProp(e);
+      break;
 
     case 13: // enter
       if (e.shiftKey) { searchPgnGame(lastSearchPgnExpression, true); }
       else { searchPgnGame(lastSearchPgnExpression); }
-      return stopKeyProp(e);
+      break;
 
     case 68: // d
       if (e.shiftKey) { displayFenData(); }
       else { displayPgnData(false); }
-      return stopKeyProp(e);
+      break;
 
     case 65: // a
       GoToMove(CurrentPly + 1);
       SetAutoPlay(true);
-      return stopKeyProp(e);
+      break;
 
     case 48: // 0
       if (e.shiftKey) { customShortcutKey_Shift_0(); }
       else { SetAutoPlay(false); }
-      return stopKeyProp(e);
+      break;
 
     case 49: // 1
       if (e.shiftKey) { customShortcutKey_Shift_1(); }
       else { SetAutoplayDelayAndStart( 1*1000); }
-      return stopKeyProp(e);
+      break;
 
     case 50: // 2
       if (e.shiftKey) { customShortcutKey_Shift_2(); }
       else { SetAutoplayDelayAndStart( 2*1000); }
-      return stopKeyProp(e);
+      break;
 
     case 51: // 3
       if (e.shiftKey) { customShortcutKey_Shift_3(); }
       else { SetAutoplayDelayAndStart( 3*1000); }
-      return stopKeyProp(e);
+      break;
 
     case 52: // 4
       if (e.shiftKey) { customShortcutKey_Shift_4(); }
       else { SetAutoplayDelayAndStart( 4*1000); }
-      return stopKeyProp(e);
+      break;
 
     case 53: // 5
       if (e.shiftKey) { customShortcutKey_Shift_5(); }
       else { SetAutoplayDelayAndStart( 5*1000); }
-      return stopKeyProp(e);
+      break;
 
     case 54: // 6
       if (e.shiftKey) { customShortcutKey_Shift_6(); }
       else { SetAutoplayDelayAndStart( 6*1000); }
-      return stopKeyProp(e);
+      break;
 
     case 55: // 7
       if (e.shiftKey) { customShortcutKey_Shift_7(); }
       else { SetAutoplayDelayAndStart( 7*1000); }
-      return stopKeyProp(e);
+      break;
 
     case 56: // 8
       if (e.shiftKey) { customShortcutKey_Shift_8(); }
       else { SetAutoplayDelayAndStart( 8*1000); }
-      return stopKeyProp(e);
+      break;
 
     case 57: // 9
       if (e.shiftKey) { customShortcutKey_Shift_9(); }
       else { SetAutoplayDelayAndStart( 9*1000); }
-      return stopKeyProp(e);
+      break;
 
     case 81: // q
       SetAutoplayDelayAndStart(10*1000);
-      return stopKeyProp(e);
+      break;
 
     case 87: // w
       SetAutoplayDelayAndStart(20*1000);
-      return stopKeyProp(e);
+      break;
 
     case 69: // e
       SetAutoplayDelayAndStart(30*1000);
-      return stopKeyProp(e);
+      break;
 
     case 82: // r
       pauseLiveBroadcast();
-      return stopKeyProp(e);
+      break;
 
     case 84: // t
       if (e.shiftKey) { LiveBroadcastSteppingMode = !LiveBroadcastSteppingMode; }
       else { refreshPgnSource(); }
-      return stopKeyProp(e);
+      break;
 
     case 89: // y
       resumeLiveBroadcast();
-      return stopKeyProp(e);
+      break;
 
     case 70: // f
       if (!e.shiftKey || IsRotated) { FlipBoard(); }
-      return stopKeyProp(e);
+      break;
 
     case 71: // g
       SetHighlight(!highlightOption);
-      return stopKeyProp(e);
+      break;
 
     case 88: // x
       randomGameRandomPly();
-      return stopKeyProp(e);
+      break;
 
     case 67: // c
       if (numberOfGames > 1) { Init(Math.floor(Math.random()*numberOfGames)); }
-      return stopKeyProp(e);
+      break;
 
     case 86: // v
       if (numberOfGames > 1) { Init(0); }
-      return stopKeyProp(e);
+      break;
 
     case 66: // b
       Init(currentGame - 1);
-      return stopKeyProp(e);
+      break;
 
     case 78: // n
       Init(currentGame + 1);
-      return stopKeyProp(e);
+      break;
 
     case 77: // m
       if (numberOfGames > 1) { Init(numberOfGames - 1); }
-      return stopKeyProp(e);
+      break;
 
     case 80: // p
       if (e.shiftKey) { SetCommentsOnSeparateLines(!commentsOnSeparateLines); }
@@ -399,12 +399,12 @@ function handlekey(e) {
       oldVar = CurrentVar;
       Init();
       GoToMove(oldPly, oldVar);
-      return stopKeyProp(e);
+      break;
 
     default:
       return true;
   }
-  return true;
+  return stopKeyProp(e);
 }
 
 boardOnClick = new Array(8);
@@ -727,6 +727,8 @@ function CurrentFEN() {
   currentFEN += CurrentPly%2 === 0 ? " w" : " b";
 
   // castling availability
+  // always in the KQkq form, producing the wrong FEN
+  // for Chess960 positions with an inner castling rook
   CastlingFEN = "";
   if (RookForOOCastling(0) !== null) { CastlingFEN += FenPieceName.charAt(0).toUpperCase(); }
   if (RookForOOOCastling(0) !== null) { CastlingFEN += FenPieceName.charAt(1).toUpperCase(); }
@@ -735,8 +737,8 @@ function CurrentFEN() {
   currentFEN += " " + (CastlingFEN ? CastlingFEN : "-");
 
   // en-passant square
-  if (HistEnPassant[CurrentPly-1]) {
-    currentFEN += " " + String.fromCharCode(HistEnPassantCol[CurrentPly-1] + 97);
+  if (HistEnPassant[CurrentPly]) {
+    currentFEN += " " + String.fromCharCode(HistEnPassantCol[CurrentPly] + 97);
     currentFEN += CurrentPly%2 === 0 ? "6" : "3";
   } else { currentFEN += " -"; }
 
@@ -982,10 +984,7 @@ var gameSelectorChResult = 0;
 var gameSelectorChDate = 10;
 
 function CheckLegality(what, plyCount) {
-  var retVal;
-  var start;
-  var end;
-  var isCheck;
+  var retVal, thisCol;
 
   if (what == '--') {
     StoreMove(plyCount);
@@ -995,23 +994,15 @@ function CheckLegality(what, plyCount) {
   // castling move?
   if (what == 'O-O') {
     if (!CheckLegalityOO()) { return false; }
-    start = PieceCol[MoveColor][0];
-    end   = 6;
-    while (start < end) {
-      isCheck = IsCheck(start, MoveColor*7, MoveColor);
-      if (isCheck) { return false; }
-      ++start;
+    for (thisCol = PieceCol[MoveColor][0]; thisCol < 7; thisCol++) {
+      if (IsCheck(thisCol, MoveColor*7, MoveColor)) { return false; }
     }
     StoreMove(plyCount);
     return true;
   } else if (what == 'O-O-O') {
     if (!CheckLegalityOOO()) { return false; }
-    start = PieceCol[MoveColor][0];
-    end   = 2;
-    while (start > end) {
-      isCheck = IsCheck(start, MoveColor*7, MoveColor);
-      if (isCheck) { return false; }
-      --start;
+    for (thisCol = PieceCol[MoveColor][0]; thisCol > 1; thisCol--) {
+      if (IsCheck(thisCol, MoveColor*7, MoveColor)) { return false; }
     }
     StoreMove(plyCount);
     return true;
@@ -1024,13 +1015,13 @@ function CheckLegality(what, plyCount) {
     if (Board[mvToCol][mvToRow] !== 0) { return false; }
   }
   if ((mvCapture) && (Color(Board[mvToCol][mvToRow]) != 1-MoveColor)) {
-    if ((mvPiece != 6) || (!HistEnPassant[plyCount-1]) || (HistEnPassantCol[plyCount-1] != mvToCol) ||
+    if ((mvPiece != 6) || (!HistEnPassant[plyCount]) || (HistEnPassantCol[plyCount] != mvToCol) ||
       (mvToRow != 5-3*MoveColor)) { return false; }
   }
   if (mvIsPromotion) {
-    if (mvPiece     != 6) { return false; }
+    if (mvPiece != 6) { return false; }
     if (mvPieceOnTo >= 6) { return false; }
-    if (mvToRow     != 7*(1-MoveColor)) { return false; }
+    if (mvToRow != 7*(1-MoveColor)) { return false; }
   }
 
   // piece move => loop over same type pieces: which could move there?
@@ -1047,8 +1038,7 @@ function CheckLegality(what, plyCount) {
         mvPieceId = pieceId;
         // board updated: king check?
         StoreMove(plyCount);
-        isCheck = IsCheck(PieceCol[MoveColor][0], PieceRow[MoveColor][0], MoveColor);
-        if (!isCheck) { return true; }
+        if (! IsCheck(PieceCol[MoveColor][0], PieceRow[MoveColor][0], MoveColor)) { return true; }
         else { UndoMove(plyCount); }
       }
     }
@@ -1067,44 +1057,31 @@ function CheckLegalityKing(thisKing) {
 function CheckLegalityQueen(thisQueen) {
   if ((mvFromCol >= 0) && (mvFromCol != PieceCol[MoveColor][thisQueen])) { return false; }
   if ((mvFromRow >= 0) && (mvFromRow != PieceRow[MoveColor][thisQueen])) { return false; }
-  if (((PieceCol[MoveColor][thisQueen]-mvToCol) *
-    (PieceRow[MoveColor][thisQueen]-mvToRow) !== 0) &&
-    (Math.abs(PieceCol[MoveColor][thisQueen]-mvToCol) !=
-    Math.abs(PieceRow[MoveColor][thisQueen]-mvToRow)))
-  { return false; }
-  var clearWay = CheckClearWay(thisQueen);
-  if (!clearWay) { return false; }
+  if (((PieceCol[MoveColor][thisQueen]-mvToCol) * (PieceRow[MoveColor][thisQueen]-mvToRow) !== 0) && (Math.abs(PieceCol[MoveColor][thisQueen]-mvToCol) != Math.abs(PieceRow[MoveColor][thisQueen]-mvToRow))) { return false; }
+  if (! CheckClearWay(thisQueen)) { return false; }
   return true;
 }
 
 function CheckLegalityRook(thisRook) {
   if ((mvFromCol >= 0) && (mvFromCol != PieceCol[MoveColor][thisRook])) { return false; }
   if ((mvFromRow >= 0) && (mvFromRow != PieceRow[MoveColor][thisRook])) { return false; }
-  if ((PieceCol[MoveColor][thisRook]-mvToCol) *
-    (PieceRow[MoveColor][thisRook]-mvToRow) !== 0)
-  { return false; }
-  var clearWay = CheckClearWay(thisRook);
-  if (!clearWay) { return false; }
+  if ((PieceCol[MoveColor][thisRook]-mvToCol) * (PieceRow[MoveColor][thisRook]-mvToRow) !== 0) { return false; }
+  if (! CheckClearWay(thisRook)) { return false; }
   return true;
 }
 
 function CheckLegalityBishop(thisBishop) {
   if ((mvFromCol >= 0) && (mvFromCol != PieceCol[MoveColor][thisBishop])) { return false; }
   if ((mvFromRow >= 0) && (mvFromRow != PieceRow[MoveColor][thisBishop])) { return false; }
-  if (Math.abs(PieceCol[MoveColor][thisBishop]-mvToCol) !=
-    Math.abs(PieceRow[MoveColor][thisBishop]-mvToRow))
-  { return false; }
-  var clearWay = CheckClearWay(thisBishop);
-  if (!clearWay) { return false; }
+  if (Math.abs(PieceCol[MoveColor][thisBishop]-mvToCol) != Math.abs(PieceRow[MoveColor][thisBishop]-mvToRow)) { return false; }
+  if (! CheckClearWay(thisBishop)) { return false; }
   return true;
 }
 
 function CheckLegalityKnight(thisKnight) {
   if ((mvFromCol >= 0) && (mvFromCol != PieceCol[MoveColor][thisKnight])) { return false; }
   if ((mvFromRow >= 0) && (mvFromRow != PieceRow[MoveColor][thisKnight])) { return false; }
-  if (Math.abs(PieceCol[MoveColor][thisKnight]-mvToCol) *
-    Math.abs(PieceRow[MoveColor][thisKnight]-mvToRow) != 2)
-  { return false; }
+  if (Math.abs(PieceCol[MoveColor][thisKnight]-mvToCol) * Math.abs(PieceRow[MoveColor][thisKnight]-mvToRow) != 2) { return false; }
   return true;
 }
 
@@ -1130,8 +1107,7 @@ function RookForOOCastling(color) {
   if (PieceMoveCounter[color][0] > 0) { return null; }
 
   legal = false;
-  thisRook = 0;
-  while (thisRook < 16) {
+  for (thisRook = 0; thisRook < 16; thisRook++) {
     if ((PieceCol[color][thisRook] == CastlingShort[color]) &&
       (PieceCol[color][thisRook] > PieceCol[color][0]) &&
       (PieceRow[color][thisRook] == color*7) &&
@@ -1139,7 +1115,6 @@ function RookForOOCastling(color) {
       legal = true;
       break;
     }
-    ++thisRook;
   }
   if (!legal) { return null; }
   if (PieceMoveCounter[color][thisRook] > 0) { return null; }
@@ -1170,8 +1145,7 @@ function RookForOOOCastling(color) {
   if (PieceMoveCounter[color][0] > 0) { return null; }
 
   legal = false;
-  thisRook = 0;
-  while (thisRook < 16) {
+  for (thisRook = 0; thisRook < 16; thisRook++) {
     if ((PieceCol[color][thisRook] == CastlingLong[color]) &&
       (PieceCol[color][thisRook] < PieceCol[color][0]) &&
       (PieceRow[color][thisRook] == color*7) &&
@@ -1179,7 +1153,6 @@ function RookForOOOCastling(color) {
       legal = true;
       break;
     }
-    ++thisRook;
   }
   if (!legal) { return null; }
   if (PieceMoveCounter[color][thisRook] > 0) { return null; }
@@ -1218,23 +1191,11 @@ function CheckClearWay(thisPiece) {
   return true;
 }
 
-function ClearMove(move) {
-  var ss = move.length;
-  var cc = -1;
-  var ii = 0;
-  var mm = "";
-  while(ii < ss){
-    cc = move.charCodeAt(ii);
-    if ((cc == 45) || ((cc >= 48) && (cc <= 57)) || (cc == 61) || (cc == 35) ||
-        // (cc == 43) || // patch this to pass through '+' signs
-        ((cc >= 65) && (cc <= 90)) || ((cc >=97) && (cc <= 122))) {
-      mm += move.charAt(ii);
-    }
-    ++ii;
-  }
-  if (mm.match('^[Oo0]-?[Oo0]-?[Oo0]$')) { return 'O-O-O'; }
-  if (mm.match('^[Oo0]-?[Oo0]$')) { return 'O-O'; }
-  return mm;
+function CleanMove(move) {
+  move = move.replace(/[^a-zA-Z0-9#=-]*/g, ''); // patch here adding '+' after '0-8' to pass through check signs
+  if (move.match(/^[Oo0]/)) { move = move.replace(/[o0]/g, 'O').replace(/O(?=O)/g, 'O-'); }
+  move = move.replace(/ep/i, '');
+  return move;
 }
 
 function GoToMove(thisPly, thisVar) {
@@ -1244,9 +1205,8 @@ function GoToMove(thisPly, thisVar) {
     if (thisVar < 0) { thisVar = 0; }
     else if (thisVar >= numberOfVars) { thisVar = numberOfVars - 1; }
   }
-  if (thisPly < 0) {
-    thisPly = 0;
-  } else if (thisPly >= StartPlyVar[thisVar] + PlyNumberVar[thisVar]) {
+  if (thisPly < 0) { thisPly = 0; }
+  else if (thisPly >= StartPlyVar[thisVar] + PlyNumberVar[thisVar]) {
     thisPly = StartPlyVar[thisVar] + PlyNumberVar[thisVar];
   }
 
@@ -1389,7 +1349,7 @@ function HighlightLastMove() {
         clockFromComment(showThisMove+1) : initialLastMoverClock;
       if (!clockString && (CurrentPly === StartPly+PlyNumber)) {
         // support for time info in the last comment as { White Time: 0h:12min Black Time: 1h:23min }
-        clockRegExp = new RegExp((whiteToMove ? "Black" : "White") + " Time:\\s*(\\S+)", "i");
+        clockRegExp = new RegExp((whiteToMove ? "Black" : "White") + "\\s+Time:\\s*(\\S+)", "i");
         if (clockMatch = strippedMoveComment(StartPly+PlyNumber).match(clockRegExp)) {
           clockString = clockMatch[1];
         }
@@ -1406,7 +1366,7 @@ function HighlightLastMove() {
         clockFromComment(showThisMove) : initialBeforeLastMoverClock;
       if (!clockString && (CurrentPly === StartPly+PlyNumber)) {
         // support for time info in the last comment as { White Time: 0h:12min Black Time: 1h:23min }
-        clockRegExp = new RegExp((whiteToMove ? "White" : "Black") + " Time:\\s*(\\S+)", "i");
+        clockRegExp = new RegExp((whiteToMove ? "White" : "Black") + "\\s+Time:\\s*(\\S+)", "i");
         if (clockMatch = strippedMoveComment(StartPly+PlyNumber).match(clockRegExp)) {
           clockString = clockMatch[1];
         }
@@ -2167,6 +2127,9 @@ function Init(nextGame){
   firstStart = false;
 }
 
+function myAlertFEN(FenString, text) {
+  myAlert("error: invalid FEN in game " + (currentGame+1) + ": " + text + "\n" + FenString, true);
+}
 
 function InitFEN(startingFEN) {
   FenString = startingFEN !== undefined ? startingFEN : FenStringStart;
@@ -2192,6 +2155,9 @@ function InitFEN(startingFEN) {
   CastlingShort = [7, 7];
   InitialHalfMoveClock = 0;
 
+  HistVar[StartPly] = 0;
+  HistNull[StartPly] = 0;
+
   if (FenString == FenStringStart) {
     for (color = 0; color < 2; ++color) {
       //                         K  Q  N     B     R     p
@@ -2206,7 +2172,6 @@ function InitFEN(startingFEN) {
         Board[col][row] = (1-2*color)*PieceType[color][ii];
       }
     }
-    HistVar[StartPly] = 0;
   } else {
     var cc, kk, ll, nn, mm;
     for (ii = 0; ii < 2; ii++) {
@@ -2222,7 +2187,7 @@ function InitFEN(startingFEN) {
     while (cc != " ") {
       if (cc == "/") {
         if (ii != 8) {
-          myAlert("error: invalid FEN ("+ll+") in game "+(currentGame+1)+"\n"+FenString, true);
+          myAlertFEN(FenString, "char " + ll);
           InitFEN();
           return;
         }
@@ -2230,21 +2195,21 @@ function InitFEN(startingFEN) {
         jj--;
       }
       if (ii == 8) {
-        myAlert("error: invalid FEN ("+ll+") in game "+(currentGame+1)+"\n"+FenString, true);
+        myAlertFEN(FenString, "char " + ll);
         InitFEN();
         return;
       }
       if (!isNaN(cc)) {
         ii += parseInt(cc,10);
         if ((ii < 0) || (ii > 8)) {
-          myAlert("error: invalid FEN ("+ll+") in game "+(currentGame+1)+"\n"+FenString, true);
+          myAlertFEN(FenString, "char " + ll);
           InitFEN();
           return;
         }
       }
       if (cc.charCodeAt(0) == FenPieceName.toUpperCase().charCodeAt(0)) {
         if (PieceType[0][0] != -1) {
-          myAlert("error: invalid FEN ("+ll+") in game "+(currentGame+1)+"\n"+FenString, true);
+          myAlertFEN(FenString, "char " + ll);
           InitFEN();
           return;
         }
@@ -2255,7 +2220,7 @@ function InitFEN(startingFEN) {
       }
       if (cc.charCodeAt(0) == FenPieceName.toLowerCase().charCodeAt(0)) {
         if (PieceType[1][0] != -1) {
-          myAlert("error: invalid FEN ("+ll+") in game "+(currentGame+1)+"\n"+FenString, true);
+          myAlertFEN(FenString, "char " + ll);
           InitFEN();
           return;
         }
@@ -2267,7 +2232,7 @@ function InitFEN(startingFEN) {
       for (kk = 1; kk < 6; kk++) {
         if (cc.charCodeAt(0) == FenPieceName.toUpperCase().charCodeAt(kk)) {
           if (nn == 16) {
-            myAlert("error: invalid FEN ("+ll+") in game "+(currentGame+1)+"\n"+FenString, true);
+            myAlertFEN(FenString, "char " + ll);
             InitFEN();
             return;
           }
@@ -2279,7 +2244,7 @@ function InitFEN(startingFEN) {
         }
         if (cc.charCodeAt(0) == FenPieceName.toLowerCase().charCodeAt(kk)) {
           if (mm==16) {
-            myAlert("error: invalid FEN ("+ll+") in game "+(currentGame+1)+"\n"+FenString, true);
+            myAlertFEN(FenString, "char " + ll);
             InitFEN();
             return;
           }
@@ -2293,44 +2258,27 @@ function InitFEN(startingFEN) {
       cc = ll < FenString.length ? FenString.charAt(ll++) : " ";
     }
     if ((ii != 8) || (jj !== 0)) {
-      myAlert("error: invalid FEN ("+ll+") in game "+(currentGame+1)+"\n"+FenString, true);
+      myAlertFEN(FenString, "char " + ll);
       InitFEN();
       return;
     }
     if ((PieceType[0][0] == -1) || (PieceType[1][0] == -1)) {
-      myAlert("error: invalid FEN missing King in game "+(currentGame+1)+"\n"+FenString, true);
+      myAlertFEN(FenString, "missing King");
       InitFEN();
       return;
     }
     if (ll == FenString.length) {
-      FenString += " w ";
-      assumedCastleRights = ""; // castling rights will be guessed assuming Kings and Rooks original starting positions as in normal chess rules
-      if ((PieceRow[0][0] === 0) && (PieceCol[0][0] === 4)) {
-        for (ii = 0; ii < PieceType[0].length; ii++) {
-          if ((PieceType[0][ii] === 3) && (PieceRow[0][ii] === 0) && (PieceCol[0][ii] === 7)) { assumedCastleRights += FenPieceName.charAt(0).toUpperCase(); }
-          if ((PieceType[0][ii] === 3) && (PieceRow[0][ii] === 0) && (PieceCol[0][ii] === 0)) { assumedCastleRights += FenPieceName.charAt(1).toUpperCase(); }
-        }
-      }
-      if ((PieceRow[1][0] === 7) && (PieceCol[1][0] === 4)) {
-        for (ii = 0; ii < PieceType[1].length; ii++) {
-          if ((PieceType[1][ii] === 3) && (PieceRow[1][ii] === 7) && (PieceCol[1][ii] === 7)) { assumedCastleRights += FenPieceName.charAt(0).toLowerCase(); }
-          if ((PieceType[1][ii] === 3) && (PieceRow[1][ii] === 7) && (PieceCol[1][ii] === 0)) { assumedCastleRights += FenPieceName.charAt(1).toLowerCase(); }
-        }
-      }
-      FenString += assumedCastleRights ? assumedCastleRights : "-";
-      FenString += " - 0 1";
-      ll++;
+      FenString += "w " + assumedCastleRights() + " - 0 1";
     }
     cc = FenString.charAt(ll++);
     if ((cc == "w") || (cc == "b")) {
       if (cc == "b") {
-        StartMove=1;
+        StartMove = 1;
         StartPly += 1;
         MoveColor = 1;
       }
     } else {
-      myAlert("error: invalid FEN ("+ll+") invalid active color in game "+(currentGame+1)+"\n"+FenString, true);
-      return;
+      myAlertFEN(FenString, "invalid active color");
     }
 
     // set board
@@ -2346,46 +2294,47 @@ function InitFEN(startingFEN) {
 
     ll++;
     if (ll >= FenString.length) {
-      myAlert("error: invalid FEN ("+ll+") missing castling availability in game "+(currentGame+1)+"\n"+FenString, true);
-      return;
+      myAlertFEN(FenString, "missing castling availability");
+      FenString += " " + assumedCastleRights() + " - 0 1";
+      ll++;
     }
     CastlingLong = [-1, -1];
     CastlingShort = [-1, -1];
     cc = FenString.charAt(ll++);
     while (cc!=" ") {
       if (cc.charCodeAt(0) == FenPieceName.toUpperCase().charCodeAt(0)) {
-        for (CastlingShort[0] = 7; CastlingShort[0] >= 0; CastlingShort[0]--) {
+        for (CastlingShort[0] = 7; CastlingShort[0] > PieceCol[0][0]; CastlingShort[0]--) {
           if (Board[CastlingShort[0]][0] == 3) { break; }
         }
-        if (CastlingShort[0] < 0) {
-          myAlert("error: invalid FEN ("+ll+") missing Rook at castling column " + cc, true);
+        if (CastlingShort[0] <= PieceCol[0][0]) {
+          myAlertFEN(FenString, "missing castling Rook " + cc);
           CastlingShort[0] = -1;
         }
       }
       if (cc.charCodeAt(0) == FenPieceName.toUpperCase().charCodeAt(1)) {
-        for (CastlingLong[0] = 0; CastlingLong[0] <= 7; CastlingLong[0]++) {
+        for (CastlingLong[0] = 0; CastlingLong[0] < PieceCol[0][0]; CastlingLong[0]++) {
           if (Board[CastlingLong[0]][0] == 3) { break; }
         }
-        if (CastlingLong[0] > 7) {
-          myAlert("error: invalid FEN ("+ll+") missing Rook at castling column " + cc, true);
+        if (CastlingLong[0] >= PieceCol[0][0]) {
+          myAlertFEN(FenString, "missing castling Rook " + cc);
           CastlingLong[0] = -1;
         }
       }
       if (cc.charCodeAt(0) == FenPieceName.toLowerCase().charCodeAt(0)) {
-        for (CastlingShort[1] = 7; CastlingShort[1] >= 0; CastlingShort[1]--) {
+        for (CastlingShort[1] = 7; CastlingShort[1] > PieceCol[1][0]; CastlingShort[1]--) {
           if (Board[CastlingShort[1]][7] == -3) { break; }
         }
-        if (CastlingShort[1] < 0) {
-          myAlert("error: invalid FEN ("+ll+") missing Rook at castling column " + cc, true);
+        if (CastlingShort[1] <= PieceCol[1][0]) {
+          myAlertFEN(FenString, "missing castling Rook " + cc);
           CastlingShort[1] = -1;
         }
       }
       if (cc.charCodeAt(0) == FenPieceName.toLowerCase().charCodeAt(1)) {
-        for (CastlingLong[1] = 0; CastlingLong[1] <= 7; CastlingLong[1]++) {
+        for (CastlingLong[1] = 0; CastlingLong[1] < PieceCol[1][0]; CastlingLong[1]++) {
           if (Board[CastlingLong[1]][7] == -3) { break; }
         }
-        if (CastlingLong[1] > 7) {
-          myAlert("error: invalid FEN ("+ll+") missing Rook at castling column " + cc, true);
+        if (CastlingLong[1] >= PieceCol[1][0]) {
+          myAlertFEN(FenString, "missing castling Rook " + cc);
           CastlingLong[1] = -1;
         }
       }
@@ -2400,15 +2349,16 @@ function InitFEN(startingFEN) {
           if (castlingRookCol > PieceCol[color][0]) { CastlingShort[color] = castlingRookCol; }
           if (castlingRookCol < PieceCol[color][0]) { CastlingLong[color] = castlingRookCol; }
         } else {
-          myAlert("error: invalid FEN ("+ll+") missing Rook at castling column " + cc, true);
+          myAlertFEN(FenString, "missing castling Rook " + cc);
         }
       }
       cc = ll<FenString.length ? FenString.charAt(ll++) : " ";
     }
 
     if (ll >= FenString.length) {
-      myAlert("error: invalid FEN ("+ll+") missing en passant target square in game "+(currentGame+1)+"\n"+FenString, true);
-      return;
+      myAlertFEN(FenString, "missing en passant square");
+      FenString += " - 0 1";
+      ll++;
     }
     cc = FenString.charAt(ll++);
     while (cc != " ") {
@@ -2419,46 +2369,76 @@ function InitFEN(startingFEN) {
       cc = ll<FenString.length ? FenString.charAt(ll++) : " ";
     }
     if (ll >= FenString.length) {
-      myAlert("error: invalid FEN ("+ll+") missing halfmove clock in game "+(currentGame+1)+"\n"+FenString, true);
-      return;
+      myAlertFEN(FenString, "missing halfmove clock");
+      FenString += " 0 1";
+      ll++;
     }
     InitialHalfMoveClock = 0;
     cc = FenString.charAt(ll++);
     while (cc != " ") {
       if (isNaN(cc)) {
-        myAlert("error: invalid FEN ("+ll+") invalid halfmove clock in game "+(currentGame+1)+"\n"+FenString, true);
-        return;
+        myAlertFEN(FenString, "invalid halfmove clock");
+        break;
       }
       InitialHalfMoveClock=InitialHalfMoveClock*10+parseInt(cc,10);
       cc = ll<FenString.length ? FenString.charAt(ll++) : " ";
     }
     if (ll >= FenString.length) {
-      myAlert("error: invalid FEN ("+ll+") missing fullmove number in game "+(currentGame+1)+"\n"+FenString, true);
-      return;
+      myAlertFEN(FenString, "missing fullmove number");
+      FenString += " 1";
+      ll++;
     }
 
     InitialFullMoveNumber = 0;
     cc = FenString.charAt(ll++);
     while (cc != " ") {
       if (isNaN(cc)) {
-        myAlert("error: invalid FEN ("+ll+") invalid fullmove number in game "+(currentGame+1)+"\n"+FenString, true);
-        return;
+        myAlertFEN(FenString, "invalid fullmove number");
+        InitialFullMoveNumber = 1;
+        break;
       }
       InitialFullMoveNumber=InitialFullMoveNumber*10+parseInt(cc,10);
       cc = ll<FenString.length ? FenString.charAt(ll++) : " ";
     }
     if (InitialFullMoveNumber === 0) {
-      myAlert("warning: invalid FEN ("+ll+") invalid 0 fullmove number corrected to 1 in game "+(currentGame+1)+"\n"+FenString, true);
+      myAlertFEN(FenString, "invalid fullmove 0 set to 1");
       InitialFullMoveNumber = 1;
     }
     StartPly += 2*(InitialFullMoveNumber-1);
 
-    HistEnPassant[StartPly-1] = newEnPassant;
-    HistEnPassantCol[StartPly-1] = newEnPassantCol;
+    HistEnPassant[StartPly] = newEnPassant;
+    HistEnPassantCol[StartPly] = newEnPassantCol;
     HistNull[StartPly] = 0;
     HistVar[StartPly] = 0;
   }
 }
+
+// castling rights assuming Kings and Rooks starting positions as in normal chess
+function assumedCastleRights() {
+  var assumedRights = "";
+  if ((PieceRow[0][0] === 0) && (PieceCol[0][0] === 4)) {
+    for (ii = 0; ii < PieceType[0].length; ii++) {
+      if ((PieceType[0][ii] === 3) && (PieceRow[0][ii] === 0) && (PieceCol[0][ii] === 7)) {
+        assumedRights += FenPieceName.charAt(0).toUpperCase();
+      }
+      if ((PieceType[0][ii] === 3) && (PieceRow[0][ii] === 0) && (PieceCol[0][ii] === 0)) {
+        assumedRights += FenPieceName.charAt(1).toUpperCase();
+      }
+    }
+  }
+  if ((PieceRow[1][0] === 7) && (PieceCol[1][0] === 4)) {
+    for (ii = 0; ii < PieceType[1].length; ii++) {
+      if ((PieceType[1][ii] === 3) && (PieceRow[1][ii] === 7) && (PieceCol[1][ii] === 7)) {
+        assumedRights += FenPieceName.charAt(0).toLowerCase();
+      }
+      if ((PieceType[1][ii] === 3) && (PieceRow[1][ii] === 7) && (PieceCol[1][ii] === 0)) {
+        assumedRights += FenPieceName.charAt(1).toLowerCase();
+      }
+    }
+  }
+  return assumedRights ? assumedRights : "-";
+}
+
 
 function SetImageType(extension) {
   imageType = extension;
@@ -2561,18 +2541,21 @@ function LoadGameHeaders(){
     gameInitialWhiteClock[ii] = gameInitialBlackClock[ii] = "";
     gameVariant[ii] = "";
     while ((parse = pgnHeaderTagRegExpGlobal.exec(ss)) !== null) {
-      if      (parse[1] == 'Event')      { gameEvent[ii]  = parse[2]; }
-      else if (parse[1] == 'Site')       { gameSite[ii]   = parse[2]; }
-      else if (parse[1] == 'Round')      { gameRound[ii]  = parse[2]; }
-      else if (parse[1] == 'Date')       { gameDate[ii]   = parse[2]; }
-      else if (parse[1] == 'White')      { gameWhite[ii]  = parse[2]; }
-      else if (parse[1] == 'Black')      { gameBlack[ii]  = parse[2]; }
-      else if (parse[1] == 'Result')     { gameResult[ii] = parse[2]; }
-      else if (parse[1] == 'SetUp')      { gameSetUp[ii]  = parse[2]; }
-      else if (parse[1] == 'FEN')        { gameFEN[ii]    = parse[2]; }
-      else if (parse[1] == 'WhiteClock') { gameInitialWhiteClock[ii] = parse[2]; }
-      else if (parse[1] == 'BlackClock') { gameInitialBlackClock[ii] = parse[2]; }
-      else if (parse[1] == 'Variant')    { gameVariant[ii] = parse[2]; }
+      switch (parse[1]) {
+        case 'Event': gameEvent[ii] = parse[2]; break;
+        case 'Site': gameSite[ii] = parse[2]; break;
+        case 'Round': gameRound[ii] = parse[2]; break;
+        case 'Date': gameDate[ii] = parse[2]; break;
+        case 'White': gameWhite[ii] = parse[2]; break;
+        case 'Black': gameBlack[ii] = parse[2]; break;
+        case 'Result': gameResult[ii] = parse[2]; break;
+        case 'SetUp': gameSetUp[ii] = parse[2]; break;
+        case 'FEN': gameFEN[ii] = parse[2]; break;
+        case 'WhiteClock': gameInitialWhiteClock[ii] = parse[2]; break;
+        case 'BlackClock': gameInitialBlackClock[ii] = parse[2]; break;
+        case 'Variant': gameVariant[ii] = parse[2]; break;
+        default: break;
+      }
     }
   }
   if ((LiveBroadcastDemo) && (numberOfGames > 0)) {
@@ -2888,7 +2871,7 @@ function childrenVars(thisPly, thisVar) {
   if (typeof(thisPly) == "undefined") { thisPly = CurrentPly; }
   children = new Array();
   for (var ii = thisVar; ii < numberOfVars; ii++) {
-    if ((ii === thisVar && StartPlyVar[ii] + PlyNumberVar[ii] > thisPly) || (realParentVar(ii) === thisVar && StartPlyVar[ii] === thisPly)) {
+    if ((ii === thisVar && StartPlyVar[ii] + PlyNumberVar[ii] > thisPly) || (realParentVar(ii) === thisVar && StartPlyVar[ii] === thisPly && PlyNumberVar[ii] > 0)) {
       children.push(ii);
     }
   }
@@ -3023,6 +3006,14 @@ function ParsePGNGameString(gameString) {
         closeVar();
         break;
 
+      case '&': // nullmove "<>" became "&lt;&gt;"
+        if (ss.substr(start, 8) == "&lt;&gt;") {
+          ss = ss.slice(0, start) + "     -- " + ss.slice(start + 8);
+          start += 4;
+          break;
+        }
+        // dont add "break;"
+
       default:
 
         searchThis = new Array('1-0', '0-1', '1/2-1/2', '*');
@@ -3034,7 +3025,8 @@ function ParsePGNGameString(gameString) {
             } else {
                end = start + searchThis[ii].length;
             }
-            MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' ' + ss.substring(start, end).replace(/^\s*\{(.*)\}\s*$/, '$1');
+            if (MoveCommentsVar[CurrentVar][StartPly+PlyNumber]) { MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' '; }
+            MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ss.substring(start, end).replace(/^\s*\{(.*)\}\s*$/, '$1');
             start = end;
             break;
           }
@@ -3052,11 +3044,11 @@ function ParsePGNGameString(gameString) {
 
         if ((end = start + ss.substr(start).search(/[\s${;!?()]/)) < start) { end = ss.length; }
         move = ss.substring(start,end);
-        MovesVar[CurrentVar][StartPly+PlyNumber] = ClearMove(move);
+        MovesVar[CurrentVar][StartPly+PlyNumber] = CleanMove(move);
         lastVarWithNoMoves[lastVarWithNoMoves.length - 1] = false;
         if (ss.charAt(end) == ' ') { start = end; }
         else { start = end - 1; }
-        if (MovesVar[CurrentVar][StartPly+PlyNumber] !== '') { // to cope with misformed PGN data
+        if (! MovesVar[CurrentVar][StartPly+PlyNumber].match(/^[\s+#]*$/)) { // to cope with malsformed PGN data
           PlyNumber++;
           MoveCommentsVar[CurrentVar][StartPly+PlyNumber] = '';
         }
@@ -3064,7 +3056,10 @@ function ParsePGNGameString(gameString) {
     }
   }
 
-  if (CurrentVar !== 0) { myAlert("error: ParsePGNGameString ends with current var = " + CurrentVar, true); }
+  if (CurrentVar !== 0) {
+    myAlert("error: ParsePGNGameString ends with current var = " + CurrentVar, true);
+    while (CurrentVar > 0) { closeVar(); }
+  }
 
   StartPlyVar[0] = StartPly;
   PlyNumberVar[0] = PlyNumber;
@@ -3169,7 +3164,6 @@ function translateNAGs(comment) {
 }
 
 function ParseMove(move, plyCount) {
-//  move = move.replace(/[\+#]/g, ""); // patch this to pass through '+' and '#' signs
   var ii, ll;
   var remainder;
   var toRowMarker = -1;
@@ -3197,45 +3191,40 @@ function ParseMove(move, plyCount) {
     return true;
   }
 
-  // get destination column/row remembering what's left e.g. Rdxc3 exf8=Q+
-  ii = 1;
-  while(ii < move.length) {
+  // get destination column/row remembering what's left e.g. Rdxc3 exf8=Q#
+  for (ii = move.length-1; ii > 0; ii--) {
     if (!isNaN(move.charAt(ii))) {
       mvToCol = move.charCodeAt(ii-1) - 97;
-      mvToRow = move.charAt(ii)       -  1;
+      mvToRow = move.charAt(ii) - 1;
       remainder = move.substring(0, ii-1);
       toRowMarker = ii;
+      break;
     }
-    ++ii;
   }
 
   // final square did not make sense: maybe a castle?
   if ((mvToCol < 0) || (mvToCol > 7) || (mvToRow < 0) || (mvToRow > 7)) {
-    if ((move.indexOf('O') >= 0) || (move.indexOf('o') >= 0) || (move.indexOf('0') >= 0)) {
-      // long castling first: looking for o-o will get o-o-o too
-      if (move.match('^[Oo0]-?[Oo0]-?[Oo0]$') !== null) {
-        mvIsCastling = 1;
-        mvPiece = 1;
-        mvPieceId = 0;
-        mvPieceOnTo = 1;
-        mvFromCol = 4;
-        mvToCol = 2;
-        mvFromRow = 7*MoveColor;
-        mvToRow = 7*MoveColor;
-        return CheckLegality('O-O-O', plyCount);
-      }
-      if (move.match('^[Oo0]-?[Oo0]$') !== null) {
-        mvIsCastling = 1;
-        mvPiece = 1;
-        mvPieceId = 0;
-        mvPieceOnTo = 1;
-        mvFromCol = 4;
-        mvToCol = 6;
-        mvFromRow = 7*MoveColor;
-        mvToRow = 7*MoveColor;
-        return CheckLegality('O-O', plyCount);
-      }
-      return false;
+    // long castling first: looking for o-o will get o-o-o too
+    if (move.indexOf('O-O-O') === 0) {
+      mvIsCastling = 1;
+      mvPiece = 1;
+      mvPieceId = 0;
+      mvPieceOnTo = 1;
+      mvFromCol = 4;
+      mvToCol = 2;
+      mvFromRow = 7*MoveColor;
+      mvToRow = 7*MoveColor;
+      return CheckLegality('O-O-O', plyCount);
+    } else if (move.indexOf('O-O') === 0) {
+      mvIsCastling = 1;
+      mvPiece = 1;
+      mvPieceId = 0;
+      mvPieceOnTo = 1;
+      mvFromCol = 4;
+      mvToCol = 6;
+      mvFromRow = 7*MoveColor;
+      mvToRow = 7*MoveColor;
+      return CheckLegality('O-O', plyCount);
     } else { return false; }
   }
 
@@ -3269,8 +3258,8 @@ function ParseMove(move, plyCount) {
   // "square to" occupied: capture (note en-passant case)
   if (Board[mvToCol][mvToRow] !== 0) { mvCapture = 1; }
   else {
-    if ((mvPiece == 6) && (HistEnPassant[plyCount-1]) &&
-        (mvToCol == HistEnPassantCol[plyCount-1]) &&
+    if ((mvPiece == 6) && (HistEnPassant[plyCount]) &&
+        (mvToCol == HistEnPassantCol[plyCount]) &&
         (mvToRow == 5-3*MoveColor)) {
       mvCapture = 1;
     }
@@ -3293,22 +3282,23 @@ function ParseMove(move, plyCount) {
 
   // which piece was captured: if nothing found must be en-passant
   if (mvCapture) {
-    mvCapturedId = 15;
-    while((mvCapturedId >= 0) && (mvCaptured < 0)) {
+    for (mvCapturedId = 15; mvCapturedId >= 0; mvCapturedId--) {
       if ((PieceType[1-MoveColor][mvCapturedId] >  0) &&
           (PieceCol[1-MoveColor][mvCapturedId] == mvToCol) &&
           (PieceRow[1-MoveColor][mvCapturedId] == mvToRow)) {
         mvCaptured = PieceType[1-MoveColor][mvCapturedId];
-      } else { --mvCapturedId; }
+        if (mvCaptured == 1) { return false; }
+        break;
+      }
     }
-    if ((mvPiece == 6) && (mvCapturedId < 1) && (HistEnPassant[plyCount-1])) {
-      mvCapturedId = 15;
-      while((mvCapturedId >= 0) && (mvCaptured < 0)){
+    if ((mvPiece == 6) && (mvCapturedId < 1) && (HistEnPassant[plyCount])) {
+      for (mvCapturedId = 15; mvCapturedId >= 0; mvCapturedId--) {
         if ((PieceType[1-MoveColor][mvCapturedId] == 6) &&
             (PieceCol[1-MoveColor][mvCapturedId] == mvToCol) &&
             (PieceRow[1-MoveColor][mvCapturedId] == 4-MoveColor)) {
           mvCaptured = PieceType[1-MoveColor][mvCapturedId];
-        } else { --mvCapturedId; }
+          break;
+        }
       }
     }
   }
@@ -3317,12 +3307,12 @@ function ParseMove(move, plyCount) {
   if (! CheckLegality(PieceCode[mvPiece-1], plyCount)) { return false; }
 
   // pawn moved => check if en-passant possible
-  HistEnPassant[plyCount]    = false;
-  HistEnPassantCol[plyCount] = -1;
+  HistEnPassant[plyCount+1] = false;
+  HistEnPassantCol[plyCount+1] = -1;
   if (mvPiece == 6) {
      if (Math.abs(HistRow[0][plyCount]-mvToRow) == 2) {
-       HistEnPassant[plyCount]    = true;
-       HistEnPassantCol[plyCount] = mvToCol;
+       HistEnPassant[plyCount+1] = true;
+       HistEnPassantCol[plyCount+1] = mvToCol;
      }
   }
   return true;

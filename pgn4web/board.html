@@ -1145,16 +1145,22 @@ function customFunctionOnPgnTextLoad() {
     }
   }
 
+  if (firstCurrentGame == -1) { firstCurrentGame = currentGame; }
+
   if (gup("showHeightWidth") !== "") {
     myAlert("info: board width=" + boardWidth + " height=" + boardHeight, false);
   }
 }
 
+var firstCurrentGame = -1;
 var objectHiddenPuzzler = ["GameResult", "GameLastMove", "GameLastVariations", "GameNextMove", "GameNextVariations", "GameLastComment"];
 
 function customFunctionOnPgnGameLoad() {
 
   if (movesDisplay == "puzzle") {
+    if ((currentGame === firstCurrentGame) && (!alwaysInitialHalfmove)) { GoToInitialHalfmove(); }
+    if (firstCurrentGame == -1) { firstCurrentGame = currentGame; }
+
     for (var ii = 0; ii < objectHiddenPuzzler.length; ii++) {
       if (theObject = document.getElementById(objectHiddenPuzzler[ii])) {
         theObject.style.visibility = "hidden";
@@ -1301,7 +1307,7 @@ boardShortcut("H5", "scroll moves text to current move", function(t,e){ autoScro
 var boardGeneratorWin=null;
 function customShortcutKey_Shift_0() {
   if ((newPgnEncoded === "") && (newPgnText === "")) { return; }
-  if (! window.location.href.match(/board\.html/)) { return; }
+  if (!window.location.href.match(/board\.html/)) { return; }
   if (boardGeneratorWin && !boardGeneratorWin.closed) { boardGeneratorWin.close(); }
   boardGeneratorWin = window.open(window.location.href.replace(/board\.html/g, "board-generator.html").replace(window.location.hash, "") + "#preview");
   if (boardGeneratorWin && window.focus) { boardGeneratorWin.focus(); }
