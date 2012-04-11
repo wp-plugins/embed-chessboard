@@ -5,17 +5,16 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.49';
+var pgn4web_version = '2.51';
 
-var pgn4web_project_url = 'http://pgn4web.casaschi.net';
-var pgn4web_project_author = 'Paolo Casaschi';
-// pgn4web_project_email could be preassigned in pgn4web-server-config.js
-var pgn4web_project_email;
-if (pgn4web_project_email === undefined) { pgn4web_project_email = 'pgn4web@casaschi.net'; }
+var pgn4web_project_url = "http://pgn4web.casaschi.net";
+var pgn4web_project_author = "Paolo Casaschi";
+var pgn4web_project_email; // preassigned in pgn4web-server-config.js
+if (typeof(pgn4web_project_email) == "undefined") { pgn4web_project_email = "pgn4web@casaschi.net"; }
 
 var helpWin=null;
 function displayHelp(section) {
-  section = typeof(section) == "undefined" ? "" : "?" + section;
+  section = !section ? "" : "?" + section;
   if (helpWin && !helpWin.closed) { helpWin.close(); }
   helpWin = window.open(detectHelpLocation() + section, "pgn4web_help",
     "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
@@ -23,8 +22,8 @@ function displayHelp(section) {
 }
 
 
-// custom functions executed at the given moments
-// to be redefined in the HTML AFTER loading pgn4web.js
+// custom functions for given events
+// to be redefined AFTER loading pgn4web.js
 
 function customFunctionOnPgnTextLoad() {}
 function customFunctionOnPgnGameLoad() {}
@@ -93,7 +92,7 @@ function resetAlert() {
   alertNum = alertNumSinceReset = fatalErrorNumSinceReset = 0;
   stopAlertPrompt();
   if (!alertFirstResetLoadingPgn) {
-    boardShortcut(debugShortcutSquare, "pgn4web v" + pgn4web_version + " debug info");
+    if (boardIsDefault(debugShortcutSquare)) { boardShortcut(debugShortcutSquare, "pgn4web v" + pgn4web_version + " debug info", null, true); }
   }
 }
 
@@ -103,10 +102,8 @@ function myAlert(msg, fatalError) {
   if (fatalError) { fatalErrorNumSinceReset++; }
   alertLast = (alertLast + 1) % alertLog.length;
   alertLog[alertLast] = msg  + "\n" + (new Date()).toLocaleString();
-  boardShortcut(debugShortcutSquare,
-    "pgn4web v" + pgn4web_version + " debug info, " + alertNum + " alert" + (alertNum > 1 ? "s" : ""));
-
-  if ((LiveBroadcastDelay === 0) || (LiveBroadcastAlert === true)) {
+  if (boardIsDefault(debugShortcutSquare)) { boardShortcut(debugShortcutSquare, "pgn4web v" + pgn4web_version + " debug info, " + alertNum + " alert" + (alertNum > 1 ? "s" : ""), null, true); }
+  if (((LiveBroadcastDelay === 0) || (LiveBroadcastAlert === true)) && (boardIsDefault(debugShortcutSquare))) {
     startAlertPrompt();
   }
   customFunctionOnAlert(msg);
@@ -131,8 +128,9 @@ function alertPromptTick(restart) {
     clearTimeout(alertPromptInterval);
     alertPromptInterval = null;
   }
-  theObject = document.getElementById('tcol0trow0');
-  if(theObject) {
+  var debugColRow = colRowFromSquare(debugShortcutSquare);
+  if (!debugColRow) { return; }
+  if(theObject = document.getElementById('tcol' + debugColRow.col + 'trow' + debugColRow.row)) {
     if (alertPromptOn) {
       if ((highlightOption) &&
         ((lastColFromHighlighted === 0 && lastRowFromHighlighted === 7) ||
@@ -156,7 +154,7 @@ function stopKeyProp(e) {
   return false;
 }
 
-// for onFocus and onBlur actions on textboxes, allowing text typing
+// for onFocus and onBlur textbox events, allowing text typing
 var shortcutKeysWereEnabled = false;
 function disableShortcutKeysAndStoreStatus() {
   if ((shortcutKeysWereEnabled = shortcutKeysEnabled) === true) {
@@ -409,11 +407,22 @@ function handlekey(e) {
 
 boardOnClick = new Array(8);
 boardTitle = new Array(8);
+boardDefault = new Array(8);
 for (col=0; col<8; col++) {
   boardOnClick[col] = new Array(8);
   boardTitle[col] = new Array(8);
+  boardDefault[col] = new Array(8);
 }
 clearShortcutSquares("ABCDEFGH", "12345678");
+
+function colRowFromSquare(square) {
+  if (square.charCodeAt === null) { return -1; }
+  var col = square.charCodeAt(0) - 65; // 65="A"
+  if ((col < 0) || (col > 7)) { return null; }
+  var row = 56 - square.charCodeAt(1); // 56="8"
+  if ((row < 0) || (row > 7)) { return null; }
+  return { "col": col, "row": row };
+}
 
 function clearShortcutSquares(cols, rows) {
   if ((typeof cols != "string") || (typeof rows != "string")) { return; }
@@ -422,19 +431,22 @@ function clearShortcutSquares(cols, rows) {
   } }
 }
 
-function boardShortcut(square, title, functionPointer) {
-  var theObject;
-  if (square.charCodeAt === null) { return; }
-  var col = square.charCodeAt(0) - 65; // 65="A"
-  if ((col < 0) || (col > 7)) { return; }
-  var row = 56 - square.charCodeAt(1); // 56="8"
-  if ((row < 0) || (row > 7)) { return; }
+function boardIsDefault(square) {
+  var colRow = colRowFromSquare(square);
+  if (!colRow) { return false; }
+  return boardDefault[colRow.col][colRow.row];
+}
+
+function boardShortcut(square, title, functionPointer, defaultSetting) {
+  var theObject, colRow = colRowFromSquare(square);
+  if (!colRow) { return; }
+  else { var col = colRow.col; var row = colRow.row; }
   boardTitle[col][row] = title;
   if (functionPointer) { boardOnClick[col][row] = functionPointer; }
+  boardDefault[col][row] = defaultSetting ? true : false;
   if (theObject = document.getElementById('img_tcol' + col + 'trow' + row)) {
     if (IsRotated) { square = String.fromCharCode(72-col,49+row); }
-    if (boardTitle[col][row] !== '') { squareTitle = square + ': ' + boardTitle[col][row]; }
-    else { squareTitle = square; }
+    squareTitle = square + (boardTitle[col][row] ? ': ' + boardTitle[col][row] : '');
     theObject.title = squareTitle;
   }
 }
@@ -442,151 +454,152 @@ function boardShortcut(square, title, functionPointer) {
 // PLEASE NOTE: 'boardShortcut' ALWAYS ASSUMES 'square' WITH WHITE ON BOTTOM
 
 debugShortcutSquare = "A8";
+
 // A8
-boardShortcut("A8", "pgn4web v" + pgn4web_version + " debug info", function(t,e){ displayDebugInfo(); });
+boardShortcut("A8", "pgn4web v" + pgn4web_version + " debug info", function(t,e){ displayDebugInfo(); }, true);
 // B8
-boardShortcut("B8", "show this position FEN string", function(t,e){ displayFenData(); });
+boardShortcut("B8", "show this position FEN string", function(t,e){ displayFenData(); }, true);
 // C8
-boardShortcut("C8", "show this game PGN source data", function(t,e){ displayPgnData(false); });
+boardShortcut("C8", "show this game PGN source data", function(t,e){ displayPgnData(false); }, true);
 // D8
-boardShortcut("D8", "show full PGN source data", function(t,e){ displayPgnData(true); });
+boardShortcut("D8", "show full PGN source data", function(t,e){ displayPgnData(true); }, true);
 // E8
-boardShortcut("E8", "search help", function(t,e){ displayHelp("search_tool"); });
+boardShortcut("E8", "search help", function(t,e){ displayHelp(e.shiftKey ? "informant_symbols" : "search_tool"); }, true);
 // F8
-boardShortcut("F8", "shortcut keys help", function(t,e){ displayHelp("shortcut_keys"); });
+boardShortcut("F8", "shortcut keys help", function(t,e){ displayHelp("shortcut_keys"); }, true);
 // G8
-boardShortcut("G8", "shortcut squares help", function(t,e){ displayHelp("shortcut_squares"); });
+boardShortcut("G8", "shortcut squares help", function(t,e){ displayHelp("shortcut_squares"); }, true);
 // H8
-boardShortcut("H8", "pgn4web help", function(t,e){ displayHelp(); });
+boardShortcut("H8", "pgn4web help", function(t,e){ displayHelp(e.shiftKey ? "credits_and_license" : ""); }, true);
 // A7
-boardShortcut("A7", "pgn4web website", function(t,e){ window.open(pgn4web_project_url); });
+boardShortcut("A7", "pgn4web website", function(t,e){ window.open(pgn4web_project_url); }, true);
 // B7
-boardShortcut("B7", "undo last chessboard position update", function(t,e){ undoStackUndo(); });
+boardShortcut("B7", "undo last chessboard position update", function(t,e){ undoStackUndo(); }, true);
 // C7
-boardShortcut("C7", "redo last undo", function(t,e){ undoStackRedo(); });
+boardShortcut("C7", "redo last undo", function(t,e){ undoStackRedo(); }, true);
 // D7
-boardShortcut("D7", "toggle highlight last move", function(t,e){ SetHighlight(!highlightOption); });
+boardShortcut("D7", "toggle highlight last move", function(t,e){ SetHighlight(!highlightOption); }, true);
 // E7
-boardShortcut("E7", "flip board", function(t,e){ if (!e.shiftKey || IsRotated) { FlipBoard(); } });
+boardShortcut("E7", "flip board", function(t,e){ if (!e.shiftKey || IsRotated) { FlipBoard(); } }, true);
 // F7
-boardShortcut("F7", "toggle show comments in game text", function(t,e){ if (e.shiftKey) { SetCommentsOnSeparateLines(!commentsOnSeparateLines); } else { SetCommentsIntoMoveText(!commentsIntoMoveText); } var oldPly = CurrentPly; var oldVar = CurrentVar; Init(); GoToMove(oldPly, oldVar); });
+boardShortcut("F7", "toggle show comments in game text", function(t,e){ if (e.shiftKey) { SetCommentsOnSeparateLines(!commentsOnSeparateLines); } else { SetCommentsIntoMoveText(!commentsIntoMoveText); } var oldPly = CurrentPly; var oldVar = CurrentVar; Init(); GoToMove(oldPly, oldVar); }, true);
 // G7
-boardShortcut("G7", "toggle autoplay next game", function(t,e){ SetAutoplayNextGame(!autoplayNextGame); });
+boardShortcut("G7", "toggle autoplay next game", function(t,e){ SetAutoplayNextGame(!autoplayNextGame); }, true);
 // H7
-boardShortcut("H7", "toggle enabling shortcut keys", function(t,e){ interactivelyToggleShortcutKeys(); });
+boardShortcut("H7", "toggle enabling shortcut keys", function(t,e){ interactivelyToggleShortcutKeys(); }, true);
 // A6
-boardShortcut("A6", "pause live broadcast automatic refresh", function(t,e){ pauseLiveBroadcast(); });
+boardShortcut("A6", "pause live broadcast automatic refresh", function(t,e){ pauseLiveBroadcast(); }, true);
 // B6
-boardShortcut("B6", "restart live broadcast automatic refresh", function(t,e){ restartLiveBroadcast(); });
+boardShortcut("B6", "restart live broadcast automatic refresh", function(t,e){ restartLiveBroadcast(); }, true);
 // C6
 boardShortcut("C6", "search previous finished game", function(t,e){ searchPgnGame('\\[\\s*Result\\s*"(?!\\*"\\s*\\])', true); });
 // D6
 boardShortcut("D6", "search previous unfinished game", function(t,e){ searchPgnGame('\\[\\s*Result\\s*"\\*"\\s*\\]', true); });
 // E6
-boardShortcut("E6", "search next unfinished game", function(t,e){  searchPgnGame('\\[\\s*Result\\s*"\\*"\\s*\\]', false); });
+boardShortcut("E6", "search next unfinished game", function(t,e){  searchPgnGame('\\[\\s*Result\\s*"\\*"\\s*\\]', false); }, true);
 // F6
-boardShortcut("F6", "search next finished game", function(t,e){ searchPgnGame('\\[\\s*Result\\s*"(?!\\*"\\s*\\])', false); });
+boardShortcut("F6", "search next finished game", function(t,e){ searchPgnGame('\\[\\s*Result\\s*"(?!\\*"\\s*\\])', false); }, true);
 // G6
-boardShortcut("G6", "toggle live broadcast stepping", function(t,e){ LiveBroadcastSteppingMode = !LiveBroadcastSteppingMode; });
+boardShortcut("G6", "toggle live broadcast stepping", function(t,e){ LiveBroadcastSteppingMode = !LiveBroadcastSteppingMode; }, true);
 // H6
-boardShortcut("H6", "force games refresh during live broadcast", function(t,e){ refreshPgnSource(); });
+boardShortcut("H6", "force games refresh during live broadcast", function(t,e){ refreshPgnSource(); }, true);
 // A5
-boardShortcut("A5", "repeat last search backward", function(t,e){ searchPgnGame(lastSearchPgnExpression, true); });
+boardShortcut("A5", "repeat last search backward", function(t,e){ searchPgnGame(lastSearchPgnExpression, true); }, true);
 // B5
-boardShortcut("B5", "search prompt", function(t,e){ searchPgnGamePrompt(); });
+boardShortcut("B5", "search prompt", function(t,e){ searchPgnGamePrompt(); }, true);
 // C5
-boardShortcut("C5", "repeat last search", function(t,e){ searchPgnGame(lastSearchPgnExpression); });
+boardShortcut("C5", "repeat last search", function(t,e){ searchPgnGame(lastSearchPgnExpression); }, true);
 // D5
-boardShortcut("D5", "search previous win result", function(t,e){ searchPgnGame('\\[\\s*Result\\s*"(1-0|0-1)"\\s*\\]', true); });
+boardShortcut("D5", "search previous win result", function(t,e){ searchPgnGame('\\[\\s*Result\\s*"(1-0|0-1)"\\s*\\]', true); }, true);
 // E5
-boardShortcut("E5", "search next win result", function(t,e){ searchPgnGame('\\[\\s*Result\\s*"(1-0|0-1)"\\s*\\]', false); });
+boardShortcut("E5", "search next win result", function(t,e){ searchPgnGame('\\[\\s*Result\\s*"(1-0|0-1)"\\s*\\]', false); }, true);
 // F5
-boardShortcut("F5", "", function(t,e){});
+boardShortcut("F5", "", function(t,e){}, true);
 // G5
-boardShortcut("G5", "", function(t,e){});
+boardShortcut("G5", "", function(t,e){}, true);
 // H5
-boardShortcut("H5", "", function(t,e){});
+boardShortcut("H5", "", function(t,e){}, true);
 // A4
-boardShortcut("A4", "search previous event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"(?!' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\])', true); });
+boardShortcut("A4", "search previous event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"(?!' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\])', true); }, true);
 // B4
-boardShortcut("B4", "search previous round of same event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])|\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])', true); });
+boardShortcut("B4", "search previous round of same event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])|\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])', true); }, true);
 // C4
-boardShortcut("C4", "search previous game of same black player", function(t,e){ searchPgnGame('\\[\\s*Black\\s*"' + fixRegExp(gameBlack[currentGame]) + '"\\s*\\]', true); });
+boardShortcut("C4", "search previous game of same black player", function(t,e){ searchPgnGame('\\[\\s*Black\\s*"' + fixRegExp(gameBlack[currentGame]) + '"\\s*\\]', true); }, true);
 // D4
-boardShortcut("D4", "search previous game of same white player", function(t,e){ searchPgnGame('\\[\\s*White\\s*"' + fixRegExp(gameWhite[currentGame]) + '"\\s*\\]', true); });
+boardShortcut("D4", "search previous game of same white player", function(t,e){ searchPgnGame('\\[\\s*White\\s*"' + fixRegExp(gameWhite[currentGame]) + '"\\s*\\]', true); }, true);
 // E4
-boardShortcut("E4", "search next game of same white player", function(t,e){ searchPgnGame('\\[\\s*White\\s*"' + fixRegExp(gameWhite[currentGame]) + '"\\s*\\]', false); });
+boardShortcut("E4", "search next game of same white player", function(t,e){ searchPgnGame('\\[\\s*White\\s*"' + fixRegExp(gameWhite[currentGame]) + '"\\s*\\]', false); }, true);
 // F4
-boardShortcut("F4", "search next game of same black player", function(t,e){  searchPgnGame('\\[\\s*Black\\s*"' + fixRegExp(gameBlack[currentGame]) + '"\\s*\\]', false); });
+boardShortcut("F4", "search next game of same black player", function(t,e){  searchPgnGame('\\[\\s*Black\\s*"' + fixRegExp(gameBlack[currentGame]) + '"\\s*\\]', false); }, true);
 // G4
-boardShortcut("G4", "search next round of same event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])|\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])', false); });
+boardShortcut("G4", "search next round of same event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])|\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])', false); }, true);
 // H4
-boardShortcut("H4", "search next event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"(?!' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\])', false); });
+boardShortcut("H4", "search next event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"(?!' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\])', false); }, true);
 // A3
-boardShortcut("A3", "load first game", function(t,e){ if (numberOfGames > 1) { Init(0); } });
+boardShortcut("A3", "load first game", function(t,e){ if (numberOfGames > 1) { Init(0); } }, true);
 // B3
-boardShortcut("B3", "jump to previous games decile", function(t,e){ if (currentGame > 0) { calculateDeciles(); for(ii=(deciles.length-2); ii>=0; ii--) { if (currentGame > deciles[ii]) { Init(deciles[ii]); break; } } } });
+boardShortcut("B3", "jump to previous games decile", function(t,e){ if (currentGame > 0) { calculateDeciles(); for(ii=(deciles.length-2); ii>=0; ii--) { if (currentGame > deciles[ii]) { Init(deciles[ii]); break; } } } }, true);
 // C3
-boardShortcut("C3", "load previous game", function(t,e){ Init(currentGame - 1); });
+boardShortcut("C3", "load previous game", function(t,e){ Init(currentGame - 1); }, true);
 // D3
-boardShortcut("D3", "load random game", function(t,e){ if (numberOfGames > 1) { Init(Math.floor(Math.random()*numberOfGames)); } });
+boardShortcut("D3", "load random game", function(t,e){ if (numberOfGames > 1) { Init(Math.floor(Math.random()*numberOfGames)); } }, true);
 // E3
-boardShortcut("E3", "load random game at random position", function(t,e){ randomGameRandomPly(); });
+boardShortcut("E3", "load random game at random position", function(t,e){ randomGameRandomPly(); }, true);
 // F3
-boardShortcut("F3", "load next game", function(t,e){ Init(currentGame + 1); });
+boardShortcut("F3", "load next game", function(t,e){ Init(currentGame + 1); }, true);
 // G3
-boardShortcut("G3", "jump to next games decile", function(t,e){ if (currentGame < numberOfGames - 1) { calculateDeciles(); for(ii=1; ii<deciles.length; ii++) { if (currentGame < deciles[ii]) { Init(deciles[ii]); break; } } } });
+boardShortcut("G3", "jump to next games decile", function(t,e){ if (currentGame < numberOfGames - 1) { calculateDeciles(); for(ii=1; ii<deciles.length; ii++) { if (currentGame < deciles[ii]) { Init(deciles[ii]); break; } } } }, true);
 // H3
-boardShortcut("H3", "load last game", function(t,e){ if (numberOfGames > 1) { Init(numberOfGames - 1); } });
+boardShortcut("H3", "load last game", function(t,e){ if (numberOfGames > 1) { Init(numberOfGames - 1); } }, true);
 // A2
-boardShortcut("A2", "stop autoplay", function(t,e){ SetAutoPlay(e.shiftKey); });
+boardShortcut("A2", "stop autoplay", function(t,e){ SetAutoPlay(e.shiftKey); }, true);
 // B2
-boardShortcut("B2", "toggle autoplay", function(t,e){ SwitchAutoPlay(); });
+boardShortcut("B2", "toggle autoplay", function(t,e){ SwitchAutoPlay(); }, true);
 // C2
-boardShortcut("C2", "autoplay 1 second", function(t,e){ SetAutoplayDelayAndStart((e.shiftKey ? 10 : 1)*1000); });
+boardShortcut("C2", "autoplay 1 second", function(t,e){ SetAutoplayDelayAndStart((e.shiftKey ? 10 : 1)*1000); }, true);
 // D2
-boardShortcut("D2", "autoplay 2 seconds", function(t,e){ SetAutoplayDelayAndStart((e.shiftKey ? 20 : 2)*1000); });
+boardShortcut("D2", "autoplay 2 seconds", function(t,e){ SetAutoplayDelayAndStart((e.shiftKey ? 20 : 2)*1000); }, true);
 // E2
-boardShortcut("E2", "autoplay 5 seconds", function(t,e){ SetAutoplayDelayAndStart((e.shiftKey ? 50 : 5)*1000); });
+boardShortcut("E2", "autoplay 5 seconds", function(t,e){ SetAutoplayDelayAndStart((e.shiftKey ? 50 : 5)*1000); }, true);
 // F2
-boardShortcut("F2", "autoplay custom delay", function(t,e){ setCustomAutoplayDelay(); });
+boardShortcut("F2", "autoplay custom delay", function(t,e){ setCustomAutoplayDelay(); }, true);
 // G2
-boardShortcut("G2", "replay up to 6 previous half-moves, then autoplay forward", function(t,e){ replayPreviousMoves(e.shiftKey ? 10 : 6); });
+boardShortcut("G2", "replay up to 6 previous half-moves, then autoplay forward", function(t,e){ replayPreviousMoves(e.shiftKey ? 10 : 6); }, true);
 // H2
-boardShortcut("H2", "replay the previous half-move, then autoplay forward", function(t,e){ replayPreviousMoves(e.shiftKey ? 3 : 1); });
+boardShortcut("H2", "replay the previous half-move, then autoplay forward", function(t,e){ replayPreviousMoves(e.shiftKey ? 3 : 1); }, true);
 // A1
-boardShortcut("A1", "go to game start", function(t,e){ startButton(e); });
-// B1
-// see setB1C1F1G1boardShortcuts()
-// C1
-// see setB1C1F1G1boardShortcuts()
+boardShortcut("A1", "go to game start", function(t,e){ startButton(e); }, true);
+// B1 see setB1C1F1G1boardShortcuts()
+boardShortcut("B1", "", function(t,e){}, true);
+// C1 see setB1C1F1G1boardShortcuts()
+boardShortcut("C1", "", function(t,e){}, true);
 // D1
-boardShortcut("D1", "move backward", function(t,e){ GoToMove(CurrentPly - 1); });
+boardShortcut("D1", "move backward", function(t,e){ GoToMove(CurrentPly - 1); }, true);
 // E1
-boardShortcut("E1", "move forward", function(t,e){ GoToMove(CurrentPly + 1); });
-// F1
-// see setB1C1F1G1boardShortcuts()
-// G1
-// see setB1C1F1G1boardShortcuts()
+boardShortcut("E1", "move forward", function(t,e){ GoToMove(CurrentPly + 1); }, true);
+// F1 see setB1C1F1G1boardShortcuts()
+boardShortcut("F1", "", function(t,e){}, true);
+// G1 see setB1C1F1G1boardShortcuts()
+boardShortcut("G1", "", function(t,e){}, true);
 // H1
-boardShortcut("H1", "go to game end", function(t,e){ endButton(e); });
+boardShortcut("H1", "go to game end", function(t,e){ endButton(e); }, true);
 
 setB1C1F1G1boardShortcuts();
 
 function setB1C1F1G1boardShortcuts() {
   if (commentsIntoMoveText && GameHasComments) {
-    boardShortcut("B1", "go to previous comment or variation", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly - 10); } else { MoveToPrevComment(); } });
-    boardShortcut("G1", "go to next comment or variation", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly + 10); } else { MoveToNextComment(); } });
+    if (boardIsDefault("B1")) { boardShortcut("B1", "go to previous comment or variation", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly - 10); } else { MoveToPrevComment(); } }, true); }
+    if (boardIsDefault("G1")) { boardShortcut("G1", "go to next comment or variation", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly + 10); } else { MoveToNextComment(); } }, true); }
   } else {
-    boardShortcut("B1", "move 10 half-moves backward", function(t,e){ GoToMove(CurrentPly - 10); });
-    boardShortcut("G1", "move 10 half-moves forward", function(t,e){ GoToMove(CurrentPly + 10); });
+    if (boardIsDefault("B1")) { boardShortcut("B1", "move 10 half-moves backward", function(t,e){ GoToMove(CurrentPly - 10); }, true); }
+    if (boardIsDefault("G1")) { boardShortcut("G1", "move 10 half-moves forward", function(t,e){ GoToMove(CurrentPly + 10); }, true); }
   }
   if (commentsIntoMoveText && GameHasVariations) {
-    boardShortcut("C1", "go to parent variation", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly - 6); } else { GoToMove(StartPlyVar[CurrentVar]); } });
-    boardShortcut("F1", "cycle through alternative variations, if any, otherwise move forward", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly + 6); } else { if (!goToNextVariationSibling()) { GoToMove(CurrentPly + 1); } } });
+    if (boardIsDefault("C1")) { boardShortcut("C1", "go to parent variation", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly - 6); } else { GoToMove(StartPlyVar[CurrentVar]); } }, true); }
+    if (boardIsDefault("F1")) { boardShortcut("F1", "cycle through alternative variations, if any, otherwise move forward", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly + 6); } else { if (!goToNextVariationSibling()) { GoToMove(CurrentPly + 1); } } }, true); }
   } else {
-    boardShortcut("C1", "move 6 half-moves backward", function(t,e){ GoToMove(CurrentPly - 6); });
-    boardShortcut("F1", "move 6 half-moves forward", function(t,e){ GoToMove(CurrentPly + 6); });
+    if (boardIsDefault("C1")) { boardShortcut("C1", "move 6 half-moves backward", function(t,e){ GoToMove(CurrentPly - 6); }, true); }
+    if (boardIsDefault("F1")) { boardShortcut("F1", "move 6 half-moves forward", function(t,e){ GoToMove(CurrentPly + 6); }, true); }
   }
 }
 
@@ -607,8 +620,8 @@ function replayPreviousMoves(numPlies) {
 }
 
 function detectJavascriptLocation() {
-  jspath = "";
-  var e = document.getElementsByTagName('script');
+  var jspath = "";
+  var e = document.getElementsByTagName("script");
   for(var i=0; i<e.length; i++) {
     if ((e[i].src) && (e[i].src.match(/(pgn4web|pgn4web-compacted)\.js/))) {
       jspath = e[i].src;
@@ -622,10 +635,10 @@ function detectHelpLocation() {
 }
 
 function detectBaseLocation() {
-  base = "";
-  var e = document.getElementsByTagName('base');
+  var base = "";
+  var e = document.getElementsByTagName("base");
   for(var i=0; i<e.length; i++) {
-    if (e[i].href) { base = e[i].href; }
+    if (e[i].href) { base = e[i].href; break; }
   }
   return base;
 }
@@ -633,30 +646,32 @@ function detectBaseLocation() {
 
 debugWin = null;
 function displayDebugInfo() {
+  var base = detectBaseLocation();
+  var jsurl = detectJavascriptLocation();
   stopAlertPrompt();
   debugInfo = 'pgn4web: version=' + pgn4web_version + ' homepage=' + pgn4web_project_url + '\n\n' +
     'HTMLURL: length=' + location.href.length + ' url=' +
     (location.href.length < 100 ? location.href : (location.href.substring(0,99) + '...')) + '\n' +
-    'BASEURL: url=' + detectBaseLocation() + '\n' +
-    'JSURL: url=' + detectJavascriptLocation() + '\n\n' +
-    'PGNURL: url=' + pgnUrl + '\n' +
-    'PGNTEXT: length=';
-  if (document.getElementById("pgnText") !== null) {
-    debugInfo += document.getElementById("pgnText").tagName.toLowerCase() == "textarea" ?
-      document.getElementById("pgnText").value.length :
-      document.getElementById("pgnText").innerHTML.length +
-      ' container=' + document.getElementById("pgnText").tagName.toLowerCase();
-    // pgn4web up to 1.77 used <span> for pgnText
+    (base ? 'BASEURL: url=' + base + '\n' : '') +
+    (jsurl != 'pgn4web.js' ? 'JSURL: url=' + jsurl + '\n' : '');
+  if (pgnUrl) {
+    debugInfo += 'PGNURL: url=' + pgnUrl;
+  } else {
+    if (theObject = document.getElementById("pgnText")) {
+      debugInfo += 'PGNTEXT: length=' + (theObject.tagName.toLowerCase() == "textarea" ? theObject.value.length : "?");
+    }
   }
   debugInfo += '\n\n' +
     'GAME: current=' + (currentGame+1) + ' number=' + numberOfGames + '\n' +
     'VARIATION: current=' + CurrentVar + ' number=' + (numberOfVars-1) + '\n' +
     'PLY: start=' + StartPly + ' current=' + CurrentPly + ' number=' + PlyNumber + '\n' +
-    'AUTOPLAY: ' + (isAutoPlayOn ? 'delay=' + Delay + 'ms' + ' autoplaynext=' + autoplayNextGame : 'off') +
-    '\n\n' +
-    'LIVEBROADCAST: ' + (LiveBroadcastDelay > 0 ? 'ticker=' + LiveBroadcastTicker + ' delay=' + LiveBroadcastDelay + 'm' + ' started=' + LiveBroadcastStarted + ' ended=' + LiveBroadcastEnded + ' paused=' + LiveBroadcastPaused + ' demo=' + LiveBroadcastDemo + ' alert=' + LiveBroadcastAlert + ' stepping=' + LiveBroadcastSteppingMode + '\n' + 'refreshed: ' + LiveBroadcastLastRefreshedLocal + '\n' + 'received: ' + LiveBroadcastLastReceivedLocal + '\n' + 'modified (server time): ' + LiveBroadcastLastModified_ServerTime() : 'off') +
-    '\n\n' +
-    'ALERTLOG: fatalnew=' + fatalErrorNumSinceReset + ' new=' + alertNumSinceReset +
+    'AUTOPLAY: status=' + (isAutoPlayOn ? 'on' : 'off') + ' delay=' + Delay + 'ms' + ' next=' + autoplayNextGame +
+    '\n\n';
+  if (LiveBroadcastDelay > 0) {
+    debugInfo += 'LIVEBROADCAST: status=' + liveStatusDebug() + ' ticker=' + LiveBroadcastTicker + ' delay=' + LiveBroadcastDelay + 'm' + '\n' + 'refreshed: ' + LiveBroadcastLastRefreshedLocal + '\n' + 'received: ' + LiveBroadcastLastReceivedLocal + '\n' + 'modified (server time): ' + LiveBroadcastLastModified_ServerTime() +
+    '\n\n';
+  }
+  debugInfo += 'ALERTLOG: fatalnew=' + fatalErrorNumSinceReset + ' new=' + alertNumSinceReset +
     ' shown=' + Math.min(alertNum, alertLog.length) + ' total=' + alertNum + '\n--';
   if (alertNum > 0) {
     for (ii = 0; ii<alertLog.length; ii++) {
@@ -680,6 +695,14 @@ function displayDebugInfo() {
   }
   alertNumSinceReset = fatalErrorNumSinceReset = 0;
 }
+
+function liveStatusDebug() {
+  if (LiveBroadcastEnded) { return "ended"; }
+  if (LiveBroadcastPaused) { return "paused"; }
+  if (LiveBroadcastStarted) { return "started"; }
+  return "waiting";
+}
+
 
 pgnWin = null;
 function displayPgnData(allGames) {
@@ -1008,9 +1031,8 @@ function CheckLegality(what, plyCount) {
     return true;
   }
 
-  // not a capture => square must be empty
-  // capture => "square to" occupied by opposite color piece (except en-passant)
-  // "square to" moved piece different from piece => pawn promotion
+  // capture: "square to" occupied by opposite color piece (except en-passant)
+  // promotion: "square to" moved piece different from piece
   if (!mvCapture) {
     if (Board[mvToCol][mvToRow] !== 0) { return false; }
   }
@@ -1024,7 +1046,7 @@ function CheckLegality(what, plyCount) {
     if (mvToRow != 7*(1-MoveColor)) { return false; }
   }
 
-  // piece move => loop over same type pieces: which could move there?
+  // piece move: loop over same type pieces, which could move there?
   var pieceId;
   for (pieceId = 0; pieceId < 16; ++pieceId) {
      if (PieceType[MoveColor][pieceId] == mvPiece) {
@@ -1480,7 +1502,6 @@ function highlightMove(colFrom, rowFrom, colTo, rowTo) {
 function highlightSquare(col, row, on) {
   if ((col === undefined) || (row === undefined)) { return false; }
   if (! SquareOnBoard(col, row)) { return false; }
-  // locates coordinates on HTML table
   if (IsRotated) { trow = row; tcol = 7 - col; }
   else { trow = 7 - row; tcol = col; }
   if (!(theObject = document.getElementById('tcol' + tcol + 'trow' + trow))) { return false; }
@@ -1542,7 +1563,7 @@ function undoStackRedo() {
 }
 
 
-// keep this aligned with the one in chrome-extension/background.html
+// keep aligned with chrome-extension/background.html
 function fixCommonPgnMistakes(text) {
   text = text.replace(/[\u00A0\u180E\u2000-\u200A\u202F\u205F\u3000]/g," "); // some "space" to plain space
   text = text.replace(/\u00BD/g,"1/2"); // "half fraction" to "1/2"
@@ -1567,11 +1588,11 @@ function pgnGameFromPgnText(pgnText) {
 
   pgnText = fixCommonPgnMistakes(pgnText);
 
-  // replace < and > with html entities: avoid html injection from PGN data
+  // replace < and > with html entities to avoid html injection
   pgnText = pgnText.replace(/</g, "&lt;");
   pgnText = pgnText.replace(/>/g, "&gt;");
 
-  // PGN standard: lines starting with % must be ignored
+  // PGN standard: ignore lines starting with %
   pgnText = pgnText.replace(/(^|\n)%.*(\n|$)/g, "\n");
 
   numberOfGames = 0;
@@ -1662,7 +1683,7 @@ function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
         loadPgnFromPgnUrlResult = LOAD_PGN_FAIL;
       }
 
-// dirty hack for some old Opera versions failure with reporting 304 status
+// dirty hack for Opera's failure reporting 304 status
     } else if (window.opera && (! this_http_request.responseText) && (this_http_request.status === 0)) {
       this_http_request.abort();
       loadPgnFromPgnUrlResult = LOAD_PGN_UNMODIFIED;
@@ -1948,10 +1969,10 @@ function refreshPgnSource() {
     addedPly = 0;
     for(ii=0;ii<numberOfGames;ii++) {
       rnd = Math.random();
-      if      (rnd <= 0.05) { newPly = 3; } //  5% add 3 ply
-      else if (rnd <= 0.20) { newPly = 2; } // 15% add 2 ply
-      else if (rnd <= 0.60) { newPly = 1; } // 40% add 1 ply
-      else                  { newPly = 0; } // 40% add 0 ply
+      if      (rnd <= 0.05) { newPly = 3; } //  5%
+      else if (rnd <= 0.20) { newPly = 2; } // 15%
+      else if (rnd <= 0.60) { newPly = 1; } // 40%
+      else                  { newPly = 0; } // 40%
       if (gameDemoMaxPly[ii] <= gameDemoLength[ii]) {
         gameDemoMaxPly[ii] += newPly;
         addedPly += newPly;
@@ -1991,7 +2012,7 @@ function loadPgnFromTextarea(textareaId) {
       if (tmpText.indexOf('"') < 0) { tmpText = tmpText.replace(/(&quot;)/g, '"'); }
     }
 
-    // no html header => add emptyPgnHeader
+    // no header: add emptyPgnHeader
     if (pgnHeaderTagRegExp.test(tmpText) === false) { tmpText = emptyPgnHeader + tmpText; }
 
     if ( pgnGameFromPgnText(tmpText) ) {
@@ -2134,7 +2155,6 @@ function myAlertFEN(FenString, text) {
 function InitFEN(startingFEN) {
   FenString = startingFEN !== undefined ? startingFEN : FenStringStart;
 
-  // board reset
   var ii, jj;
   for (ii = 0; ii < 8; ++ii) {
     for (jj = 0; jj < 8; ++jj) {
@@ -2142,8 +2162,7 @@ function InitFEN(startingFEN) {
     }
   }
 
-  // initial position
-  var color, pawn;
+  var color;
   StartPly  = 0;
   MoveCount = StartPly;
   MoveColor = StartPly % 2;
@@ -2159,7 +2178,7 @@ function InitFEN(startingFEN) {
   HistNull[StartPly] = 0;
 
   if (FenString == FenStringStart) {
-    for (color = 0; color < 2; ++color) {
+    for (color = 0; color < 2; color++) {
       //                         K  Q  N     B     R     p
       PieceType[color]        = [1, 2, 5, 5, 4, 4, 3, 3, 6, 6, 6, 6, 6, 6, 6, 6];
       PieceCol[color]         = [4, 3, 1, 6, 2, 5, 0, 7, 0, 1, 2, 3, 4, 5, 6, 7];
@@ -2474,7 +2493,7 @@ function IsCheck(col, row, color) {
   if ((Math.abs(PieceCol[1-color][0]-col) <= 1) &&
       (Math.abs(PieceRow[1-color][0]-row) <= 1)) { return true; }
 
-  // knight giving check?
+  // knight?
   for (ii = -2; ii <= 2; ii += 4) {
     for(jj = -1; jj <= 1; jj += 2) {
       if (SquareOnBoard(col+ii, row+jj)) {
@@ -2486,14 +2505,14 @@ function IsCheck(col, row, color) {
     }
   }
 
-  // pawn giving check?
+  // pawn?
   for (ii = -1; ii <= 1; ii += 2) {
     if (SquareOnBoard(col+ii, row-sign)) {
       if (Board[col+ii][row-sign] == sign*6) { return true; }
     }
   }
 
-  // queens, rooks and bishops?
+  // queens, rooks, bishops?
   for (ii = -1; ii <= 1; ++ii) {
     for (jj = -1; jj <= 1; ++jj) {
       if ((ii !== 0) || (jj !== 0)) {
@@ -2580,7 +2599,7 @@ function MoveBackward(diff, scanOnly) {
   var goToPly    = goFromPly  - diff;
   if (goToPly < StartPly) { goToPly = StartPly-1; }
 
-  // reconstruct old position ply by ply
+  // reconstruct old position
   for(var thisPly = goFromPly; thisPly > goToPly; --thisPly) {
     CurrentPly--;
     MoveColor = 1-MoveColor;
@@ -2915,7 +2934,7 @@ function ParsePGNGameString(gameString) {
 
   var ssRep, ss = gameString, ssComm;
   ss = ss.replace(pgn4webVariationRegExpGlobal, "[%_pgn4web_variation_ $1]");
-  // replace empty variations with comments
+  // empty variations to comments
   while ((ssRep = ss.replace(/\((([\?!+#\s]|\$\d+|{[^}]*})*)\)/g, ' $1 ')) !== ss) { ss = ssRep; }
   ss = ss.replace(/^\s/, '');
   ss = ss.replace(/\s$/, '');
@@ -3280,7 +3299,7 @@ function ParseMove(move, plyCount) {
     if ((mvToRow == 7 * (1-MoveColor)) ? !mvIsPromotion : mvIsPromotion) { return false; }
   }
 
-  // which piece was captured: if nothing found must be en-passant
+  // which captured piece: if nothing found must be en-passant
   if (mvCapture) {
     for (mvCapturedId = 15; mvCapturedId >= 0; mvCapturedId--) {
       if ((PieceType[1-MoveColor][mvCapturedId] >  0) &&
@@ -3306,7 +3325,7 @@ function ParseMove(move, plyCount) {
   // check move legality
   if (! CheckLegality(PieceCode[mvPiece-1], plyCount)) { return false; }
 
-  // pawn moved => check if en-passant possible
+  // pawn moved: check en-passant possibility
   HistEnPassant[plyCount+1] = false;
   HistEnPassantCol[plyCount+1] = -1;
   if (mvPiece == 6) {
@@ -3411,7 +3430,7 @@ function PrintHTML() {
   var text;
   var theObject;
 
-  // 8x8 table chessboard
+  // chessboard
 
   if (theObject = document.getElementById("GameBoard")) {
     text = '<TABLE CLASS="boardTable" ID="boardTable" CELLSPACING=0 CELLPADDING=0';
@@ -3845,16 +3864,12 @@ function FlipBoard() {
 }
 
 function RefreshBoard() {
-
-  // display all empty squares
   var col, row, square;
   for (col = 0; col < 8;++col) {
     for (row = 0; row < 8; ++row) {
       if (Board[col][row] === 0) { SetImage(col, row, ClearImg.src); }
     }
   }
-
-  // display pieces
   var color, ii;
   for (color = 0; color < 2; ++color) {
     for (ii = 0; ii < 16; ++ii) {
@@ -3867,9 +3882,9 @@ function RefreshBoard() {
 
 function SetAutoPlay(vv) {
   isAutoPlayOn = vv;
-  // clear timeout
+
   if (AutoPlayInterval) { clearTimeout(AutoPlayInterval); AutoPlayInterval = null; }
-  // timeout on: move forward and change button label
+
   if (isAutoPlayOn){
     if (document.GameButtonsForm) {
       if (document.GameButtonsForm.AutoPlay) {
@@ -3915,8 +3930,8 @@ function SetAutoplayDelayAndStart(vv) {
 }
 
 function SetLiveBroadcast(delay, alertFlag, demoFlag, stepFlag) {
-  LiveBroadcastDelay = delay; // delay = 0 => no live broadcast
-  LiveBroadcastAlert = (alertFlag === true); // display myAlerts during live broadcast?
+  LiveBroadcastDelay = delay; // zero delay: no live broadcast
+  LiveBroadcastAlert = (alertFlag === true);
   LiveBroadcastDemo = (demoFlag === true);
   LiveBroadcastSteppingMode = (stepFlag === true);
 }
@@ -3974,14 +3989,14 @@ function StoreMove(thisPly) {
   // update "square from" and captured square (not necessarily "square to" e.g. en-passant)
   Board[PieceCol[MoveColor][mvPieceId]][PieceRow[MoveColor][mvPieceId]] = 0;
 
-  // mark the captured piece
+  // mark captured piece
   if (mvCapturedId >= 0) {
      PieceType[1-MoveColor][mvCapturedId] = -1;
      PieceMoveCounter[1-MoveColor][mvCapturedId]++;
      Board[PieceCol[1-MoveColor][mvCapturedId]][PieceRow[1-MoveColor][mvCapturedId]] = 0;
   }
 
-  // update piece arrays: a promotion would change piece type
+  // update piece arrays: promotion changes piece type
   PieceType[MoveColor][mvPieceId] = mvPieceOnTo;
   PieceMoveCounter[MoveColor][mvPieceId]++;
   PieceCol[MoveColor][mvPieceId] = mvToCol;
@@ -4005,7 +4020,7 @@ function UndoMove(thisPly) {
 
   if (HistNull[thisPly]) { return; }
 
-  // bring moved piece back
+  // moved piece back
   Board[mvToCol][mvToRow] = 0;
   Board[HistCol[0][thisPly]][HistRow[0][thisPly]] =
     HistType[0][thisPly]*(1-2*MoveColor);
@@ -4015,7 +4030,7 @@ function UndoMove(thisPly) {
   PieceType[MoveColor][mvPieceId] = HistType[0][thisPly];
   PieceMoveCounter[MoveColor][mvPieceId]--;
 
-  // capture/castle: bring captured/rook back
+  // capture/castle: captured/rook back
   if (mvCapturedId >= 0) {
      PieceType[1-MoveColor][mvCapturedId] = mvCapturedId;
      PieceCol[1-MoveColor][mvCapturedId] = HistCol[1][thisPly];
