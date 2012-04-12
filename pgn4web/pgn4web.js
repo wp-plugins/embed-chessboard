@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.51';
+var pgn4web_version = '2.52';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -18,7 +18,7 @@ function displayHelp(section) {
   if (helpWin && !helpWin.closed) { helpWin.close(); }
   helpWin = window.open(detectHelpLocation() + section, "pgn4web_help",
     "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
-  if ((helpWin !== null) && (window.focus)) { helpWin.focus(); }
+  if (helpWin && window.focus) { helpWin.focus(); }
 }
 
 
@@ -39,7 +39,7 @@ function customPgnHeaderTag(customTagString, htmlElementIdString, gameNum) {
   if ((pgnHeader[gameNum]) && (tagValues = pgnHeader[gameNum].match('\\[\\s*' + customTagString + '\\s*\"([^\"]+)\"\\s*\\]'))) {
     tagValue = tagValues[1];
   } else { tagValue = ""; }
-  if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (theObject.innerHTML !== null)) {
+  if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (typeof(theObject.innerHTML) == "string")) {
     theObject.innerHTML = tagValue;
   }
   return tagValue;
@@ -54,7 +54,7 @@ function customPgnCommentTag(customTagString, htmlElementIdString, plyNum, varId
   if ((MoveCommentsVar[varId][plyNum]) && (tagValues = MoveCommentsVar[varId][plyNum].match('\\[%' + customTagString + '\\s*([^\\]]+)\\s*\\]'))) {
     tagValue = tagValues[1];
   } else { tagValue = ""; }
-  if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (theObject.innerHTML !== null)) {
+  if ((htmlElementIdString) && (theObject = document.getElementById(htmlElementIdString)) && (typeof(theObject.innerHTML) == "string")) {
     theObject.innerHTML = tagValue;
   }
   return tagValue;
@@ -683,7 +683,7 @@ function displayDebugInfo() {
     if (debugWin && !debugWin.closed) { debugWin.close(); }
     debugWin = window.open("", "debug_data",
       "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
-    if (debugWin !== null) {
+    if (debugWin) {
       text = "<html><head><title>pgn4web debug info</title>" +
         "<link rel='shortcut icon' href='pawn.ico' /></head>" +
         "<body>\n<pre>\n" + debugInfo + "\n</pre>\n</body></html>";
@@ -706,11 +706,11 @@ function liveStatusDebug() {
 
 pgnWin = null;
 function displayPgnData(allGames) {
-  if (allGames === null) { allGames = true; }
+  if (typeof(allGames) == "undefined") { allGames = true; }
   if (pgnWin && !pgnWin.closed) { pgnWin.close(); }
   pgnWin = window.open("", "pgn_data",
     "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
-  if (pgnWin !== null) {
+  if (pgnWin) {
     text = "<html><head><title>pgn4web PGN source</title>" +
       "<link rel='shortcut icon' href='pawn.ico' /></head><body>\n<pre>\n";
     if (allGames) { for (ii = 0; ii < numberOfGames; ++ii) { text += fullPgnGame(ii) + "\n\n"; } }
@@ -811,7 +811,7 @@ function displayFenData() {
 
   fenWin = window.open("", "fen_data",
     "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
-  if (fenWin !== null) {
+  if (fenWin) {
     text = "<html>" +
       "<head><title>pgn4web FEN string</title><link rel='shortcut icon' href='pawn.ico' /></head>" +
       "<body>\n<b><pre>\n\n" + currentFEN + "\n\n</pre></b>\n<hr>\n<pre>\n\n" +
@@ -1362,7 +1362,7 @@ function HighlightLastMove() {
   initialBeforeLastMoverClock = whiteToMove ?
     gameInitialWhiteClock[currentGame] : gameInitialBlackClock[currentGame];
 
-  if (lastMoverClockObject !== null) {
+  if (lastMoverClockObject) {
     clockString = ((showThisMove+1 === StartPly+PlyNumber) &&
       ((!LiveBroadcastDemo) || (gameResult[currentGame] !== "*"))) ?
       clockFromHeader(!whiteToMove) : null;
@@ -1379,7 +1379,7 @@ function HighlightLastMove() {
     }
     lastMoverClockObject.innerHTML = clockString;
   }
-  if (beforeLastMoverClockObject !== null) {
+  if (beforeLastMoverClockObject) {
     clockString = ((showThisMove+1 === StartPly+PlyNumber) &&
       ((!LiveBroadcastDemo) || (gameResult[currentGame] !== "*"))) ?
       clockFromHeader(whiteToMove) : null;
@@ -1395,6 +1395,14 @@ function HighlightLastMove() {
       }
     }
     beforeLastMoverClockObject.innerHTML = clockString;
+  }
+
+  if (lastMoverClockObject && beforeLastMoverClockObject) {
+    if (lastMoverClockObject.innerHTML && !beforeLastMoverClockObject.innerHTML) {
+      beforeLastMoverClockObject.innerHTML = "-";
+    } else if (!lastMoverClockObject.innerHTML && beforeLastMoverClockObject.innerHTML) {
+      lastMoverClockObject.innerHTML = "-";
+    }
   }
 
   // show next move
@@ -2132,13 +2140,12 @@ function Init(nextGame){
     setTimeout("autoScrollToCurrentMoveIfEnabled();", Math.min(666, 0.9 * Delay));
   } else {
     synchMoves();
+    RefreshBoard();
+    HighlightLastMove();
     autoScrollToCurrentMoveIfEnabled();
     // customFunctionOnMove here for consistency: null move starting new game
     customFunctionOnMove();
   }
-
-  RefreshBoard();
-  HighlightLastMove();
 
   if ((firstStart) && (autostartAutoplay)) { SetAutoPlay(true); }
 
@@ -2559,7 +2566,7 @@ function LoadGameHeaders(){
     gameWhite[ii] = gameBlack[ii] = gameResult[ii] = "";
     gameInitialWhiteClock[ii] = gameInitialBlackClock[ii] = "";
     gameVariant[ii] = "";
-    while ((parse = pgnHeaderTagRegExpGlobal.exec(ss)) !== null) {
+    while (parse = pgnHeaderTagRegExpGlobal.exec(ss)) {
       switch (parse[1]) {
         case 'Event': gameEvent[ii] = parse[2]; break;
         case 'Site': gameSite[ii] = parse[2]; break;
