@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.52';
+var pgn4web_version = '2.53';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -1279,7 +1279,7 @@ function SetAutoplayNextGame(onOff) {
 }
 
 function SetInitialHalfmove(number_or_string, always) {
-  if (always === true) { alwaysInitialHalfmove = true; }
+  alwaysInitialHalfmove = (always === true);
   if (number_or_string === undefined) { initialHalfmove = 0; return; }
   initialHalfmove = number_or_string;
   if ((typeof number_or_string == "string") &&
@@ -3481,7 +3481,7 @@ function PrintHTML() {
     spaceSize = 3;
     buttonSize = (tableSize - spaceSize*(numberOfButtons - 1)) / numberOfButtons;
     text = '<FORM NAME="GameButtonsForm" STYLE="display:inline;">' +
-      '<TABLE BORDER=0 CELLPADDING=0 CELLSPACING=0>' +
+      '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">' +
       '<TR><TD>' +
       '<INPUT ID="startButton" TYPE="BUTTON" VALUE="&lt;&lt;" STYLE="';
     if (buttonSize > 0) { text += 'width: ' + buttonSize + 'px;'; }
