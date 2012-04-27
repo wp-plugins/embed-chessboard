@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.54';
+var pgn4web_version = '2.55';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -1913,10 +1913,9 @@ function restartLiveBroadcast() {
   refreshPgnSource();
 }
 
-var liveBroadcastTickerFlag = new Array("><", "<>");
 function checkLiveBroadcastStatus() {
   var liveBroadcastStatusTitle;
-  var tick = "&nbsp;" + liveBroadcastTickerFlag[LiveBroadcastTicker % liveBroadcastTickerFlag.length] + "&nbsp;";
+  var tick = "&nbsp;" + (LiveBroadcastTicker % 2 ? "<>" : "><") + "&nbsp;";
 
   if (LiveBroadcastDelay === 0) { return; }
 
@@ -2155,7 +2154,8 @@ function myAlertFEN(FenString, text) {
 }
 
 function InitFEN(startingFEN) {
-  FenString = startingFEN !== undefined ? startingFEN : FenStringStart;
+  if (typeof(startingFEN) != "string") { FenString = FenStringStart; }
+  else { FenString = startingFEN.replace(/\\/g, "/").replace(/[^a-zA-Z0-9\s\/-]/g, " ").replace(/(^\s*|\s*$)/g, "").replace(/\s+/g, " "); }
 
   var ii, jj;
   for (ii = 0; ii < 8; ++ii) {
