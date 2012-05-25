@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Embeds a javascript chessboard in wordpress articles for replaying chess games. Use plugin options to blend the chessboard with the site template; use tag parameters to customize each chessboard. Insert chess games in PGN format into your wordpress article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. For more info on plugin options and tag parameters please <a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress">read the tutorial</a>.
-Version: 1.72
+Version: 1.73
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 Copyright: copyright (C) 2009, 2012 Paolo Casaschi
@@ -87,6 +87,7 @@ ChangeLog:
   1.70  - upgraded pgn4web to 2.54
   1.71  - upgraded pgn4web to 2.55 and minor bug fix
   1.72  - upgraded pgn4web to 2.56
+  1.73  - added basic support for translation of the plugin settings page
 */
 
 class pgnBBCode {
@@ -234,7 +235,7 @@ class pgnBBCode {
 		$replacement .= $extendedOptionsString . "' ";
 		$replacement .= "frameborder='0' width='100%' height='" . $height . "' ";
 		$replacement .= "scrolling='no' marginheight='0' marginwidth='0'>";
-		$replacement .= "your web browser and/or your host do not support iframes as required to display the chessboard; alternatively your wordpress theme might suppress the html iframe tag from articles or excerpts";
+		$replacement .= __("your web browser and/or your host do not support iframes as required to display the chessboard; alternatively your wordpress theme might suppress the html iframe tag from articles or excerpts", "embedchess");
 		$replacement .= "</iframe>";
 		$replacement .= "</div>";
 
@@ -247,18 +248,21 @@ class pgnBBCode {
 add_action( 'plugins_loaded', create_function( '', 'global $pgnBBCode; $pgnBBCode = new pgnBBCode();' ) );
 
 // create custom plugin settings menu
-add_action('admin_menu', 'embedchessboard_create_menu');
+add_action( 'admin_menu', 'embedchessboard_create_menu' );
 
 function embedchessboard_create_menu() {
 
 	//create new sub-level menu from the settings menu
-	add_submenu_page('options-general.php', 'Embed Chessboard Plugin Settings', 'Embed Chessboard', 'administrator', __FILE__, 'embedchessboard_settings_page');
+	add_submenu_page( 'options-general.php', 'Embed Chessboard Plugin Settings', 'Embed Chessboard', 'administrator', __FILE__, 'embedchessboard_settings_page' );
 
 	//call register settings function
 	add_action( 'admin_init', 'register_mysettings' );
 }
 
 function register_mysettings() {
+	//load language
+	load_plugin_textdomain( 'embedchess', null, dirname(plugin_basename(__FILE__)) . '/lang' );
+
 	//register our settings
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_horizontal_layout' );
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_height' );
@@ -342,43 +346,43 @@ function get_option_with_default($optionName) {
 function embedchessboard_settings_page() {
 ?>
 <div class="wrap">
-<h2>Embed Chessboard Plugin Settings</h2>
+<h2><?php _e("Embed Chessboard Plugin Settings", "embedchess"); ?></h2>
 <small>
-<a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress" target="_blank">read the tutorial</a> for more details about this plugin
+<a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress" target="_blank"><?php _e("read the tutorial", "embedchess");?></a> <?php _e("for more details about this plugin", "embedchess"); ?>
 <br>
-leave blank values to reset to defaults
+<?php _e("leave blank values to reset to defaults", "embedchess"); ?>
 </small>
 
 <script type="text/javascript" src="<?php echo plugins_url('pgn4web/jscolor/jscolor.js', __FILE__) ?>"></script>
 
 <form method="post" action="options.php">
-	<?php settings_fields( 'embedchessboard-settings-group' ); ?>
+	<?php settings_fields('embedchessboard-settings-group'); ?>
 	<table class="form-table">
 
-		<tr><td colspan=3><h3>Layout</h3></td></tr>
+		<tr><td colspan=3><h3><?php _e("Layout", "embedchess"); ?></h3></td></tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_horizontal_layout">chessboard frame layout</label></th>
+		<th scope="row"><label for="embedchessboard_horizontal_layout"><?php _e("chessboard frame layout", "embedchess"); ?></label></th>
 		<td colspan=2>
 			<select name="embedchessboard_horizontal_layout">
-			<option <?php if ("t" == get_option_with_default('embedchessboard_horizontal_layout')) echo "selected" ?> value="t">horizontal layout</option>
-			<option <?php if ("f" == get_option_with_default('embedchessboard_horizontal_layout')) echo "selected" ?> value="f">vertical layout</option>
+			<option <?php if ("t" == get_option_with_default('embedchessboard_horizontal_layout')) echo "selected" ?> value="t"><?php _e("horizontal layout", "embedchess"); ?></option>
+			<option <?php if ("f" == get_option_with_default('embedchessboard_horizontal_layout')) echo "selected" ?> value="f"><?php _e("vertical layout", "embedchess"); ?></option>
 			</select>
 		</td>
 		</tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_height">chessboard frame height</label></th>
+		<th scope="row"><label for="embedchessboard_height"><?php _e("chessboard frame height", "embedchess"); ?></label></th>
 		<td><input type="text" name="embedchessboard_height" value="<?php echo get_option_with_default('embedchessboard_height'); ?>" /></td>
-		<td><small>normally set to <b>auto</b>, it can be set to a number to assign the chessboard frame height</small></td>
+		<td><small><?php _e("normally set to <b>auto</b>, it can be set to a number to assign the chessboard frame height", "embedchess"); ?></small></td>
 		</tr>
 
 		<tr><td colspan=3></td></tr>
 
-		<tr><td colspan=3><h3>Colors</h3></td></tr>
+		<tr><td colspan=3><h3><?php _e("Colors", "embedchess"); ?></h3></td></tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_background_color">background color</label></th>
+		<th scope="row"><label for="embedchessboard_background_color"><?php _e("background color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_background_color" value="<?php echo get_option_with_default('embedchessboard_background_color'); ?>" /></td>
 		<td></td>
 		</tr>
@@ -386,25 +390,25 @@ leave blank values to reset to defaults
 		<tr><td colspan=3></td></tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_light_squares_color">light squares color</label></th>
+		<th scope="row"><label for="embedchessboard_light_squares_color"><?php _e("light squares color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_light_squares_color" value="<?php echo get_option_with_default('embedchessboard_light_squares_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_dark_squares_color">dark squares color</label></th>
+		<th scope="row"><label for="embedchessboard_dark_squares_color"><?php _e("dark squares color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_dark_squares_color" value="<?php echo get_option_with_default('embedchessboard_dark_squares_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_board_border_color">board border color</label></th>
+		<th scope="row"><label for="embedchessboard_board_border_color"><?php _e("board border color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_board_border_color" value="<?php echo get_option_with_default('embedchessboard_board_border_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_square_highlight_color">square highlight color</label></th>
+		<th scope="row"><label for="embedchessboard_square_highlight_color"><?php _e("square highlight color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_square_highlight_color" value="<?php echo get_option_with_default('embedchessboard_square_highlight_color'); ?>" /></td>
 		<td></td>
 		</tr>
@@ -412,13 +416,13 @@ leave blank values to reset to defaults
 		<tr><td colspan=3></td></tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_control_buttons_background_color">buttons background color</label></th>
+		<th scope="row"><label for="embedchessboard_control_buttons_background_color"><?php _e("buttons background color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_control_buttons_background_color" value="<?php echo get_option_with_default('embedchessboard_control_buttons_background_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_control_buttons_text_color">buttons text color</label></th>
+		<th scope="row"><label for="embedchessboard_control_buttons_text_color"><?php _e("buttons text color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_control_buttons_text_color" value="<?php echo get_option_with_default('embedchessboard_control_buttons_text_color'); ?>" /></td>
 		<td></td>
 		</tr>
@@ -426,58 +430,58 @@ leave blank values to reset to defaults
 		<tr><td colspan=3></td></tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_header_text_color">header text color</label></th>
+		<th scope="row"><label for="embedchessboard_header_text_color"><?php _e("header text color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_header_text_color" value="<?php echo get_option_with_default('embedchessboard_header_text_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_moves_text_color">moves text color</label></th>
+		<th scope="row"><label for="embedchessboard_moves_text_color"><?php _e("moves text color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_moves_text_color" value="<?php echo get_option_with_default('embedchessboard_moves_text_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_move_highlight_color">move highlight color</label></th>
+		<th scope="row"><label for="embedchessboard_move_highlight_color"><?php _e("move highlight color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_move_highlight_color" value="<?php echo get_option_with_default('embedchessboard_move_highlight_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_comments_text_color">comments text color</label></th>
+		<th scope="row"><label for="embedchessboard_comments_text_color"><?php _e("comments text color", "embedchess"); ?></label></th>
 		<td><input class="color {required:false}" type="text" name="embedchessboard_comments_text_color" value="<?php echo get_option_with_default('embedchessboard_comments_text_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr><td colspan=3></td></tr>
 
-		<tr><td colspan=3><h3>Autoplay Mode</h3></td></tr>
+		<tr><td colspan=3><h3><?php _e("Autoplay Mode", "embedchess"); ?></h3></td></tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_autoplay_mode">autoplay mode</label></th>
+		<th scope="row"><label for="embedchessboard_autoplay_mode"><?php _e("autoplay mode", "embedchess"); ?></label></th>
 		<td colspan=2>
 			<select name="embedchessboard_autoplay_mode">
-			<option <?php if ("g" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="g">autoplay the initial game only</option>
-			<option <?php if ("l" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="l">autoplay all games in a loop</option>
-			<option <?php if ("n" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="n">do not autoplay games</option>
+			<option <?php if ("g" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="g"><?php _e("autoplay the initial game only", "embedchess"); ?></option>
+			<option <?php if ("l" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="l"><?php _e("autoplay all games in a loop", "embedchess"); ?></option>
+			<option <?php if ("n" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="n"><?php _e("do not autoplay games", "embedchess"); ?></option>
 			</select>
 		</td>
 		</tr>
 
 		<tr><td colspan=3></td></tr>
 
-		<tr><td colspan=3><h3>Advanced Settings</h3></td></tr>
+		<tr><td colspan=3><h3><?php _e("Advanced Settings", "embedchess"); ?></h3></td></tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_container_style">CSS style for the HTML DIV container of the plugin frame</label></th>
+		<th scope="row"><label for="embedchessboard_container_style"><?php _e("CSS style for the HTML DIV container of the plugin frame", "embedchess"); ?></label></th>
 		<td><input type="text" name="embedchessboard_container_style" value="<?php echo get_option_with_default('embedchessboard_container_style'); ?>" /></td>
-		<td><small>normally left blank, it can be used to fix layout issues with certain wordpress templates; for instance, if the chessboard frame is constraint too narrow, setting this parameter as <b>width:500px;</b> might improve the layout</small></td>
+		<td><small><?php _e("normally left blank, it can be used to fix layout issues with certain wordpress templates; for instance, if the chessboard frame is constraint too narrow, setting this parameter as <b>width:500px;</b> might improve the layout", "embedchess"); ?></small></td>
 		</tr>
 
 		<tr valign="top">
-		<th scope="row"><label for="embedchessboard_extended_options">extended options</label></th>
+		<th scope="row"><label for="embedchessboard_extended_options"><?php _e("extended options", "embedchess"); ?></label></th>
 		<td><input type="text" name="embedchessboard_extended_options" value="<?php echo get_option_with_default('embedchessboard_extended_options'); ?>" /></td>
-		<td><small>normally left blank, undocumented feature: improper use will break the chessboard display</small></td>
+		<td><small><?php _e("normally left blank, undocumented feature: improper use will break the chessboard display", "embedchess"); ?></small></td>
 		</tr>
 
 		<tr><td colspan=3></td></tr>
