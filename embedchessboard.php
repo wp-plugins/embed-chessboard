@@ -347,11 +347,12 @@ function embedchessboard_settings_page() {
 ?>
 <div class="wrap">
 <h2><?php _e("Embed Chessboard Plugin Settings", "embedchess"); ?></h2>
-<small>
+<p style="font-size:smaller; line-height:normal;">
 <a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress" target="_blank"><?php _e("read the tutorial", "embedchess");?></a> <?php _e("for more details about this plugin", "embedchess"); ?>
-<br>
+</p>
+<p style="font-size:smaller; line-height:normal;">
 <?php _e("leave blank values to reset to defaults", "embedchess"); ?>
-</small>
+</p>
 
 <script type="text/javascript" src="<?php echo plugins_url('pgn4web/jscolor/jscolor.js', __FILE__) ?>"></script>
 
@@ -374,7 +375,7 @@ function embedchessboard_settings_page() {
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_height"><?php _e("chessboard frame height", "embedchess"); ?></label></th>
 		<td><input type="text" name="embedchessboard_height" value="<?php echo get_option_with_default('embedchessboard_height'); ?>" /></td>
-		<td><small><?php _e("normally set to <b>auto</b>, it can be set to a number to assign the chessboard frame height", "embedchess"); ?></small></td>
+		<td><p style="font-size:smaller; line-height:normal;"><?php _e("normally set to <b>auto</b>, it can be set to a number to assign the chessboard frame height", "embedchess"); ?></p></td>
 		</tr>
 
 		<tr><td colspan=3></td></tr>
@@ -475,13 +476,13 @@ function embedchessboard_settings_page() {
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_container_style"><?php _e("CSS style for the HTML DIV container of the plugin frame", "embedchess"); ?></label></th>
 		<td><input type="text" name="embedchessboard_container_style" value="<?php echo get_option_with_default('embedchessboard_container_style'); ?>" /></td>
-		<td><small><?php _e("normally left blank, it can be used to fix layout issues with certain wordpress templates; for instance, if the chessboard frame is constraint too narrow, setting this parameter as <b>width:500px;</b> might improve the layout", "embedchess"); ?></small></td>
+		<td><p style="font-size:smaller; line-height:normal;"><?php _e("normally left blank, it can be used to fix layout issues with certain wordpress templates; for instance, if the chessboard frame is constraint too narrow, setting this parameter as <b>width:500px;</b> might improve the layout", "embedchess"); ?></p></td>
 		</tr>
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_extended_options"><?php _e("extended options", "embedchess"); ?></label></th>
 		<td><input type="text" name="embedchessboard_extended_options" value="<?php echo get_option_with_default('embedchessboard_extended_options'); ?>" /></td>
-		<td><small><?php _e("normally left blank, undocumented feature: improper use will break the chessboard display", "embedchess"); ?></small></td>
+		<td><p style="font-size:smaller; line-height:normal;"><?php _e("normally left blank, undocumented feature: improper use will break the chessboard display", "embedchess"); ?></p></td>
 		</tr>
 
 		<tr><td colspan=3></td></tr>
