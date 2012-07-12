@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.56';
+var pgn4web_version = '2.57';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -51,8 +51,8 @@ function customPgnCommentTag(customTagString, htmlElementIdString, plyNum, varId
   customTagString = customTagString.replace(/\W+/g, "");
   if (typeof(varId) == "undefined") { varId = 0; }
   if (typeof(plyNum) == "undefined") { plyNum = CurrentPly; }
-  if ((MoveCommentsVar[varId][plyNum]) && (tagValues = MoveCommentsVar[varId][plyNum].match('\\[%' + customTagString + '\\s*([^\\]]+)\\s*\\]'))) {
-    tagValue = tagValues[1];
+  if ((MoveCommentsVar[varId][plyNum]) && (tagValues = MoveCommentsVar[varId][plyNum].match('\\[%' + customTagString + '\\s+((?:,?(?:"[^"]*"|[^,\\]]*))*)\\s*\\]'))) {
+    tagValue = tagValues[1].replace(/\s+$/, "");
   } else { tagValue = ""; }
   if ((htmlElementIdString) && (theObj = document.getElementById(htmlElementIdString)) && (typeof(theObj.innerHTML) == "string")) {
     theObj.innerHTML = tagValue;
@@ -3426,7 +3426,7 @@ function searchPgnGameForm() {
 }
 
 function fixCommentForDisplay(comment) {
-  chessMovesRegExp = new RegExp("((\\d+(\\.|\\.\\.\\.|)\\s*|)(([KQRBNP]|)([a-h1-8]|)(x|)[a-h][1-8](=[QRNB]|)|O-O-O|O-O)([+#]|))", "g");
+  chessMovesRegExp = new RegExp("((\\d+(\\.|\\.\\.\\.)?\\s*)?([KQRBNP]?[a-h1-8]?x?[a-h][1-8](=[QRNB])?|O-O-O|O-O)[!?+#]?)", "g");
   return comment.replace(chessMovesRegExp, '<SPAN STYLE="white-space: nowrap;" CLASS="commentMove">$1</SPAN>');
 }
 
