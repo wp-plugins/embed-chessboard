@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Embeds a javascript chessboard in wordpress articles for replaying chess games. Use plugin options to blend the chessboard with the site template; use tag parameters to customize each chessboard. Insert chess games in PGN format into your wordpress article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. For more info on plugin options and tag parameters please <a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress">read the tutorial</a>.
-Version: 1.76
+Version: 1.77
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 Copyright: copyright (C) 2009, 2012 Paolo Casaschi
@@ -90,6 +90,7 @@ ChangeLog:
   1.74  - added basic support for localization of the plugin settings page
   1.75  - minor improvements
   1.76  - upgraded pgn4web to 2.57
+  1.77  - minor improvements
 */
 
 class pgnBBCode {
@@ -150,7 +151,6 @@ class pgnBBCode {
 					break;
 				}
 			}
-			$extendedOptionsString = preg_replace('/&/', '&amp;', $extendedOptionsString);
                 }
 		if ( isset($atts['extendedoptions']) ) { $extendedOptions = $atts['extendedoptions']; }
 		elseif ( isset($atts['eo']) ) { $extendedOptions = htmlspecialchars($atts['eo']); }
@@ -159,7 +159,7 @@ class pgnBBCode {
 			foreach ($atts as $key => $value) {
 				if (in_array(strtolower($key), $skipParameters)) { continue; }
 				if (in_array(strtolower($key), $pgnParameters)) { $pgnSourceOverride = true;  }
-				$extendedOptionsString .= '&amp;' . rawurlencode($key) . '=' . rawurlencode($value);
+				$extendedOptionsString .= '&' . rawurlencode($key) . '=' . rawurlencode($value);
 			}
 		}
 
@@ -206,34 +206,34 @@ class pgnBBCode {
 		$replacement .= "</textarea>";
 		$replacement .= "<iframe src='" . plugins_url("pgn4web/board.html", __FILE__) . "?";
 		$replacement .= "am=" . rawurlencode($autoplayMode);
-		$replacement .= "&amp;d=3000";
-		$replacement .= "&amp;ig=" . rawurlencode($initialGame);
-		$replacement .= "&amp;iv=" . rawurlencode($initialVariation);
-		$replacement .= "&amp;ih=" . rawurlencode($initialHalfmove);
-		$replacement .= "&amp;ss=26&amp;ps=d&amp;pf=d";
-		$replacement .= "&amp;lch=" . rawurlencode(get_option_with_default('embedchessboard_light_squares_color'));
-		$replacement .= "&amp;dch=" . rawurlencode(get_option_with_default('embedchessboard_dark_squares_color'));
-		$replacement .= "&amp;bbch=" . rawurlencode(get_option_with_default('embedchessboard_board_border_color'));
-		$replacement .= "&amp;hm=b";
-		$replacement .= "&amp;hch=" . rawurlencode(get_option_with_default('embedchessboard_square_highlight_color'));
-		$replacement .= "&amp;bd=c";
-		$replacement .= "&amp;cbch=" . rawurlencode(get_option_with_default('embedchessboard_control_buttons_background_color'));
-		$replacement .= "&amp;ctch=" . rawurlencode(get_option_with_default('embedchessboard_control_buttons_text_color'));
-		$replacement .= "&amp;hd=" . rawurlencode($headerDisplay);
-		$replacement .= "&amp;md=" . rawurlencode($movesDisplay);
-		$replacement .= "&amp;tm=13";
-		$replacement .= "&amp;fhch=" . rawurlencode(get_option_with_default('embedchessboard_header_text_color'));
-		$replacement .= "&amp;fhs=14";
-		$replacement .= "&amp;fmch=" . rawurlencode(get_option_with_default('embedchessboard_moves_text_color'));
-		$replacement .= "&amp;fcch=" . rawurlencode(get_option_with_default('embedchessboard_comments_text_color'));
-		$replacement .= "&amp;hmch=" . rawurlencode(get_option_with_default('embedchessboard_move_highlight_color'));
-		$replacement .= "&amp;fms=14&amp;fcs=m&amp;cd=i";
-		$replacement .= "&amp;bch=" . rawurlencode(get_option_with_default('embedchessboard_background_color'));
-		$replacement .= "&amp;fp=13";
-		$replacement .= "&amp;hl=" . rawurlencode($horizontalLayout);
-		$replacement .= "&amp;fh=" . rawurlencode($frameHeight);
-		$replacement .= "&amp;fw=p";
-		if (!$pgnSourceOverride) { $replacement .= "&amp;pi=" . rawurlencode($pgnId); }
+		$replacement .= "&d=3000";
+		$replacement .= "&ig=" . rawurlencode($initialGame);
+		$replacement .= "&iv=" . rawurlencode($initialVariation);
+		$replacement .= "&ih=" . rawurlencode($initialHalfmove);
+		$replacement .= "&ss=26&ps=d&pf=d";
+		$replacement .= "&lch=" . rawurlencode(get_option_with_default('embedchessboard_light_squares_color'));
+		$replacement .= "&dch=" . rawurlencode(get_option_with_default('embedchessboard_dark_squares_color'));
+		$replacement .= "&bbch=" . rawurlencode(get_option_with_default('embedchessboard_board_border_color'));
+		$replacement .= "&hm=b";
+		$replacement .= "&hch=" . rawurlencode(get_option_with_default('embedchessboard_square_highlight_color'));
+		$replacement .= "&bd=c";
+		$replacement .= "&cbch=" . rawurlencode(get_option_with_default('embedchessboard_control_buttons_background_color'));
+		$replacement .= "&ctch=" . rawurlencode(get_option_with_default('embedchessboard_control_buttons_text_color'));
+		$replacement .= "&hd=" . rawurlencode($headerDisplay);
+		$replacement .= "&md=" . rawurlencode($movesDisplay);
+		$replacement .= "&tm=13";
+		$replacement .= "&fhch=" . rawurlencode(get_option_with_default('embedchessboard_header_text_color'));
+		$replacement .= "&fhs=14";
+		$replacement .= "&fmch=" . rawurlencode(get_option_with_default('embedchessboard_moves_text_color'));
+		$replacement .= "&fcch=" . rawurlencode(get_option_with_default('embedchessboard_comments_text_color'));
+		$replacement .= "&hmch=" . rawurlencode(get_option_with_default('embedchessboard_move_highlight_color'));
+		$replacement .= "&fms=14&fcs=m&cd=i";
+		$replacement .= "&bch=" . rawurlencode(get_option_with_default('embedchessboard_background_color'));
+		$replacement .= "&fp=13";
+		$replacement .= "&hl=" . rawurlencode($horizontalLayout);
+		$replacement .= "&fh=" . rawurlencode($frameHeight);
+		$replacement .= "&fw=p";
+		if (!$pgnSourceOverride) { $replacement .= "&pi=" . rawurlencode($pgnId); }
 		$replacement .= $extendedOptionsString . "' ";
 		$replacement .= "frameborder='0' width='100%' height='" . $height . "' ";
 		$replacement .= "scrolling='no' marginheight='0' marginwidth='0'>";
