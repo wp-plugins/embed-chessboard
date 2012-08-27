@@ -93,6 +93,7 @@ ChangeLog:
   1.77  - minor improvements
   1.78  - upgraded pgn4web to 2.58
   1.79  - upgraded pgn4web to 2.59
+        - added [pgn4web] tag
 */
 
 class pgnBBCode {
@@ -104,6 +105,7 @@ class pgnBBCode {
 
 		// Register the shortcodes
 		add_shortcode( 'pgn' , array(&$this, 'shortcode_pgn') );
+		add_shortcode( 'pgn4web' , array(&$this, 'shortcode_pgn') );
 	}
 
 	// pgn shortcode
