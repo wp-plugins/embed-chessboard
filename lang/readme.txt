@@ -1,4 +1,4 @@
-Empty folder to hold localization files for the plugin settings page.
+Placeholder folder to hold localization files for the plugin settings page.
 
 Actual localization files are not provided within the plugin packages;
 localization files can be easily generated using a tool like:
