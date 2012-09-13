@@ -4,7 +4,7 @@ Contributors: pgn4web
 Donate link: http://pgn4web.casaschi.net
 Requires at least: 2.9
 Tested up to: 3.4
-Stable tag: 1.81
+Stable tag: 1.82
 
 Allows for the insertion of a chessboard displaying chess games within wordpress articles.
 
