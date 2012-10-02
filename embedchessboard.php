@@ -4,7 +4,7 @@
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
 Description: Embeds a javascript chessboard in wordpress articles for replaying chess games. Use plugin options to blend the chessboard with the site template; use tag parameters to customize each chessboard. Insert chess games in PGN format into your wordpress article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. For more info on plugin options and tag parameters please <a href="http://code.google.com/p/pgn4web/wiki/User_Notes_wordpress">read the tutorial</a>.
-Version: 1.82
+Version: 1.83
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
 Copyright: copyright (C) 2009-2012 Paolo Casaschi
@@ -96,6 +96,7 @@ ChangeLog:
   1.80  - added [pgn4web] tag and upgraded pgn4web to 2.60
   1.81  - minor fix
   1.82  - upgraded pgn4web to 2.61
+  1.83  - bug fix
 */
 
 class pgnBBCode {
@@ -155,10 +156,10 @@ class pgnBBCode {
 			$extendedOptionsString = preg_replace('/^\s+/', '', $extendedOptionsString);
 			$extendedOptionsString = preg_replace('/\s+$/', '', $extendedOptionsString);
 			$extendedOptionsString = preg_replace('/(^|\s+)/', '&', $extendedOptionsString);
-			foreach ($skipParameters as $value) {
+			foreach ($skipParameters as &$value) {
 				$extendedOptionsString = preg_replace('/&' . $value . '=[^&]*/', '', $extendedOptionsString);
 			}
-			foreach ($pgnParameters  as $value) {
+			foreach ($pgnParameters as &$value) {
 				if (preg_match('/&' . $value . '=[^&]*/', $extendedOptionsString)) {
 					$pgnSourceOverride = true;
 					break;
@@ -169,7 +170,7 @@ class pgnBBCode {
 		elseif ( isset($atts['eo']) ) { $extendedOptions = htmlspecialchars($atts['eo']); }
 		else { $extendedOptions = 'false'; }
 		if (($extendedOptions == 'true') || ($extendedOptions == 't')) {
-			foreach ($atts as $key => $value) {
+			foreach ($atts as $key => &$value) {
 				if (in_array(strtolower($key), $skipParameters)) { continue; }
 				if (in_array(strtolower($key), $pgnParameters)) { $pgnSourceOverride = true;  }
 				$extendedOptionsString .= '&' . rawurlencode($key) . '=' . rawurlencode($value);
