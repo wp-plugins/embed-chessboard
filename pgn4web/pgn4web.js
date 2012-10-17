@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.61';
+var pgn4web_version = '2.62';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -146,7 +146,7 @@ function alertPromptTick(restart) {
 }
 
 
-function stopKeyProp(e) {
+function stopEvProp(e) {
   e.cancelBubble = true;
   if (e.stopPropagation) { e.stopPropagation(); }
   if (e.preventDefault) { e.preventDefault(); }
@@ -400,7 +400,7 @@ function handlekey(e) {
     default:
       return true;
   }
-  return stopKeyProp(e);
+  return stopEvProp(e);
 }
 
 boardOnClick = new Array(8);
@@ -462,11 +462,11 @@ boardShortcut("C8", "show this game PGN source data", function(t,e){ displayPgnD
 
 boardShortcut("D8", "show full PGN source data", function(t,e){ displayPgnData(true); }, true);
 
-boardShortcut("E8", "search help", function(t,e){ displayHelp(e.shiftKey ? "informant_symbols" : "search_tool"); }, true);
+boardShortcut("E8", "search help", function(t,e){ displayHelp("search_tool"); }, true);
 
 boardShortcut("F8", "shortcut keys help", function(t,e){ displayHelp("shortcut_keys"); }, true);
 
-boardShortcut("G8", "shortcut squares help", function(t,e){ displayHelp("shortcut_squares"); }, true);
+boardShortcut("G8", "shortcut squares help", function(t,e){ displayHelp(e.shiftKey ? "informant_symbols" : "shortcut_squares"); }, true);
 
 boardShortcut("H8", "pgn4web help", function(t,e){ displayHelp(e.shiftKey ? "credits_and_license" : ""); }, true);
 
@@ -669,7 +669,10 @@ function displayDebugInfo() {
     dbg3 += 'LIVEBROADCAST: status=' + liveStatusDebug() + ' ticker=' + LiveBroadcastTicker + ' delay=' + LiveBroadcastDelay + 'm' + '\n' + 'refreshed: ' + LiveBroadcastLastRefreshedLocal + '\n' + 'received: ' + LiveBroadcastLastReceivedLocal + '\n' + 'modified (server time): ' + LiveBroadcastLastModified_ServerTime() +
     '\n\n';
   }
-  var thisInfo = customDebugInfo();
+  var thisInfo;
+  if (typeof(engineWinCheck) == "function") { thisInfo = engineWinCheck() ? "board=connected " + engineWin.customDebugInfo() : "board=disconnected"; }
+  if (thisInfo) { dbg3 += "ANALYSIS: " + thisInfo + "\n\n"; }
+  thisInfo = customDebugInfo();
   if (thisInfo) { dbg3 += "CUSTOM: " + thisInfo + "\n\n"; }
   dbg3 += 'ALERTLOG: fatalnew=' + fatalErrorNumSinceReset + ' new=' + alertNumSinceReset +
     ' shown=' + Math.min(alertNum, alertLog.length) + ' total=' + alertNum + '\n--';
@@ -681,7 +684,7 @@ function displayDebugInfo() {
   }
   if (confirm(dbg1 + dbg2 + dbg3 + '\n\nclick OK to show this debug info in a browser window for cut and paste')) {
     if (debugWin && !debugWin.closed) { debugWin.close(); }
-    debugWin = window.open("", "debug_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
+    debugWin = window.open("", "pgn4web_debug_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
     if (debugWin) {
       text = "<html><head><title>pgn4web debug info</title>" +
         "<link rel='shortcut icon' href='pawn.ico' /></head>" +
@@ -709,7 +712,7 @@ pgnWin = null;
 function displayPgnData(allGames) {
   if (typeof(allGames) == "undefined") { allGames = true; }
   if (pgnWin && !pgnWin.closed) { pgnWin.close(); }
-  pgnWin = window.open("", "pgn_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
+  pgnWin = window.open("", "pgn4web_pgn_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
   if (pgnWin) {
     text = "<html><head><title>pgn4web PGN source</title>" +
       "<link rel='shortcut icon' href='pawn.ico' /></head><body>\n<pre>\n";
@@ -808,7 +811,7 @@ function displayFenData() {
     }
   }
 
-  fenWin = window.open("", "fen_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
+  fenWin = window.open("", "pgn4web_fen_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
   if (fenWin) {
     text = "<html>" +
       "<head><title>pgn4web FEN string</title><link rel='shortcut icon' href='pawn.ico' /></head>" +
@@ -1570,7 +1573,6 @@ function undoStackRedo() {
 }
 
 
-// align to chrome-extension/background.html
 function fixCommonPgnMistakes(text) {
   text = text.replace(/[\u00A0\u180E\u2000-\u200A\u202F\u205F\u3000]/g," "); // some "space" to plain space
   text = text.replace(/\u00BD/g,"1/2"); // "half fraction" to "1/2"
@@ -1850,9 +1852,9 @@ function loadPgnFromPgnUrl(pgnUrl) {
     }
   } else if (window.ActiveXObject) { // IE
     try { http_request = new ActiveXObject("Msxml2.XMLHTTP"); }
-    catch (e) {
+    catch(e) {
       try { http_request = new ActiveXObject("Microsoft.XMLHTTP"); }
-      catch (e) {
+      catch(e) {
         myAlert('error: XMLHttpRequest unavailable for PGN URL\n' + pgnUrl, true);
         return false;
       }
@@ -2142,6 +2144,7 @@ function Init(nextGame) {
     autoScrollToCurrentMoveIfEnabled();
     // customFunctionOnMove here for consistency: null move starting new game
     customFunctionOnMove();
+    if (typeof(engineWinOnMove) == "function") { engineWinOnMove(); }
   }
 
   if ((firstStart) && (autostartAutoplay)) { SetAutoPlay(true); }
@@ -2664,6 +2667,7 @@ function MoveBackward(diff, scanOnly) {
   }
 
   customFunctionOnMove();
+  if (typeof(engineWinOnMove) == "function") { engineWinOnMove(); }
 }
 
 function MoveForward(diff, targetVar, scanOnly) {
@@ -2742,6 +2746,7 @@ function MoveForward(diff, targetVar, scanOnly) {
   }
 
   customFunctionOnMove();
+  if (typeof(engineWinOnMove) == "function") { engineWinOnMove(); }
 }
 
 lastSynchCurrentVar = -1;

@@ -175,7 +175,7 @@ function percentFixFromUrl( text ) {
   return text.replace(/pct$/,'%').replace(/p$/,'%'); // 100pct and 100p both mean 100%
 }
 
-var  sexEncodingCharSet = "$0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+var sexEncodingCharSet = "$0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 function sex2hex(sex) {
   if (sex === "") { return ""; }
   sex += "";
@@ -217,14 +217,14 @@ if ((lightColor = gup("lightColorName")) === "") {
     if ((lightColor = "#" + sex2hex(gup("lightColorSex"))) == "#") { lightColor = "#EFF4EC"; }
   }
 }
-if ((darkColor  = gup("darkColorName"))  === "") {
-  if ((darkColor  = "#" + gup("darkColorHex"))  == "#") {
-    if ((darkColor  = "#" + sex2hex(gup("darkColorSex")))  == "#") { darkColor  = "#C6CEC3"; }
+if ((darkColor = gup("darkColorName")) === "") {
+  if ((darkColor = "#" + gup("darkColorHex")) == "#") {
+    if ((darkColor = "#" + sex2hex(gup("darkColorSex"))) == "#") { darkColor = "#C6CEC3"; }
   }
 }
-if ((highlightColor  = gup("highlightColorName")) === "") {
-  if ((highlightColor  = "#" + gup("highlightColorHex"))  == "#") {
-    if ((highlightColor  = "#" + sex2hex(gup("highlightColorSex")))  == "#") { highlightColor  = "#DAF4D7"; }
+if ((highlightColor = gup("highlightColorName")) === "") {
+  if ((highlightColor = "#" + gup("highlightColorHex")) == "#") {
+    if ((highlightColor = "#" + sex2hex(gup("highlightColorSex"))) == "#") { highlightColor = "#DAF4D7"; }
   }
 }
 if ((highlightMode == 'none') || (highlightColor == 'none') || (highlightColor == '#none')) {
@@ -320,13 +320,13 @@ if ((backgroundColor ==  "transparent") || (backgroundColor ==  "t") ||
   backgroundColor = "transparent";
 }
 
-if ((highlightMoveColor  = gup("highlightMoveColorName")) === "") {
-  if ((highlightMoveColor  = "#" + gup("highlightMoveColorHex"))  == "#") {
+if ((highlightMoveColor = gup("highlightMoveColorName")) === "") {
+  if ((highlightMoveColor = "#" + gup("highlightMoveColorHex")) == "#") {
     highlightMoveColorSex = gup("highlightMoveColorSex");
     if ((highlightMoveColorSex == "background") || (highlightMoveColorSex == "b")) {
       highlightMoveColor = "background";
     } else {
-      if ((highlightMoveColor  = "#" + sex2hex(highlightMoveColorSex)) == "#") { highlightMoveColor = "#DAF4D7"; }
+      if ((highlightMoveColor = "#" + sex2hex(highlightMoveColorSex)) == "#") { highlightMoveColor = "#DAF4D7"; }
     }
   }
 }
@@ -445,7 +445,7 @@ if (buttonsDisplay == "s") { buttonsDisplay = "standard"; }
 if ((buttonsDisplay != "custom") && (buttonsDisplay != "standard")) { buttonsDisplay = "hidden"; }
 
 // SetGameSelectorOptions(head, num, chEvent, chSite, chRound, chWhite, chBlack, chResult, chDate);
-SetGameSelectorOptions(null, false,  0, 0, 0, 15, 15, 3, 10);
+SetGameSelectorOptions(null, false, 0, 0, 0, 15, 15, 3, 10);
 
 if (buttonsDisplay == "custom") {
 
@@ -700,7 +700,7 @@ if (gup("help") !== "") {
   document.write(" - delay = autoplay delay in ms (default 1000)\n");
   document.write("\n");
   document.write(" - squareSize = size of square (default 28)\n");
-  document.write(" - pieceSize = size of pieces | default (default selects piece size based on piece size)\n");
+  document.write(" - pieceSize = size of pieces | default (default selects piece size based on square size)\n");
   document.write(" - pieceFont = alpha | merida | uscf | random | default (default selects piece font based on piece size)\n");
   document.write(" - highlightMode = border | square | none (default square)\n");
   document.write(" - lightColorHex = light square color hex code, like FF0000 (default EFF4EC)\n");
@@ -717,7 +717,7 @@ if (gup("help") !== "") {
   document.write(" - movesDisplay = figurine | text | puzzle | hidden (default hidden)\n");
   document.write(" - textHeight = set height of the textual section, header and/or moves text, might be ignored if frameHeight is set (default 100%)\n");
   document.write(" - textWidth = set width of the textual section, header and/or moves text, might be ignored if frameWidth is set (default 100%)\n");
-  document.write(" - textMargin = set left/right margin width of the  textual section, header and/or moves text (default 0)\n");
+  document.write(" - textMargin = set left/right margin width of the textual section, header and/or moves text (default 0)\n");
   document.write(" - commentsDisplay = hidden | inline (same line as moves) | newline (new lines) (default inline)\n");
   document.write(" - fontHeaderColorHex = header color hex code, like FF0000 (default 000000)\n");
   document.write(" - fontMovesColorHex = moves color hex code, like FF0000 (default 000000)\n");
@@ -1327,17 +1327,8 @@ function customShortcutKey_Shift_0() {
   if (boardGeneratorWin && window.focus) { boardGeneratorWin.focus(); }
 }
 
-function customShortcutKey_Shift_1() {
-  if (typeof(openFidePlayerUrl) == "function") {
-    openFidePlayerUrl(gameWhite[currentGame], customPgnHeaderTag('WhiteFideId'));
-  }
-}
-
-function customShortcutKey_Shift_2() {
-  if (typeof(openFidePlayerUrl) == "function") {
-    openFidePlayerUrl(gameBlack[currentGame], customPgnHeaderTag('BlackFideId'));
-  }
-}
+// customShortcutKey_Shift_1 defined by fide-lookup.js
+// customShortcutKey_Shift_2 defined by fide-lookup.js
 
 function customShortcutKey_Shift_5() {
   if (movesDisplay == "puzzle") { Init(currentGame); }
