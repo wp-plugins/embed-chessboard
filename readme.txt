@@ -3,8 +3,8 @@ Tags: chess, chessboard, pgn, pgn4web
 Contributors: pgn4web
 Donate link: http://pgn4web.casaschi.net
 Requires at least: 2.9
-Tested up to: 3.4
-Stable tag: 1.85
+Tested up to: 3.5
+Stable tag: 1.86
 
 Allows for the insertion of a chessboard displaying chess games within wordpress articles.
 
