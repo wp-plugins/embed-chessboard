@@ -1,11 +1,11 @@
 /*
  *  pgn4web javascript chessboard
- *  copyright (C) 2009-2012 Paolo Casaschi
+ *  copyright (C) 2009-2013 Paolo Casaschi
  *  see README file and http://pgn4web.casaschi.net
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.65';
+var pgn4web_version = '2.66';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -60,7 +60,7 @@ function customPgnCommentTag(customTagString, htmlElementIdString, plyNum, varId
 
 
 function simpleAddEvent(obj, evt, cbk) {
-  if (obj.addEventListener) { obj.addEventListener(evt, cbk); }
+  if (obj.addEventListener) { obj.addEventListener(evt, cbk, false); }
   else if (obj.attachEvent) { obj.attachEvent("on" + evt, cbk); } // IE
 }
 
@@ -106,14 +106,14 @@ function resetAlert() {
   }
 }
 
-function myAlert(msg, fatalError) {
+function myAlert(msg, fatalError, doNotPrompt) {
   alertNum++;
   alertNumSinceReset++;
   if (fatalError) { fatalErrorNumSinceReset++; }
   alertLast = (alertLast + 1) % alertLog.length;
   alertLog[alertLast] = msg + "\n" + (new Date()).toLocaleString();
   if (boardIsDefault(debugShortcutSquare)) { boardShortcut(debugShortcutSquare, "pgn4web v" + pgn4web_version + " debug info, " + alertNum + " alert" + (alertNum > 1 ? "s" : ""), null, true); }
-  if (((LiveBroadcastDelay === 0) || (LiveBroadcastAlert === true)) && (boardIsDefault(debugShortcutSquare))) {
+  if ((!doNotPrompt) && ((LiveBroadcastDelay === 0) || (LiveBroadcastAlert === true)) && (boardIsDefault(debugShortcutSquare))) {
     startAlertPrompt();
   }
   customFunctionOnAlert(msg);
@@ -274,7 +274,8 @@ function handlekey(e) {
       break;
 
     case 83: // s
-      searchPgnGamePrompt();
+      if (e.shiftKey) { searchPgnGame(""); }
+      else { searchPgnGamePrompt(); }
       break;
 
     case 13: // enter
@@ -493,13 +494,13 @@ boardShortcut("E7", "flip board", function(t,e){ if (!e.shiftKey || IsRotated) {
 
 boardShortcut("F7", "toggle show comments in game text", function(t,e){ if (e.shiftKey) { SetCommentsOnSeparateLines(!commentsOnSeparateLines); } else { SetCommentsIntoMoveText(!commentsIntoMoveText); } var oldPly = CurrentPly; var oldVar = CurrentVar; Init(); GoToMove(oldPly, oldVar); }, true);
 
-boardShortcut("G7", "toggle autoplay next game", function(t,e){ SetAutoplayNextGame(!autoplayNextGame); }, true);
+boardShortcut("G7", "", function(t,e){}, true); // see setG7A6B6H6...
 
 boardShortcut("H7", "toggle enabling shortcut keys", function(t,e){ interactivelyToggleShortcutKeys(); }, true);
 
-boardShortcut("A6", "pause live broadcast automatic refresh", function(t,e){ pauseLiveBroadcast(); }, true);
+boardShortcut("A6", "", function(t,e){}, true); // see setG7A6B6H6...
 
-boardShortcut("B6", "restart live broadcast automatic refresh", function(t,e){ restartLiveBroadcast(); }, true);
+boardShortcut("B6", "", function(t,e){}, true); // see setG7A6B6H6...
 
 boardShortcut("C6", "search previous finished game", function(t,e){ searchPgnGame('\\[\\s*Result\\s*"(?!\\*"\\s*\\])', true); });
 
@@ -511,11 +512,11 @@ boardShortcut("F6", "search next finished game", function(t,e){ searchPgnGame('\
 
 boardShortcut("G6", "", function(t,e){}, true);
 
-boardShortcut("H6", "force games refresh during live broadcast", function(t,e){ refreshPgnSource(); }, true);
+boardShortcut("H6", "", function(t,e){}, true); // see setG7A6B6H6...
 
 boardShortcut("A5", "repeat last search backward", function(t,e){ searchPgnGame(lastSearchPgnExpression, true); }, true);
 
-boardShortcut("B5", "search prompt", function(t,e){ searchPgnGamePrompt(); }, true);
+boardShortcut("B5", "search prompt", function(t,e){ if (e.shiftKey) { searchPgnGame(""); } else { searchPgnGamePrompt(); } }, true);
 
 boardShortcut("C5", "repeat last search", function(t,e){ searchPgnGame(lastSearchPgnExpression); }, true);
 
@@ -531,17 +532,17 @@ boardShortcut("H5", "", function(t,e){}, true);
 
 boardShortcut("A4", "search previous event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"(?!' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\])', true); }, true);
 
-boardShortcut("B4", "search previous round of same event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])|\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])', true); }, true);
+boardShortcut("B4", "search previous round of same event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])|\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\]).*\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\]', true); }, true);
 
-boardShortcut("C4", "search previous game of same black player", function(t,e){ searchPgnGame('\\[\\s*Black\\s*"' + fixRegExp(gameBlack[currentGame]) + '"\\s*\\]', true); }, true);
+boardShortcut("C4", "search previous game of same black player", function(t,e){ searchPgnGame('\\[\\s*' + (e.shiftKey ? 'White' : 'Black') + '\\s*"' + fixRegExp(gameBlack[currentGame]) + '"\\s*\\]', true); }, true);
 
-boardShortcut("D4", "search previous game of same white player", function(t,e){ searchPgnGame('\\[\\s*White\\s*"' + fixRegExp(gameWhite[currentGame]) + '"\\s*\\]', true); }, true);
+boardShortcut("D4", "search previous game of same white player", function(t,e){ searchPgnGame('\\[\\s*' + (e.shiftKey ? 'Black' : 'White') + '\\s*"' + fixRegExp(gameWhite[currentGame]) + '"\\s*\\]', true); }, true);
 
-boardShortcut("E4", "search next game of same white player", function(t,e){ searchPgnGame('\\[\\s*White\\s*"' + fixRegExp(gameWhite[currentGame]) + '"\\s*\\]', false); }, true);
+boardShortcut("E4", "search next game of same white player", function(t,e){ searchPgnGame('\\[\\s*' + (e.shiftKey ? 'Black' : 'White') + '\\s*"' + fixRegExp(gameWhite[currentGame]) + '"\\s*\\]', false); }, true);
 
-boardShortcut("F4", "search next game of same black player", function(t,e){ searchPgnGame('\\[\\s*Black\\s*"' + fixRegExp(gameBlack[currentGame]) + '"\\s*\\]', false); }, true);
+boardShortcut("F4", "search next game of same black player", function(t,e){ searchPgnGame('\\[\\s*' + (e.shiftKey ? 'White' : 'Black') + '\\s*"' + fixRegExp(gameBlack[currentGame]) + '"\\s*\\]', false); }, true);
 
-boardShortcut("G4", "search next round of same event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])|\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])', false); }, true);
+boardShortcut("G4", "search next round of same event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\].*\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\])|\\[\\s*Round\\s*"(?!' + fixRegExp(gameRound[currentGame]) + '"\\s*\\]).*\\[\\s*Event\\s*"' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\]', false); }, true);
 
 boardShortcut("H4", "search next event", function(t,e){ searchPgnGame('\\[\\s*Event\\s*"(?!' + fixRegExp(gameEvent[currentGame]) + '"\\s*\\])', false); }, true);
 
@@ -594,6 +595,22 @@ boardShortcut("G1", "", function(t,e){}, true); // see setB1C1F1G1...
 boardShortcut("H1", "go to game end", function(t,e){ endButton(e); }, true);
 
 
+setG7A6B6H7boardShortcuts();
+
+function setG7A6B6H7boardShortcuts() {
+  if (LiveBroadcastDelay > 0) {
+    if (boardIsDefault("G7")) { boardShortcut("G7", "", function(t,e){}, true); }
+    if (boardIsDefault("A6")) { boardShortcut("A6", "pause live broadcast automatic games refresh", function(t,e){ pauseLiveBroadcast(); }, true); }
+    if (boardIsDefault("B6")) { boardShortcut("B6", "restart live broadcast automatic games refresh", function(t,e){ restartLiveBroadcast(); }, true); }
+    if (boardIsDefault("H6")) { boardShortcut("H6", "force live broadcast games refresh", function(t,e){ refreshPgnSource(); }, true); }
+  } else {
+    if (boardIsDefault("G7")) { boardShortcut("G7", "toggle autoplay next game", function(t,e){ SetAutoplayNextGame(!autoplayNextGame); }, true); }
+    if (boardIsDefault("A6")) { boardShortcut("A6", "", function(t,e){}, true); }
+    if (boardIsDefault("B6")) { boardShortcut("B6", "", function(t,e){}, true); }
+    if (boardIsDefault("H6")) { boardShortcut("H6", "", function(t,e){}, true); }
+  }
+}
+
 setB1C1F1G1boardShortcuts();
 
 function setB1C1F1G1boardShortcuts() {
@@ -612,6 +629,7 @@ function setB1C1F1G1boardShortcuts() {
     if (boardIsDefault("F1")) { boardShortcut("F1", "move 6 half-moves forward", function(t,e){ GoToMove(CurrentPly + 6); }, true); }
   }
 }
+
 
 var deciles = new Array(11);
 function calculateDeciles() {
@@ -1223,7 +1241,7 @@ function CheckClearWay(thisPiece) {
 }
 
 function CleanMove(move) {
-  move = move.replace(/[^a-zA-Z0-9#=-]*/g, ''); // patch here adding '+' after '0-8' to pass through check signs
+  move = move.replace(/[^a-zA-Z0-9#=-]*/g, ''); // patch here adding '+' before '#' to pass through check signs
   if (move.match(/^[Oo0]/)) { move = move.replace(/[o0]/g, 'O').replace(/O(?=O)/g, 'O-'); }
   move = move.replace(/ep/i, '');
   return move;
@@ -1964,8 +1982,7 @@ function checkLiveBroadcastStatus() {
 function restartLiveBroadcastTimeout() {
   if (LiveBroadcastDelay === 0) { return; }
   if (LiveBroadcastInterval) { clearTimeout(LiveBroadcastInterval); LiveBroadcastInterval = null; }
-  needRestart = (!LiveBroadcastEnded);
-  if ((needRestart === true) && (!LiveBroadcastPaused)) {
+  if ((!LiveBroadcastEnded) && (!LiveBroadcastPaused)) {
     LiveBroadcastInterval = setTimeout("refreshPgnSource()", LiveBroadcastDelay * 60000);
   }
   LiveBroadcastTicker++;
@@ -2032,7 +2049,7 @@ function loadPgnFromTextarea(textareaId) {
       loadPgnFromTextareaResult = LOAD_PGN_OK;
       LiveBroadcastLastReceivedLocal = (new Date()).toLocaleString();
     } else {
-      myAlert('error: no games found in ' + textareaId + 'object in the HTML file');
+      myAlert('error: no games found in ' + textareaId + ' object in the HTML file');
       loadPgnFromTextareaResult = LOAD_PGN_FAIL;
     }
   }
@@ -2663,7 +2680,7 @@ function MoveForward(diff, targetVar, scanOnly) {
         if (PredecessorsVars[targetVar][ii] === CurrentVar) { break; }
       }
       if (ii === PredecessorsVars[targetVar].length) {
-        myAlert("error: unknown path to reach variation " + targetVar + " from " + CurrentVar + " in game " + (currentGame+1), true);
+        myAlert("error: unknown path to variation " + targetVar + " from " + CurrentVar + " in game " + (currentGame+1), true);
         return;
       } else {
         nextVarStartPly = StartPlyVar[PredecessorsVars[targetVar][ii + 1]];
@@ -2942,7 +2959,7 @@ function ParsePGNGameString(gameString) {
         commentEnd = commentStart + 1;
         while ('0123456789'.indexOf(ss.charAt(commentEnd)) >= 0) {
           commentEnd++;
-          if (commentEnd == ss.length) { break; }
+          if (commentEnd >= ss.length) { break; }
         }
         if (MoveCommentsVar[CurrentVar][StartPly+PlyNumber]) { MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' '; }
         MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += translateNAGs(ss.substring(commentStart, commentEnd).replace(/(^\s*|\s*$)/, ''));
@@ -2955,7 +2972,7 @@ function ParsePGNGameString(gameString) {
         commentEnd = commentStart + 1;
         while ('!?'.indexOf(ss.charAt(commentEnd)) >= 0) {
           commentEnd++;
-          if (commentEnd == ss.length) { break; }
+          if (commentEnd >= ss.length) { break; }
         }
         if (MoveCommentsVar[CurrentVar][StartPly+PlyNumber]) { MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' '; }
         MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ss.substring(commentStart, commentEnd);
@@ -2965,16 +2982,15 @@ function ParsePGNGameString(gameString) {
       case '{':
         commentStart = start+1;
         commentEnd = ss.indexOf('}',start+1);
-        if (commentEnd > 0) {
-          if (MoveCommentsVar[CurrentVar][StartPly+PlyNumber]) { MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' '; }
-          ssComm = translateNAGs(ss.substring(commentStart, commentEnd).replace(/(^\s*|\s*$)/, ''));
-          MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ssComm;
-          GameHasComments = GameHasComments || ssComm.replace(/\[%[^\]]*\]\s*/g,'').replace(basicNAGs, '').replace(/^\s+$/,'') !== '';
-          start = commentEnd;
-        } else {
-          myAlert('error: missing end comment char } while parsing game ' + (currentGame+1), true);
-          return;
+        if (commentEnd < 0) {
+          myAlert('error: missing end comment } in game ' + (currentGame+1), true);
+          commentEnd = ss.length;
         }
+        if (MoveCommentsVar[CurrentVar][StartPly+PlyNumber]) { MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ' '; }
+        ssComm = translateNAGs(ss.substring(commentStart, commentEnd).replace(/(^\s*|\s*$)/, ''));
+        MoveCommentsVar[CurrentVar][StartPly+PlyNumber] += ssComm;
+        GameHasComments = GameHasComments || ssComm.replace(/\[%[^\]]*\]\s*/g,'').replace(basicNAGs, '').replace(/^\s+$/,'') !== '';
+        start = commentEnd;
         break;
 
       case '%':
@@ -3058,7 +3074,7 @@ function ParsePGNGameString(gameString) {
   }
 
   if (CurrentVar !== 0) {
-    myAlert("error: ParsePGNGameString ends with current var = " + CurrentVar, true);
+    myAlert("error: ParsePGNGameString ends with CurrentVar " + CurrentVar + " in game " + (currentGame+1), true);
     while (CurrentVar > 0) { closeVar(); }
   }
 
@@ -3379,11 +3395,11 @@ function gameNumberSearchPgn(searchExpression, backward, includeCurrent) {
 }
 
 function searchPgnGame(searchExpression, backward) {
+  if (typeof(searchExpression) == "undefined") { searchExpression = ""; }
   lastSearchPgnExpression = searchExpression;
   if (theObj = document.getElementById('searchPgnExpression'))
   { theObj.value = searchExpression; }
-  if ((searchExpression === "") || (!searchExpression)) { return; }
-  if (numberOfGames < 2) { return; }
+  if ((searchExpression === "") || (numberOfGames < 2)) { return; }
   checkGame = gameNumberSearchPgn(searchExpression, backward, false);
   if ((checkGame !== false) && (checkGame != currentGame)) { Init(checkGame); }
 }
@@ -3404,7 +3420,7 @@ function searchPgnGameForm() {
 
 function fixCommentForDisplay(comment) {
   chessMovesRegExp = new RegExp("((\\d+(\\.|\\.\\.\\.)?\\s*)?([KQRBNP]?[a-h1-8]?x?[a-h][1-8](=[QRNB])?|O-O-O|O-O)[!?+#]?)", "g");
-  return comment.replace(chessMovesRegExp, '<SPAN STYLE="white-space: nowrap;" CLASS="commentMove">$1</SPAN>');
+  return comment.replace(chessMovesRegExp, '<SPAN CLASS="commentMove">$1</SPAN>');
 }
 
 var tableSize = 0;
@@ -3915,6 +3931,7 @@ function SetLiveBroadcast(delay, alertFlag, demoFlag, stepFlag) {
   LiveBroadcastAlert = (alertFlag === true);
   LiveBroadcastDemo = (demoFlag === true);
   LiveBroadcastSteppingMode = (stepFlag === true);
+  setG7A6B6H7boardShortcuts();
 }
 
 function SetImage(col, row, image) {

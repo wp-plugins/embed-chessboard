@@ -2,7 +2,7 @@
 
 <!--
   pgn4web javascript chessboard
-  copyright (C) 2009-2012 Paolo Casaschi
+  copyright (C) 2009-2013 Paolo Casaschi
   see README file and http://pgn4web.casaschi.net
   for credits, license and more details
 -->
@@ -69,6 +69,12 @@ body {
 .variation {
   line-height: 1.4em;
   text-decoration: none;
+}
+
+a.move,
+a.variation,
+.commentMove {
+  white-space: nowrap;
 }
 
 .move {
@@ -1273,7 +1279,7 @@ function customFunctionOnPgnGameLoad() {
 //          (gameResult[currentGame] == "0-1")     ||
 //          (gameResult[currentGame] == "1/2-1/2") ||
 //          (gameResult[currentGame] == "*") ) {
-//       theObj.innerHTML += '<span class="move"> ' + gameResult[currentGame] + '</span>';
+//       theObj.innerHTML += '<span class="move" style="white-space: nowrap;"> ' + gameResult[currentGame] + '</span>';
 //     }
 //   }
 
