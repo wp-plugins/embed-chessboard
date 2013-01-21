@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.67';
+var pgn4web_version = '2.68';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -21,7 +21,7 @@ function displayHelp(section) {
 }
 
 
-// custom functions for given events, to be redefined
+// empty event APIs to be redefined
 
 function customFunctionOnPgnTextLoad() {}
 function customFunctionOnPgnGameLoad() {}
@@ -189,7 +189,7 @@ function customShortcutKey_Shift_9() {}
 
 var shortcutKeysEnabled = false;
 function handlekey(e) {
-  var keycode, oldPly, oldVar;
+  var keycode, oldPly, oldVar, colRow;
 
   if (!e) { e = window.event; }
 
@@ -208,10 +208,10 @@ function handlekey(e) {
     case 17: // ctrl
     case 18: // alt
     case 32: // space
-    case 35: // end
-    case 36: // home
     case 33: // page-up
     case 34: // page-down
+    case 35: // end
+    case 36: // home
     case 92: // super
     case 93: // menu
     case 188: // comma
@@ -220,6 +220,10 @@ function handlekey(e) {
     case 27: // escape
       if (e.shiftKey) { interactivelyToggleShortcutKeys(); }
       else { displayHelp(); }
+      break;
+
+    case 189: // dash
+      if ((colRow = prompt("Enter shortcut square coordinates to click:", "")) && (colRow = colRowFromSquare(colRow.toUpperCase()))) { boardOnClick[colRow.col][colRow.row](null, e); }
       break;
 
     case 90: // z
@@ -288,6 +292,10 @@ function handlekey(e) {
       else { displayPgnData(false); }
       break;
 
+    case 187: // equal
+      SwitchAutoPlay();
+      break;
+
     case 65: // a
       GoToMove(CurrentPly + 1);
       SetAutoPlay(true);
@@ -340,7 +348,7 @@ function handlekey(e) {
 
     case 57: // 9
       if (e.shiftKey) { customShortcutKey_Shift_9(); }
-      else { SetAutoplayDelayAndStart( 9*1000); }
+      else { setCustomAutoplayDelay(); }
       break;
 
     case 81: // q
@@ -1041,7 +1049,7 @@ function CheckLegality(what, plyCount) {
     return true;
   }
 
-  // castling move?
+  // castling
   if (what == 'O-O') {
     if (!CheckLegalityOO()) { return false; }
     for (thisCol = PieceCol[MoveColor][0]; thisCol < 7; thisCol++) {
@@ -1332,7 +1340,7 @@ function randomGameRandomPly() {
 }
 
 
-// clock detection: DGT format [%clk 01:02]
+// clock detection as [%clk 01:02]
 
 function clockFromComment(plyNum) {
   return customPgnCommentTag("clk", null, plyNum);
@@ -1357,7 +1365,7 @@ function HighlightLastMove() {
     }
   }
 
-  // halfmove to be highlighted, negative for starting position (nothing to highlight)
+  // halfmove to be highlighted, negative for starting position
   var showThisMove = CurrentPly - 1;
   if (showThisMove > StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]) { showThisMove = StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]; }
 
@@ -1413,7 +1421,7 @@ function HighlightLastMove() {
       clockString = showThisMove > StartPly ?
         clockFromComment(showThisMove) : initialBeforeLastMoverClock;
       if (!clockString && (CurrentPly === StartPly+PlyNumber)) {
-        // support for time info in the last comment as { White Time: 0h:12min Black Time: 1h:23min }
+        // see comment above
         clockRegExp = new RegExp((whiteToMove ? "White" : "Black") + "\\s+Time:\\s*(\\S+)", "i");
         if (clockMatch = strippedMoveComment(StartPly+PlyNumber).match(clockRegExp)) {
           clockString = clockMatch[1];
@@ -1598,12 +1606,12 @@ function undoStackRedo() {
 
 
 function fixCommonPgnMistakes(text) {
-  text = text.replace(/[\u00A0\u180E\u2000-\u200A\u202F\u205F\u3000]/g," "); // some "space" to plain space
+  text = text.replace(/[\u00A0\u180E\u2000-\u200A\u202F\u205F\u3000]/g," "); // some spaces to plain space
   text = text.replace(/\u00BD/g,"1/2"); // "half fraction" to "1/2"
   text = text.replace(/[\u2010-\u2015]/g,"-"); // "hyphens" to "-"
   text = text.replace(/\u2024/g,"."); // "one dot leader" to "."
   text = text.replace(/[\u2025-\u2026]/g,"..."); // "two dot leader" and "ellipsis" to "..."
-  text = text.replace(/\\"/g,"'"); // fix parsing headers like: [Opening "King\"s Indian Attack"]
+  text = text.replace(/\\"/g,"'"); // fix [Opening "Queen\"s Gambit"]
   return text;
 }
 
@@ -1662,7 +1670,7 @@ function pgnGameFromPgnText(pgnText) {
 
 function pgnGameFromHttpRequest(httpResponseData) {
 
-  if (pgnUrl && pgnUrl.match(/\.zip(\?|#|$)/i)) {
+  if (pgnUrl && pgnUrl.replace(/[?#].*/, "").match(/\.zip$/i)) {
     var unzippedPgnText = "";
     try {
       // requires js-unzip/js-unzip.js and js-unzip/js-inflate.js
@@ -1869,7 +1877,7 @@ function loadPgnFromPgnUrl(pgnUrl) {
   LiveBroadcastLastRefreshedLocal = (new Date()).toLocaleString();
 
   var http_request = false;
-  if (window.XMLHttpRequest) { // not IE
+  if (window.XMLHttpRequest) {
     http_request = new XMLHttpRequest();
     if (http_request.overrideMimeType) {
       http_request.overrideMimeType('text/plain; charset=x-user-defined');
@@ -3202,6 +3210,9 @@ function ParseMove(move, plyCount) {
 
   if (typeof(move) == "undefined") { return false; }
 
+  HistEnPassant[plyCount+1] = false;
+  HistEnPassantCol[plyCount+1] = -1;
+
   if (move.indexOf('--') === 0) {
     mvIsNull = 1;
     CheckLegality('--', plyCount);
@@ -3325,8 +3336,6 @@ function ParseMove(move, plyCount) {
   if (!CheckLegality(PieceCode[mvPiece-1], plyCount)) { return false; }
 
   // pawn moved: check en-passant possibility
-  HistEnPassant[plyCount+1] = false;
-  HistEnPassantCol[plyCount+1] = -1;
   if (mvPiece == 6) {
      if (Math.abs(HistRow[0][plyCount]-mvToRow) == 2) {
        HistEnPassant[plyCount+1] = true;
@@ -3861,17 +3870,16 @@ function FlipBoard() {
 }
 
 function RefreshBoard() {
-  var col, row, square;
-  for (col = 0; col < 8;++col) {
-    for (row = 0; row < 8; ++row) {
-      if (Board[col][row] === 0) { SetImage(col, row, ClearImg.src); }
+  var ii, jj;
+  for (jj = 0; jj < 8; ++jj) {
+    for (ii = 0; ii < 8; ++ii) {
+      if (Board[jj][ii] === 0) { SetImage(jj, ii, ClearImg.src); }
     }
   }
-  var color, ii;
-  for (color = 0; color < 2; ++color) {
+  for (jj = 0; jj < 2; ++jj) {
     for (ii = 0; ii < 16; ++ii) {
-      if (PieceType[color][ii] > 0) {
-        SetImage(PieceCol[color][ii], PieceRow[color][ii], PiecePicture[color][PieceType[color][ii]].src);
+      if (PieceType[jj][ii] > 0) {
+        SetImage(PieceCol[jj][ii], PieceRow[jj][ii], PiecePicture[jj][PieceType[jj][ii]].src);
       }
     }
   }
@@ -3947,11 +3955,8 @@ function SetImagePath(path) {
 }
 
 function SwitchAutoPlay() {
-  if (isAutoPlayOn) { SetAutoPlay(false); }
-  else {
-    MoveForward(1);
-    SetAutoPlay(true);
-  }
+  if (!isAutoPlayOn) { MoveForward(1); }
+  SetAutoPlay(!isAutoPlayOn);
 }
 
 function StoreMove(thisPly) {
@@ -3984,7 +3989,7 @@ function StoreMove(thisPly) {
     HistPieceId[1][thisPly] = -1;
   }
 
-  // update "square from" and captured square (not necessarily "square to" e.g. en-passant)
+  // update "square from" and captured square (not "square to" for en-passant)
   Board[PieceCol[MoveColor][mvPieceId]][PieceRow[MoveColor][mvPieceId]] = 0;
 
   // mark captured piece
