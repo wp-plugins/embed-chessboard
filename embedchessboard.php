@@ -104,6 +104,7 @@ ChangeLog:
   1.88  - upgraded pgn4web to 2.66
   1.89  - upgraded pgn4web to 2.67
   1.90  - upgraded pgn4web to 2.68
+        -  and minor bug fix
 */
 
 class pgnBBCode {
@@ -124,7 +125,7 @@ class pgnBBCode {
 
 		// [pgn height=auto showMoves=figurine initialGame=1 initialVariation=0 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
 
-		$pgnText = preg_replace("@(<.*?>|\n)@", " ", $content);
+		$pgnText = preg_replace("@(<.*?>|\n|\r)+@", " ", $content);
 
 		if ( !empty($atts) ) {
 			foreach ($atts as &$value) {
