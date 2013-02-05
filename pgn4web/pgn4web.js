@@ -5,7 +5,7 @@
  *  for credits, license and more details
  */
 
-var pgn4web_version = '2.68';
+var pgn4web_version = '2.69';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -189,7 +189,7 @@ function customShortcutKey_Shift_9() {}
 
 var shortcutKeysEnabled = false;
 function handlekey(e) {
-  var keycode, oldPly, oldVar, colRow;
+  var keycode, oldPly, oldVar, colRow, colRowList;
 
   if (!e) { e = window.event; }
 
@@ -223,7 +223,13 @@ function handlekey(e) {
       break;
 
     case 189: // dash
-      if ((colRow = prompt("Enter shortcut square coordinates to click:", "")) && (colRow = colRowFromSquare(colRow.toUpperCase()))) { boardOnClick[colRow.col][colRow.row](null, e); }
+      if (colRowList = prompt("Enter shortcut square coordinates to click:", "")) {
+        colRowList = colRowList.toUpperCase().replace(/[^A-Z0-9]/g,"");
+        while (colRow = colRowFromSquare(colRowList)) {
+          boardOnClick[colRow.col][colRow.row]({"id": "img_tcol" + colRow.col + "trow" + colRow.row}, e);
+          colRowList = colRowList.substr(2);
+        }
+      }
       break;
 
     case 90: // z
@@ -480,7 +486,7 @@ boardShortcut("B8", "show this position FEN string", function(t,e){ displayFenDa
 
 boardShortcut("C8", "show this game PGN source data", function(t,e){ displayPgnData(false); }, true);
 
-boardShortcut("D8", "show full PGN source data", function(t,e){ displayPgnData(true); }, true);
+boardShortcut("D8", "show full PGN source data", function(t,e){ if (e.shiftKey && pgnUrl) { location.href = pgnUrl; } else { displayPgnData(true); } }, true);
 
 boardShortcut("E8", "search help", function(t,e){ displayHelp("search_tool"); }, true);
 
