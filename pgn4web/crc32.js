@@ -1,9 +1,11 @@
 /*
  *  pgn4web javascript chessboard
- *  copyright (C) 2009-2012 Paolo Casaschi
+ *  copyright (C) 2009-2013 Paolo Casaschi
  *  see README file and http://pgn4web.casaschi.net
  *  for credits, license and more details
  */
+
+"use strict";
 
 function crc32(str) {
 
@@ -22,10 +24,10 @@ function crc32(str) {
 }
 
 function printHex(n) {
-  hex = "0123456789ABCDEF";
+  var hex = "0123456789ABCDEF";
   var s = "";
   var r = 0;
-  for (ii = 0; ii < 8; ii++) {
+  for (var i = 0; i < 8; i++) {
     r = n % 16;
     if (r < 0) { r += 16; }
     s = hex.charAt(r) + s;

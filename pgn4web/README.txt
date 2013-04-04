@@ -80,7 +80,7 @@ chessboard square.
 
 HOW TO USE pgn4we.js
 
-add a SCRIPT instance at the top of your HTML file:
+To enable pgn4web, add a SCRIPT instance at the top of your HTML file:
 
   <script src="pgn4web.js" type="text/javascript"></script>
 
@@ -117,7 +117,7 @@ Example:
     SetAutostartAutoplay(false);
     SetAutoplayNextGame(false); // if set, move to the next game at the end of the current game during autoplay
     SetInitialGame(1); // number of game to be shown at load, from 1 (default); values (keep the quotes) of "first", "last", "random" are accepted; other string values assumed as PGN search string
-    SetInitialVariation(0); // halfmove number to be shown at load, 0 (default) for main variation
+    SetInitialVariation(0); // number for the variation to be shown at load, 0 (default) for main variation
     SetInitialHalfmove(0,false); // halfmove number to be shown at load, 0 (default) for start position; values (keep the quotes) of "start", "end", "random", "comment" (go to first comment or variation), "variation" (go to the first variation) are also accepted. Second parameter if true applies the setting to every selected game instead of startup only
     SetShortcutKeysEnabled(false);
 
@@ -166,6 +166,9 @@ See http://pgn4web.casaschi.net/demo/ usage example, including a live broadcast
 demo.
 See http://pgn4web-blog.casaschi for a usage example within a blog using the
 iframe html tag.
+
+The pgn4web scripts and pages are optimized for the HTML5 doctype declaration:
+<!DOCTYPE HTML>
 
 
 CHESS FIGURINE DISPLAY OF MOVES
