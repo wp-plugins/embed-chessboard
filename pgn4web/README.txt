@@ -5,7 +5,9 @@
 #  for credits, license and more details
 #
 
+
 PGN4WEB: javascript chess games viewer for websites, blogs and live broadcasts.
+
 
 ABOUT
 
@@ -105,6 +107,7 @@ within a hidden FORM/TEXTAREA statement with the ID pgnText:
 Example:
 
   <script type="text/javascript>
+    "use strict";
 
     SetPgnUrl("http://yoursite/yourpath/yourfile.pgn"); // if set, this has precedence over the inline PGN in the HTML file
     SetImagePath(""); // use "" path if images are in the same folder as this javascript file
@@ -430,10 +433,12 @@ moves) in the "(*" notation, such as in 1. e4 (* 1... d5 2. exd5) e5
 
 Please email me for review any PGN file that pgn4web fails parsing correctly.
 
+
 CHESS960 SUPPORT
 
 pgn4web supports Chess960 (a.k.a. Fischer random chess) and understands both
 the X-FEN and the Shredder-FEN extensions to the FEN notation.
+
 
 JAVASCRIPT CODING
 
@@ -447,6 +452,8 @@ Although a compression beyond 50% can be achieved, only the uncompressed
 version is distributed, but if you want to use a compressed version on your
 site, the pgn4web.js code should support it.
 
+As of pgn4web version 2.71 strict mode is used, see statement: "use strict";
+
 
 CREDITS AND LICENSE
 
@@ -459,7 +466,10 @@ attribution-share alike 3.0 unported license) by Eric De Mund.
 SVG images from http://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
 by Colin M.L. Burnett; licensed under GFDL (www.gnu.org/copyleft/fdl.html),
 CC-BY-SA-3.0 (www.creativecommons.org/licenses/by-sa/3.0/) or
-GPL (www.gnu.org/licenses/gpl.html)], via Wikimedia Commons.
+GPL (www.gnu.org/licenses/gpl.html), via Wikimedia Commons. SVG images from
+http://openclipart.org/search/?query=chess+symbols+set by Igor Krizanovskij;
+dedicated to the Public Domain as openclipart.org content
+(http://creativecommons.org/publicdomain/zero/1.0/)
 
 The figurine fonts are derived from the Liberation Sans font (released under
 GNU General Public License, see https://fedorahosted.org/liberation-fonts/)
