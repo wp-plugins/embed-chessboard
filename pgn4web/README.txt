@@ -467,9 +467,10 @@ SVG images from http://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
 by Colin M.L. Burnett; licensed under GFDL (www.gnu.org/copyleft/fdl.html),
 CC-BY-SA-3.0 (www.creativecommons.org/licenses/by-sa/3.0/) or
 GPL (www.gnu.org/licenses/gpl.html), via Wikimedia Commons. SVG images from
-http://openclipart.org/search/?query=chess+symbols+set by Igor Krizanovskij;
-dedicated to the Public Domain as openclipart.org content
-(http://creativecommons.org/publicdomain/zero/1.0/)
+http://openclipart.org/search/?query=chess+symbols+set by Igor Krizanovskij
+and from http://openclipart.org/search/?query=Chess+tile both dedicated to
+the Public Domain (http://creativecommons.org/publicdomain/zero/1.0/) as any
+openclipart.org content.
 
 The figurine fonts are derived from the Liberation Sans font (released under
 GNU General Public License, see https://fedorahosted.org/liberation-fonts/)
@@ -495,13 +496,6 @@ See http://jscolor.com/
 
 The SWFObject javascript library (http://code.google.com/p/swfobject/) is
 released under the MIT License
-(http://www.opensource.org/licenses/mit-license.php).
-
-The js-unzip.js library (https://github.com/augustl/js-unzip) is
-Copyright (c) 2010 August Lilleaas.
-The js-inflate.js library (https://github.com/augustl/js-inflate) is
-Copyright (c) 2010 August Lilleaas and Copyright (c) 1999 Masanao Izumo.
-Both are released under the MIT License
 (http://www.opensource.org/licenses/mit-license.php).
 
 

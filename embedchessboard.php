@@ -380,7 +380,7 @@ function embedchessboard_settings_page() {
 <?php _e("leave blank values to reset to defaults", "embedchess"); ?>
 </p>
 
-<script type="text/javascript" src="<?php echo plugins_url('pgn4web/jscolor/jscolor.js', __FILE__) ?>"></script>
+<script type="text/javascript" src="<?php echo plugins_url('pgn4web/libs/jscolor/jscolor.js', __FILE__) ?>"></script>
 
 <form method="post" action="options.php">
 	<?php settings_fields('embedchessboard-settings-group'); ?>
