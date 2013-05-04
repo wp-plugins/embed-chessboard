@@ -7,7 +7,7 @@
 
 "use strict";
 
-var pgn4web_version = '2.71+';
+var pgn4web_version = '2.72';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -379,7 +379,7 @@ function handlekey(e) {
       break;
 
     case 89: // y
-      resumeLiveBroadcast();
+      restartLiveBroadcast();
       break;
 
     case 70: // f
@@ -2470,7 +2470,7 @@ function InitImages() {
   }
 
   ClearImg = new Image();
-  ClearImg.src = ImagePath+'clear.'+imageType;
+  ClearImg.src = ImagePath + 'clear.' + imageType;
 
   var ColorName = new Array ("w", "b");
   var PiecePrefix = new Array ("k", "q", "r", "b", "n", "p");
@@ -3408,7 +3408,7 @@ function PrintHTML() {
         squareTitle = squareCoord;
         if (boardTitle[jj][ii] !== '') { squareTitle += ': ' + boardTitle[jj][ii]; }
         text += '<IMG SRC="'+ ClearImg.src + '" ' +
-          'CLASS="pieceImage" STYLE="vertical-align: middle; border-style: none; outline: none;" ' +
+          'CLASS="pieceImage" STYLE="border: none; display: block; vertical-align: middle;" ' +
           'ONCLICK="boardOnClick[' + jj + '][' + ii + '](this, event);" ' +
           'ID="' + imageId + '" TITLE="' + squareTitle + '" ' + 'ONFOCUS="this.blur()" />' +
           '</TD>';
