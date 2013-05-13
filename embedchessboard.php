@@ -145,7 +145,7 @@ class pgnBBCode {
 			elseif (($layout == "vertical") || ($layout == "v")) { $horizontalLayout = "f"; }
 			else { $horizontalLayout = "f"; }
 		} else {
-			$horizontalLayout = get_option_with_default('embedchessboard_horizontal_layout');
+			$horizontalLayout = get_embedchessboard_option('embedchessboard_horizontal_layout');
 		}
 
 		if ( isset($atts['showmoves']) ) { $movesDisplay = $atts['showmoves']; }
@@ -158,12 +158,12 @@ class pgnBBCode {
 		if ( isset($atts['height']) ) { $height = $atts['height']; }
 		elseif ( isset($atts['h']) ) { $height = $atts['h']; }
 		elseif ( isset($atts[0]) ) { $height = $atts[0]; } // compatibility with v < 1.09
-		else { $height = get_option_with_default('embedchessboard_height'); }
+		else { $height = get_embedchessboard_option('embedchessboard_height'); }
 
 		$skipParameters = array('layout', 'l', 'showmoves', 'sm', 'height', 'h', 'initialgame', 'ig', 'initialVariation', 'iv', 'initialhalfmove', 'ih', 'autoplaymode', 'am', 'extendedoptions', 'eo');
 		$pgnParameters = array('pgntext', 'pt', 'pgnencoded', 'pe', 'fenstring', 'fs', 'pgnid', 'pi', 'pgndata', 'pd');
 		$pgnSourceOverride = false;
-		$extendedOptionsString = get_option_with_default('embedchessboard_extended_options');
+		$extendedOptionsString = get_embedchessboard_option('embedchessboard_extended_options');
                 if ($extendedOptionsString != '') {
 			$extendedOptionsString = preg_replace('/^\s+/', '', $extendedOptionsString);
 			$extendedOptionsString = preg_replace('/\s+$/', '', $extendedOptionsString);
@@ -219,11 +219,11 @@ class pgnBBCode {
 
 		if ( isset($atts['autoplaymode']) ) { $autoplayMode = $atts['autoplaymode']; }
 		elseif ( isset($atts['am']) ) { $autoplayMode = $atts['am']; }
-		else { $autoplayMode = get_option_with_default('embedchessboard_autoplay_mode'); }
+		else { $autoplayMode = get_embedchessboard_option('embedchessboard_autoplay_mode'); }
 
 		$pgnId = "pgn4web_" . dechex(crc32($pgnText));
 
-		$containerStyle = get_option_with_default('embedchessboard_container_style');
+		$containerStyle = get_embedchessboard_option('embedchessboard_container_style');
 		if ($containerStyle == '') { $replacement  = "<div class='chessboard-wrapper'>"; }
 		else { $replacement  = "<div style='" . $containerStyle . "' class='chessboard-wrapper'>"; }
 
@@ -237,24 +237,24 @@ class pgnBBCode {
 		$replacement .= "&iv=" . rawurlencode($initialVariation);
 		$replacement .= "&ih=" . rawurlencode($initialHalfmove);
 		$replacement .= "&ss=26&ps=d&pf=d";
-		$replacement .= "&lch=" . rawurlencode(get_option_with_default('embedchessboard_light_squares_color'));
-		$replacement .= "&dch=" . rawurlencode(get_option_with_default('embedchessboard_dark_squares_color'));
-		$replacement .= "&bbch=" . rawurlencode(get_option_with_default('embedchessboard_board_border_color'));
+		$replacement .= "&lch=" . rawurlencode(get_embedchessboard_option('embedchessboard_light_squares_color'));
+		$replacement .= "&dch=" . rawurlencode(get_embedchessboard_option('embedchessboard_dark_squares_color'));
+		$replacement .= "&bbch=" . rawurlencode(get_embedchessboard_option('embedchessboard_board_border_color'));
 		$replacement .= "&hm=b";
-		$replacement .= "&hch=" . rawurlencode(get_option_with_default('embedchessboard_square_highlight_color'));
+		$replacement .= "&hch=" . rawurlencode(get_embedchessboard_option('embedchessboard_square_highlight_color'));
 		$replacement .= "&bd=c";
-		$replacement .= "&cbch=" . rawurlencode(get_option_with_default('embedchessboard_control_buttons_background_color'));
-		$replacement .= "&ctch=" . rawurlencode(get_option_with_default('embedchessboard_control_buttons_text_color'));
+		$replacement .= "&cbch=" . rawurlencode(get_embedchessboard_option('embedchessboard_control_buttons_background_color'));
+		$replacement .= "&ctch=" . rawurlencode(get_embedchessboard_option('embedchessboard_control_buttons_text_color'));
 		$replacement .= "&hd=" . rawurlencode($headerDisplay);
 		$replacement .= "&md=" . rawurlencode($movesDisplay);
 		$replacement .= "&tm=13";
-		$replacement .= "&fhch=" . rawurlencode(get_option_with_default('embedchessboard_header_text_color'));
+		$replacement .= "&fhch=" . rawurlencode(get_embedchessboard_option('embedchessboard_header_text_color'));
 		$replacement .= "&fhs=14";
-		$replacement .= "&fmch=" . rawurlencode(get_option_with_default('embedchessboard_moves_text_color'));
-		$replacement .= "&fcch=" . rawurlencode(get_option_with_default('embedchessboard_comments_text_color'));
-		$replacement .= "&hmch=" . rawurlencode(get_option_with_default('embedchessboard_move_highlight_color'));
+		$replacement .= "&fmch=" . rawurlencode(get_embedchessboard_option('embedchessboard_moves_text_color'));
+		$replacement .= "&fcch=" . rawurlencode(get_embedchessboard_option('embedchessboard_comments_text_color'));
+		$replacement .= "&hmch=" . rawurlencode(get_embedchessboard_option('embedchessboard_move_highlight_color'));
 		$replacement .= "&fms=14&fcs=m&cd=i";
-		$replacement .= "&bch=" . rawurlencode(get_option_with_default('embedchessboard_background_color'));
+		$replacement .= "&bch=" . rawurlencode(get_embedchessboard_option('embedchessboard_background_color'));
 		$replacement .= "&fp=13";
 		$replacement .= "&hl=" . rawurlencode($horizontalLayout);
 		$replacement .= "&fh=" . rawurlencode($frameHeight);
@@ -310,7 +310,7 @@ function register_embedchessboard_settings() {
 	register_setting( 'embedchessboard-settings-group', 'embedchessboard_extended_options' );
 }
 
-function get_option_with_default($optionName) {
+function get_embedchessboard_option($optionName) {
 	$retVal = get_option($optionName);
 
 	if (strlen(trim($retVal)) == 0) {
@@ -394,15 +394,15 @@ function embedchessboard_settings_page() {
 		<th scope="row"><label for="embedchessboard_horizontal_layout"><?php _e("chessboard frame layout", "embedchess"); ?></label></th>
 		<td colspan=2>
 			<select name="embedchessboard_horizontal_layout">
-			<option <?php if ("t" == get_option_with_default('embedchessboard_horizontal_layout')) echo "selected" ?> value="t"><?php _e("horizontal layout", "embedchess"); ?></option>
-			<option <?php if ("f" == get_option_with_default('embedchessboard_horizontal_layout')) echo "selected" ?> value="f"><?php _e("vertical layout", "embedchess"); ?></option>
+			<option <?php if ("t" == get_embedchessboard_option('embedchessboard_horizontal_layout')) echo "selected" ?> value="t"><?php _e("horizontal layout", "embedchess"); ?></option>
+			<option <?php if ("f" == get_embedchessboard_option('embedchessboard_horizontal_layout')) echo "selected" ?> value="f"><?php _e("vertical layout", "embedchess"); ?></option>
 			</select>
 		</td>
 		</tr>
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_height"><?php _e("chessboard frame height", "embedchess"); ?></label></th>
-		<td><input type="text" name="embedchessboard_height" value="<?php echo get_option_with_default('embedchessboard_height'); ?>" /></td>
+		<td><input type="text" name="embedchessboard_height" value="<?php echo get_embedchessboard_option('embedchessboard_height'); ?>" /></td>
 		<td><p style="font-size:smaller; line-height:normal;"><?php _e("normally set to <b>auto</b>, it can be set to a number to assign the chessboard frame height", "embedchess"); ?></p></td>
 		</tr>
 
@@ -412,7 +412,7 @@ function embedchessboard_settings_page() {
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_background_color"><?php _e("background color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_background_color" value="<?php echo get_option_with_default('embedchessboard_background_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_background_color" value="<?php echo get_embedchessboard_option('embedchessboard_background_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
@@ -420,25 +420,25 @@ function embedchessboard_settings_page() {
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_light_squares_color"><?php _e("light squares color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_light_squares_color" value="<?php echo get_option_with_default('embedchessboard_light_squares_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_light_squares_color" value="<?php echo get_embedchessboard_option('embedchessboard_light_squares_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_dark_squares_color"><?php _e("dark squares color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_dark_squares_color" value="<?php echo get_option_with_default('embedchessboard_dark_squares_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_dark_squares_color" value="<?php echo get_embedchessboard_option('embedchessboard_dark_squares_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_board_border_color"><?php _e("board border color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_board_border_color" value="<?php echo get_option_with_default('embedchessboard_board_border_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_board_border_color" value="<?php echo get_embedchessboard_option('embedchessboard_board_border_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_square_highlight_color"><?php _e("square highlight color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_square_highlight_color" value="<?php echo get_option_with_default('embedchessboard_square_highlight_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_square_highlight_color" value="<?php echo get_embedchessboard_option('embedchessboard_square_highlight_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
@@ -446,13 +446,13 @@ function embedchessboard_settings_page() {
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_control_buttons_background_color"><?php _e("buttons background color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_control_buttons_background_color" value="<?php echo get_option_with_default('embedchessboard_control_buttons_background_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_control_buttons_background_color" value="<?php echo get_embedchessboard_option('embedchessboard_control_buttons_background_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_control_buttons_text_color"><?php _e("buttons text color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_control_buttons_text_color" value="<?php echo get_option_with_default('embedchessboard_control_buttons_text_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_control_buttons_text_color" value="<?php echo get_embedchessboard_option('embedchessboard_control_buttons_text_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
@@ -460,25 +460,25 @@ function embedchessboard_settings_page() {
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_header_text_color"><?php _e("header text color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_header_text_color" value="<?php echo get_option_with_default('embedchessboard_header_text_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_header_text_color" value="<?php echo get_embedchessboard_option('embedchessboard_header_text_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_moves_text_color"><?php _e("moves text color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_moves_text_color" value="<?php echo get_option_with_default('embedchessboard_moves_text_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_moves_text_color" value="<?php echo get_embedchessboard_option('embedchessboard_moves_text_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_move_highlight_color"><?php _e("move highlight color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_move_highlight_color" value="<?php echo get_option_with_default('embedchessboard_move_highlight_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_move_highlight_color" value="<?php echo get_embedchessboard_option('embedchessboard_move_highlight_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_comments_text_color"><?php _e("comments text color", "embedchess"); ?></label></th>
-		<td><input class="color {required:false}" type="text" name="embedchessboard_comments_text_color" value="<?php echo get_option_with_default('embedchessboard_comments_text_color'); ?>" /></td>
+		<td><input class="color {required:false}" type="text" name="embedchessboard_comments_text_color" value="<?php echo get_embedchessboard_option('embedchessboard_comments_text_color'); ?>" /></td>
 		<td></td>
 		</tr>
 
@@ -490,9 +490,9 @@ function embedchessboard_settings_page() {
 		<th scope="row"><label for="embedchessboard_autoplay_mode"><?php _e("autoplay mode", "embedchess"); ?></label></th>
 		<td colspan=2>
 			<select name="embedchessboard_autoplay_mode">
-			<option <?php if ("g" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="g"><?php _e("autoplay the initial game only", "embedchess"); ?></option>
-			<option <?php if ("l" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="l"><?php _e("autoplay all games in a loop", "embedchess"); ?></option>
-			<option <?php if ("n" == get_option_with_default('embedchessboard_autoplay_mode')) echo "selected" ?> value="n"><?php _e("do not autoplay games", "embedchess"); ?></option>
+			<option <?php if ("g" == get_embedchessboard_option('embedchessboard_autoplay_mode')) echo "selected" ?> value="g"><?php _e("autoplay the initial game only", "embedchess"); ?></option>
+			<option <?php if ("l" == get_embedchessboard_option('embedchessboard_autoplay_mode')) echo "selected" ?> value="l"><?php _e("autoplay all games in a loop", "embedchess"); ?></option>
+			<option <?php if ("n" == get_embedchessboard_option('embedchessboard_autoplay_mode')) echo "selected" ?> value="n"><?php _e("do not autoplay games", "embedchess"); ?></option>
 			</select>
 		</td>
 		</tr>
@@ -503,13 +503,13 @@ function embedchessboard_settings_page() {
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_container_style"><?php _e("CSS style for the HTML DIV container of the plugin frame", "embedchess"); ?></label></th>
-		<td><input type="text" name="embedchessboard_container_style" value="<?php echo get_option_with_default('embedchessboard_container_style'); ?>" /></td>
+		<td><input type="text" name="embedchessboard_container_style" value="<?php echo get_embedchessboard_option('embedchessboard_container_style'); ?>" /></td>
 		<td><p style="font-size:smaller; line-height:normal;"><?php _e("normally left blank, it can be used to fix layout issues with certain wordpress templates; for instance, if the chessboard frame is constraint too narrow, setting this parameter as <b>width:500px;</b> might improve the layout", "embedchess"); ?></p></td>
 		</tr>
 
 		<tr valign="top">
 		<th scope="row"><label for="embedchessboard_extended_options"><?php _e("extended options", "embedchess"); ?></label></th>
-		<td><input type="text" name="embedchessboard_extended_options" value="<?php echo get_option_with_default('embedchessboard_extended_options'); ?>" /></td>
+		<td><input type="text" name="embedchessboard_extended_options" value="<?php echo get_embedchessboard_option('embedchessboard_extended_options'); ?>" /></td>
 		<td><p style="font-size:smaller; line-height:normal;"><?php _e("normally left blank, undocumented feature: improper use will break the chessboard display", "embedchess"); ?></p></td>
 		</tr>
 
