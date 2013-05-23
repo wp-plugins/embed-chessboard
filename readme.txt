@@ -60,7 +60,7 @@ Reccomended installation method is from the plugins section of the administratio
 
 Alternative manual install option:
 
-1. Download the Embed Chessboard plugin package [from the Wordpress plugin directory](http://wordpress.org/extend/plugins/embed-chessboard/) or [from the pgn4web project site](http://code.google.com/p/pgn4web/downloads/list)
+1. Download the Embed Chessboard plugin package [from the Wordpress plugin directory](http://wordpress.org/extend/plugins/embed-chessboard/) or [from the pgn4web project site](http://pgn4web-downloads.casaschi.net)
 1. Unzip
 1. Copy to your '/wp-content/plugins' directory
 1. Activate plugin
