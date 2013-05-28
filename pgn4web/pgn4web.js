@@ -7,7 +7,7 @@
 
 "use strict";
 
-var pgn4web_version = '2.72';
+var pgn4web_version = '2.73';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -474,7 +474,7 @@ function boardShortcut(square, title, functionPointer, defaultSetting) {
   }
 }
 
-// PLEASE NOTE: 'boardShortcut' ALWAYS ASSUMES 'square' WITH WHITE ON BOTTOM
+// boardShortcut() always assumes 'square' defined as with white on bottom
 
 var debugShortcutSquare = "A8";
 
@@ -729,12 +729,11 @@ function displayDebugInfo() {
     if (debugWin && !debugWin.closed) { debugWin.close(); }
     debugWin = window.open("", "pgn4web_debug_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
     if (debugWin) {
-      text = "<html><head><title>pgn4web debug info</title>" +
+      debugWin.document.open("text/html", "replace");
+      debugWin.document.write("<html><head><title>pgn4web debug info</title>" +
         "<link rel='shortcut icon' href='pawn.ico' /></head>" +
         "<body>\n<pre>\n" + dbg1 + location.href + " " + dbg3 +
-        "\n</pre>\n</body></html>";
-      debugWin.document.open("text/html", "replace");
-      debugWin.document.write(text);
+        "\n</pre>\n</body></html>");
       debugWin.document.close();
       if (window.focus) { debugWin.focus(); }
     }
@@ -1668,9 +1667,9 @@ function pgnGameFromPgnText(pgnText) {
 
 function pgnGameFromHttpRequest(httpResponseData) {
 
-  // process here any special file types,
-  // for instance extracting games from zipfiles:
-  // if (pgnUrl && pgnUrl.replace(/[?#].*/, "").match(/\.zip$/i)) { return pgnGameFromPgnText(unzipPgnFiles(httpResponseData)); }
+  // process here any special file types, for instance zipfiles:
+  //   if (pgnUrl && pgnUrl.replace(/[?#].*/, "").match(/\.zip$/i)) { return pgnGameFromPgnText(unzipPgnFiles(httpResponseData)); }
+  // remember to fix function loadPgnFromPgnUrl() for binary data
 
   return pgnGameFromPgnText(httpResponseData);
 }
@@ -1844,7 +1843,11 @@ function loadPgnFromPgnUrl(pgnUrl) {
   if (window.XMLHttpRequest) {
     http_request = new XMLHttpRequest();
     if (http_request.overrideMimeType) {
-      http_request.overrideMimeType('text/plain; charset=x-user-defined');
+      http_request.overrideMimeType("text/plain");
+
+      // if pgnGameFromHttpRequest() deals with binary files, for those use:
+      //   http_request.overrideMimeType("text/plain; charset=x-user-defined");
+
     }
   } else if (window.ActiveXObject) { // IE
     try { http_request = new ActiveXObject("Msxml2.XMLHTTP"); }
