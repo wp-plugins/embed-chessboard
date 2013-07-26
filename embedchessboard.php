@@ -132,6 +132,7 @@ class pgnBBCode {
 		// [pgn height=auto showMoves=figurine initialGame=1 initialVariation=0 initialHalfmove=0 autoplayMode=loop] e4 e6 d4 d5 [/pgn]
 
 		$pgnText = preg_replace("@(<.*?>|\n|\r)+@", " ", $content);
+		$pgnText = str_replace(array("<", ">"), array("&lt;", "&gt;"), $pgnText);
 
 		if ( !empty($atts) ) {
 			foreach ($atts as &$value) {
