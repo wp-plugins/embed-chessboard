@@ -7,7 +7,7 @@
 
 "use strict";
 
-var pgn4web_version = '2.74';
+var pgn4web_version = '2.75';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -1632,10 +1632,7 @@ function pgnGameFromPgnText(pgnText) {
 
   var headMatch, prevHead, newHead, startNew, afterNew, lastOpen, checkedGame, validHead;
 
-  pgnText = fixCommonPgnMistakes(pgnText);
-
-  // avoid html injection
-  pgnText = pgnText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  pgnText = simpleHtmlentities(fixCommonPgnMistakes(pgnText));
 
   // PGN standard: ignore lines starting with %
   pgnText = pgnText.replace(/(^|\n)%.*(\n|$)/g, "\n");
@@ -4090,7 +4087,11 @@ var waitForDoubleLeftTouchTimer = null;
 function customFunctionOnTouch(deltaX, deltaY) {
   if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < 13) { return; }
   if (Math.abs(deltaY) > 1.5 * Math.abs(deltaX)) { // vertical up or down
-    Init(currentGame + sign(deltaY));
+    if (numberOfGames > 1) {
+      if ((currentGame === 0) && (deltaY < 0)) { Init(numberOfGames - 1); }
+      else if ((currentGame === numberOfGames - 1) && (deltaY > 0)) { Init(0); }
+      else { Init(currentGame + sign(deltaY)); }
+    }
   } else if (Math.abs(deltaX) > 1.5 * Math.abs(deltaY)) {
     if (deltaX > 0) { // horizontal right
       if (isAutoPlayOn) { GoToMove(StartPlyVar[CurrentVar] + PlyNumberVar[CurrentVar]); }
@@ -4121,5 +4122,9 @@ function clearSelectedText() {
     if (window.getSelection().empty) { window.getSelection().empty(); }
     else if (window.getSelection().removeAllRanges) { window.getSelection().removeAllRanges(); }
   } else if (document.selection && document.selection.empty) { document.selection.empty(); }
+}
+
+function simpleHtmlentities(text) {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
