@@ -52,7 +52,7 @@ Rf4 Ne4 34. Qxd3 Nf2+ 35. Rxf2 Bxd3 36. Rfd2 Qe3 37. Rxd3 Rc1 38. Nb2 Qf2
 
 Any PGN header tag missing will not be displayed.
 
-Note that HTML tags are stripped from the PGN data, removing all text between "<" and ">". Please make sure your PGN data does not contain "<" and ">" characters.
+Note: HTML tags are stripped from the PGN data, removing all text between "<" and ">" characters; please make sure your PGN data does not contain "<" and ">" characters.
 
 == Installation ==
 
