@@ -112,7 +112,7 @@ ChangeLog:
   1.96  - upgraded pgn4web to 2.73
   1.97  - upgraded pgn4web to 2.74
   2.75.00 - changed version numbering scheme and upgraded pgn4web to 2.75
-  2.76.00 - upgraded pgn4web to 2.75
+  2.76.00 - upgraded pgn4web to 2.76
 */
 
 class pgnBBCode {
