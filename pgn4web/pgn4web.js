@@ -7,7 +7,7 @@
 
 "use strict";
 
-var pgn4web_version = '2.75';
+var pgn4web_version = '2.76';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -31,7 +31,7 @@ function customFunctionOnMove() {}
 function customFunctionOnAlert(msg) {}
 function customFunctionOnCheckLiveBroadcastStatus() {}
 
-// custom header tags APIs for use in customFunctionOnPgnGameLoad
+// custom header tags APIs for customFunctionOnPgnGameLoad
 
 function customPgnHeaderTag(customTag, htmlElementId, gameNum) {
   var matches, tag = "";
@@ -45,7 +45,7 @@ function customPgnHeaderTag(customTag, htmlElementId, gameNum) {
   return tag;
 }
 
-// custom comment tags API for use in customFunctionOnMove
+// custom comment tags API for customFunctionOnMove
 
 function customPgnCommentTag(customTag, htmlElementId, plyNum, varId) {
   var matches, tag = "", theObj;
@@ -63,7 +63,7 @@ function simpleAddEvent(obj, evt, cbk) {
   else if (obj.attachEvent) { obj.attachEvent("on" + evt, cbk); } // IE8-
 }
 
-simpleAddEvent(document, "keydown", pgn4web_handleKey);
+simpleAddEvent(document, "keydown", pgn4web_handleKey_event);
 simpleAddEvent(window, "load", pgn4web_onload_event);
 
 
@@ -139,7 +139,7 @@ function alertPromptTick(restart) {
   var colRow = colRowFromSquare(debugShortcutSquare);
   if (!colRow) { return; }
 
-  var alertPromptDelay = 1500; // for alerts before the baord is printed
+  var alertPromptDelay = 1500; // for alerts before the board is printed
   var theObj = document.getElementById('tcol' + colRow.col + 'trow' + colRow.row);
   if (theObj) {
     if (alertPromptOn) {
@@ -187,6 +187,10 @@ function customShortcutKey_Shift_6() {}
 function customShortcutKey_Shift_7() {}
 function customShortcutKey_Shift_8() {}
 function customShortcutKey_Shift_9() {}
+
+function pgn4web_handleKey_event(e) {
+  pgn4web_handleKey(e);
+}
 
 var shortcutKeysEnabled = false;
 function pgn4web_handleKey(e) {
@@ -441,7 +445,7 @@ for (var col=0; col<8; col++) {
 clearShortcutSquares("ABCDEFGH", "12345678");
 
 function colRowFromSquare(square) {
-  if (square.charCodeAt === null) { return -1; }
+  if ((typeof(square) != "string") || (!square)) { return null; }
   var col = square.charCodeAt(0) - 65; // 65="A"
   if ((col < 0) || (col > 7)) { return null; }
   var row = 56 - square.charCodeAt(1); // 56="8"
@@ -1253,7 +1257,7 @@ function CheckClearWay(thisPiece) {
 }
 
 function CleanMove(move) {
-  move = move.replace(/[^a-zA-Z0-9#=-]*/g, ''); // patch here adding '+' before '#' to pass through check signs
+  move = move.replace(/[^a-zA-Z0-9#=-]*/g, ''); // patch here adding '+' before '#' to pass through check signs or remove 'x' and '=' for full Chess Informant style
   if (move.match(/^[Oo0]/)) { move = move.replace(/[o0]/g, 'O').replace(/O(?=O)/g, 'O-'); }
   move = move.replace(/ep/i, '');
   return move;
@@ -3546,7 +3550,7 @@ function PrintHTML() {
           }
           textSelectOptions += textSO.replace(/ /g, '&nbsp;');
         }
-        text += textSelectOptions + '</SELECT></FORM>';
+        text += textSelectOptions.replace(/&(amp|lt|gt);/g, '&amp;$1;') + '</SELECT></FORM>'; // see function simpleHtmlentities()
         theObj.innerHTML = text;
       }
     }
@@ -4026,7 +4030,7 @@ function SquareOnBoard(col, row) {
   return col >= 0 && col <= 7 && row >= 0 && row <= 7;
 }
 
-
+var pgn4webMaxTouches = 0;
 var pgn4webOngoingTouches = new Array();
 function pgn4webOngoingTouchIndexById(needle) {
   var id;
@@ -4040,6 +4044,7 @@ function pgn4webOngoingTouchIndexById(needle) {
 function pgn4web_handleTouchStart(e) {
   e.stopPropagation();
   for (var ii = 0; ii < e.changedTouches.length; ii++) {
+    pgn4webMaxTouches++;
     pgn4webOngoingTouches.push({ identifier: e.changedTouches[ii].identifier, clientX: e.changedTouches[ii].clientX, clientY: e.changedTouches[ii].clientY });
   }
 }
@@ -4054,7 +4059,10 @@ function pgn4web_handleTouchEnd(e) {
   var jj;
   for (var ii = 0; ii < e.changedTouches.length; ii++) {
     if ((jj = pgn4webOngoingTouchIndexById(e.changedTouches[ii].identifier)) != -1) {
-      customFunctionOnTouch(e.changedTouches[ii].clientX - pgn4webOngoingTouches[jj].clientX, e.changedTouches[ii].clientY - pgn4webOngoingTouches[jj].clientY);
+      if (pgn4webOngoingTouches.length == 1) {
+        customFunctionOnTouch(e.changedTouches[ii].clientX - pgn4webOngoingTouches[jj].clientX, e.changedTouches[ii].clientY - pgn4webOngoingTouches[jj].clientY);
+        pgn4webMaxTouches = 0;
+      }
       pgn4webOngoingTouches.splice(jj, 1);
     }
   }
@@ -4067,6 +4075,7 @@ function pgn4web_handleTouchCancel(e) {
   for (var ii = 0; ii < e.changedTouches.length; ii++) {
     if ((jj = pgn4webOngoingTouchIndexById(e.changedTouches[ii].identifier)) != -1) {
       pgn4webOngoingTouches.splice(jj, 1);
+      if (pgn4webOngoingTouches.length === 0) { pgn4webMaxTouches = 0; }
     }
   }
   clearSelectedText();
