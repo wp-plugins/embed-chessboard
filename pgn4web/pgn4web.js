@@ -7,7 +7,7 @@
 
 "use strict";
 
-var pgn4web_version = '2.76';
+var pgn4web_version = '2.77';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -831,28 +831,30 @@ function CurrentFEN() {
 }
 
 var fenWin;
-function displayFenData() {
+function displayFenData(addGametext) {
   if (fenWin && !fenWin.closed) { fenWin.close(); }
 
   var thisFEN = CurrentFEN();
 
   var movesStr = "";
   var lineStart = 0;
-  for (var thisPly = CurrentPly; thisPly <= StartPly + PlyNumber; thisPly++) {
-    var addStr = "";
-    if (thisPly == StartPly + PlyNumber) {
-      addStr = (CurrentVar ? "*" : gameResult[currentGame] || "*");
-    } else {
-      if (thisPly%2 === 0) { addStr = (Math.floor(thisPly/2)+1) + ". "; }
-      else if (thisPly == CurrentPly) { addStr = (Math.floor(thisPly/2)+1) + "... "; }
-      addStr += Moves[thisPly];
-    }
-    if (movesStr.length + addStr.length + 1 > lineStart + 80) {
-      lineStart = movesStr.length;
-      movesStr += "\n" + addStr;
-    } else {
-      if (movesStr.length > 0) { movesStr += " "; }
-      movesStr += addStr;
+  if (addGametext) {
+    for (var thisPly = CurrentPly; thisPly <= StartPly + PlyNumber; thisPly++) {
+      var addStr = "";
+      if (thisPly == StartPly + PlyNumber) {
+        addStr = (CurrentVar ? "*" : gameResult[currentGame] || "*");
+      } else {
+        if (thisPly%2 === 0) { addStr = (Math.floor(thisPly/2)+1) + ". "; }
+        else if (thisPly == CurrentPly) { addStr = (Math.floor(thisPly/2)+1) + "... "; }
+        addStr += Moves[thisPly];
+      }
+      if (movesStr.length + addStr.length + 1 > lineStart + 80) {
+        lineStart = movesStr.length;
+        movesStr += "\n" + addStr;
+      } else {
+        if (movesStr.length > 0) { movesStr += " "; }
+        movesStr += addStr;
+      }
     }
   }
 
@@ -860,19 +862,22 @@ function displayFenData() {
   if (fenWin) {
     var text = "<html>" +
       "<head><title>pgn4web FEN string</title><link rel='shortcut icon' href='pawn.ico' /></head>" +
-      "<body>\n<b><pre>\n\n" + thisFEN + "\n\n</pre></b>\n<hr>\n<pre>\n\n" +
-      "[Event \""  + ((CurrentVar ? "" : gameEvent[currentGame])  || "?") + "\"]\n" +
+      "<body>\n<b><pre>\n\n" + thisFEN + "\n\n</pre></b>\n<hr>\n<pre>\n\n";
+    if (addGametext) {
+      text += "[Event \""  + ((CurrentVar ? "" : gameEvent[currentGame])  || "?") + "\"]\n" +
       "[Site \""   + ((CurrentVar ? "" : gameSite[currentGame])   || "?") + "\"]\n" +
       "[Date \""   + ((CurrentVar ? "" : gameDate[currentGame])   || "????.??.??") + "\"]\n" +
       "[Round \""  + ((CurrentVar ? "" : gameRound[currentGame])  || "?") + "\"]\n" +
       "[White \""  + ((CurrentVar ? "" : gameWhite[currentGame])  || "?") + "\"]\n" +
       "[Black \""  + ((CurrentVar ? "" : gameBlack[currentGame])  || "?") + "\"]\n" +
       "[Result \"" + ((CurrentVar ? "" : gameResult[currentGame]) || "*") + "\"]\n";
-    if (thisFEN != FenStringStart) {
+    }
+    if ((thisFEN != FenStringStart) || (!addGametext)) {
       text += "[SetUp \"1\"]\n" + "[FEN \"" + thisFEN + "\"]\n";
     }
     if (gameVariant[currentGame] !== "") { text += "[Variant \"" + gameVariant[currentGame] + "\"]\n"; }
-    text += "\n" + movesStr + "\n</pre>\n</body></html>";
+    if (addGametext) { text += "\n" + movesStr + "\n"; }
+    text += "</pre>\n</body></html>";
     fenWin.document.open("text/html", "replace");
     fenWin.document.write(text);
     fenWin.document.close();
@@ -1257,7 +1262,7 @@ function CheckClearWay(thisPiece) {
 }
 
 function CleanMove(move) {
-  move = move.replace(/[^a-zA-Z0-9#=-]*/g, ''); // patch here adding '+' before '#' to pass through check signs or remove 'x' and '=' for full Chess Informant style
+  move = move.replace(/[^a-wyzA-WYZ0-9#-]*/g, ''); // patch: remove/add '+' 'x' '=' chars for full chess informant style or pgn style for the game text
   if (move.match(/^[Oo0]/)) { move = move.replace(/[o0]/g, 'O').replace(/O(?=O)/g, 'O-'); }
   move = move.replace(/ep/i, '');
   return move;
@@ -3025,7 +3030,7 @@ function ParsePGNGameString(gameString) {
         if (start == ss.length) { break; }
 
         moveCount = Math.floor((StartPly+PlyNumber)/2)+1;
-        needle = moveCount.toString()+'.';
+        needle = moveCount.toString();
         if (ss.indexOf(needle,start)==start) {
           start += needle.length;
           while (' .\n\r'.indexOf(ss.charAt(start)) != -1) { start++; }
@@ -3388,8 +3393,8 @@ function searchPgnGamePrompt() {
 }
 
 function searchPgnGameForm() {
-  if (theObj = document.getElementById('searchPgnExpression'))
-  { searchPgnGame(document.getElementById('searchPgnExpression').value); }
+  var theObj = document.getElementById('searchPgnExpression');
+  if (theObj) { searchPgnGame(document.getElementById('searchPgnExpression').value); }
 }
 
 var chessMovesRegExp = new RegExp("\\b((\\d+(\\.{1,3}|\\s)\\s*)?((([KQRBN][a-h1-8]?)|[a-h])?x?[a-h][1-8](=[QRNB])?|O-O-O|O-O)\\b[!?+#]*)", "g");
@@ -4135,5 +4140,9 @@ function clearSelectedText() {
 
 function simpleHtmlentities(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function simpleHtmlentitiesDecode(text) {
+  return text.replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&amp;/g, "&");
 }
 
