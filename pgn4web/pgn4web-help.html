@@ -338,12 +338,13 @@ function detectJavascriptLocation(jsre) {
   return "";
 }
 </script>
+<!-- patch: if the "fonts" folder is relocated please update the next line accordingly -->
 <script src="fonts/chess-informant-NAG-symbols.js" type="text/javascript"></script>
 <script type="text/javascript">
 "use strict";
 
 function print_NAG_row(nag, text) {
-  document.write("<tr valign='bottom'><td class='informantCell' title='$" + nag + "'>" + NAG[nag] + "</td><td>" + text + "</td></tr>");
+  document.write("<tr valign='bottom'><td class='informantCell' title='$" + nag + "'>" + (NAG[nag] || "&middot;") + "</td><td>" + text + "</td></tr>");
 }
 
 document.write("<table style='padding:0px;' border='0'>");
