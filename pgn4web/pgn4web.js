@@ -1,13 +1,13 @@
 /*
  *  pgn4web javascript chessboard
- *  copyright (C) 2009-2013 Paolo Casaschi
+ *  copyright (C) 2009-2014 Paolo Casaschi
  *  see README file and http://pgn4web.casaschi.net
  *  for credits, license and more details
  */
 
 "use strict";
 
-var pgn4web_version = '2.79';
+var pgn4web_version = '2.80';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
