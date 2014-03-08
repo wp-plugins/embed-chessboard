@@ -7,7 +7,7 @@
 
 "use strict";
 
-var pgn4web_version = '2.80';
+var pgn4web_version = '2.81';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -198,9 +198,9 @@ function pgn4web_handleKey(e) {
 
   if (!e) { e = window.event; }
 
-  keycode = e.keyCode;
-
   if (e.altKey || e.ctrlKey || e.metaKey) { return true; }
+
+  keycode = e.keyCode;
 
   // shift-escape always enabled: toggle shortcut keys
   if (!shortcutKeysEnabled && !(keycode == 27 && e.shiftKey)) { return true; }
@@ -602,9 +602,9 @@ boardShortcut("B1", "", function(t,e){}, true); // see setB1C1F1G1...
 
 boardShortcut("C1", "", function(t,e){}, true); // see setB1C1F1G1...
 
-boardShortcut("D1", "move backward", function(t,e){ GoToMove(CurrentPly - 1); }, true);
+boardShortcut("D1", "move backward", function(t,e){ backButton(e); }, true);
 
-boardShortcut("E1", "move forward", function(t,e){ GoToMove(CurrentPly + 1); }, true);
+boardShortcut("E1", "move forward", function(t,e){ forwardButton(e); }, true);
 
 boardShortcut("F1", "", function(t,e){}, true); // see setB1C1F1G1...
 
@@ -666,7 +666,7 @@ function replayPreviousMoves(numPlies) {
 }
 
 function detectJavascriptLocation(jsre) {
-  if (typeof(jsre) == "undefined") { jsre = new RegExp("(pgn4web|pgn4web-compacted)\.js$", ""); }
+  if (typeof(jsre) == "undefined") { jsre = new RegExp("pgn4web(|-compacted|\.min)\.js$", ""); }
   var e = document.getElementsByTagName("script");
   for (var i=0; i<e.length; i++) {
     if ((e[i].src) && (e[i].src.match(jsre))) {
@@ -677,7 +677,7 @@ function detectJavascriptLocation(jsre) {
 }
 
 function detectHelpLocation() {
-  return detectJavascriptLocation().replace(/(pgn4web|pgn4web-compacted)\.js/, "pgn4web-help.html");
+  return detectJavascriptLocation().replace(/pgn4web(|-compacted|\.min)\.js$/, "pgn4web-help.html");
 }
 
 function detectBaseLocation() {
@@ -1301,6 +1301,7 @@ loopCommonPredecessor:
   }
 }
 
+
 function SetShortcutKeysEnabled(onOff) {
   shortcutKeysEnabled = onOff;
 }
@@ -1329,10 +1330,7 @@ function SetAutoplayNextGame(onOff) {
 
 function SetInitialHalfmove(number_or_string, always) {
   alwaysInitialHalfmove = (always === true);
-  if (number_or_string === undefined) { initialHalfmove = 0; return; }
-  initialHalfmove = number_or_string;
-  if ((typeof number_or_string == "string") && (number_or_string.match(/^(start|end|random|comment)$/))) { return; }
-  if (isNaN(initialHalfmove = parseInt(initialHalfmove,10))) { initialHalfmove = 0; }
+  initialHalfmove = typeof(number_or_string) == "undefined" ? 0 : number_or_string;
 }
 
 function SetInitialVariation(number) {
@@ -2100,22 +2098,22 @@ function GoToInitialHalfmove() {
 
   switch (initialHalfmove) {
     case "start":
-      GoToMove(0, iv);
+      GoToMove((StartPlyVar[iv] + (iv ? 1 : 0)), iv);
       break;
     case "end":
       GoToMove(StartPlyVar[iv] + PlyNumberVar[iv], iv);
       break;
     case "random":
-      GoToMove(StartPlyVar[iv] + Math.floor(Math.random()*(StartPlyVar[iv] + PlyNumberVar[iv])), iv);
+      GoToMove((StartPlyVar[iv] + (iv ? 1 : 0)) + Math.floor(Math.random()*(StartPlyVar[iv] + PlyNumberVar[iv])), iv);
       break;
     case "comment":
     case "variation":
-      GoToMove(0, iv);
+      GoToMove((StartPlyVar[iv] + (iv ? 1 : 0)), iv);
       MoveToNextComment(initialHalfmove == "variation");
       break;
     default:
       if (isNaN(initialHalfmove = parseInt(initialHalfmove, 10))) { initialHalfmove = 0; }
-      if (initialHalfmove < 0) { ih = Math.max(StartPlyVar[iv] + PlyNumberVar[iv] + 1 + initialHalfmove, 0); }
+      if (initialHalfmove < 0) { ih = Math.max(StartPlyVar[iv] + PlyNumberVar[iv] + 1 + initialHalfmove, StartPly); }
       else { ih = Math.min(initialHalfmove, StartPlyVar[iv] + PlyNumberVar[iv]); }
       GoToMove(ih, iv);
       break;
