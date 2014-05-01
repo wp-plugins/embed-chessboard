@@ -7,7 +7,7 @@
 
 "use strict";
 
-var pgn4web_version = '2.81';
+var pgn4web_version = '2.82';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -737,7 +737,7 @@ function displayDebugInfo() {
     if (debugWin) {
       debugWin.document.open("text/html", "replace");
       debugWin.document.write("<html><head><title>pgn4web debug info</title>" +
-        "<link rel='shortcut icon' href='pawn.ico' /></head>" +
+        "<link rel='icon' sizes='16x16' href='pawn.ico' /></head>" +
         "<body>\n<pre>\n" + dbg1 + location.href + " " + dbg3 +
         "\n</pre>\n</body></html>");
       debugWin.document.close();
@@ -762,7 +762,7 @@ function displayPgnData(oneGameOnly) {
   pgnWin = window.open("", "pgn4web_pgn_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
   if (pgnWin) {
     var text = "<html><head><title>pgn4web PGN source</title>" +
-      "<link rel='shortcut icon' href='pawn.ico' /></head><body>\n<pre>\n";
+      "<link rel='icon' sizes='16x16' href='pawn.ico' /></head><body>\n<pre>\n";
     if (oneGameOnly) { text += fullPgnGame(currentGame) + "\n\n"; }
     else { for (var ii = 0; ii < numberOfGames; ++ii) { text += fullPgnGame(ii) + "\n\n"; } }
     text += "\n</pre>\n</body></html>";
@@ -862,7 +862,7 @@ function displayFenData(addGametext) {
   fenWin = window.open("", "pgn4web_fen_data", "resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no");
   if (fenWin) {
     var text = "<html>" +
-      "<head><title>pgn4web FEN string</title><link rel='shortcut icon' href='pawn.ico' /></head>" +
+      "<head><title>pgn4web FEN string</title><link rel='icon' sizes='16x16' href='pawn.ico' /></head>" +
       "<body>\n<b><pre>\n\n" + thisFEN + "\n\n</pre></b>\n<hr>\n<pre>\n\n";
     if (addGametext) {
       text += "[Event \""  + ((CurrentVar ? "" : gameEvent[currentGame])  || "?") + "\"]\n" +
@@ -1638,14 +1638,14 @@ function fullPgnGame(gameNum) {
 
 function pgnGameFromPgnText(pgnText) {
 
-  var headMatch, prevHead, newHead, startNew, afterNew, lastOpen, checkedGame, validHead;
+  var newNumGames, headMatch, prevHead, newHead, startNew, afterNew, lastOpen, checkedGame, validHead;
 
   pgnText = simpleHtmlentities(fixCommonPgnMistakes(pgnText));
 
   // PGN standard: ignore lines starting with %
   pgnText = pgnText.replace(/(^|\n)%.*(\n|$)/g, "\n");
 
-  numberOfGames = 0;
+  newNumGames = 0;
   checkedGame = "";
   while (headMatch = pgnHeaderBlockRegExp.exec(pgnText)) {
     newHead = headMatch[0];
@@ -1655,8 +1655,8 @@ function pgnGameFromPgnText(pgnText) {
       checkedGame += pgnText.slice(0, startNew);
       validHead = ((lastOpen = checkedGame.lastIndexOf("{")) < 0) || (checkedGame.lastIndexOf("}")) > lastOpen;
       if (validHead) {
-        pgnHeader[numberOfGames] = prevHead;
-        pgnGame[numberOfGames++] = checkedGame;
+        pgnHeader[newNumGames] = prevHead;
+        pgnGame[newNumGames++] = checkedGame;
         checkedGame = "";
       } else {
         checkedGame += newHead;
@@ -1668,12 +1668,14 @@ function pgnGameFromPgnText(pgnText) {
     pgnText = pgnText.slice(afterNew);
   }
   if (prevHead) {
-    pgnHeader[numberOfGames] = prevHead;
+    pgnHeader[newNumGames] = prevHead;
     checkedGame += pgnText;
-    pgnGame[numberOfGames++] = checkedGame;
+    pgnGame[newNumGames++] = checkedGame;
   }
 
-  return (numberOfGames > 0);
+  if (newNumGames === 0) { return false; }
+  numberOfGames = newNumGames;
+  return true;
 }
 
 
@@ -1931,17 +1933,16 @@ function restartLiveBroadcast() {
 }
 
 function checkLiveBroadcastStatus() {
-  var theTitle, theObj, ii;
-  var tick = "&nbsp;" + (LiveBroadcastTicker % 2 ? "<>" : "><") + "&nbsp;";
-
   if (LiveBroadcastDelay === 0) { return; }
+
+  var theTitle, theObj, ii;
+  var tick = "&nbsp;" + (LiveBroadcastTicker % 2 ? "&lt;&gt;" : "&gt;&lt;") + "&nbsp;";
 
   // broadcast started yet?
   if (LiveBroadcastStarted === false || typeof(pgnHeader) == "undefined" || (numberOfGames == 1 && gameEvent[0] == LiveBroadcastPlaceholderEvent)) {
     // no
     LiveBroadcastEnded = false;
     LiveBroadcastGamesRunning = 0;
-    LiveBroadcastStatusString = "0 " + tick + " 0";
     theTitle = "live broadcast yet to start";
   } else {
     // yes
@@ -1951,9 +1952,9 @@ function checkLiveBroadcastStatus() {
     }
     LiveBroadcastEnded = (lbgr === 0);
     LiveBroadcastGamesRunning = lbgr;
-    LiveBroadcastStatusString = lbgr + " " + tick + " " + numberOfGames;
     theTitle = LiveBroadcastEnded ? "live broadcast ended" : lbgr + " live game" + (lbgr > 1 ? "s" : "") + " out of " + numberOfGames;
   }
+  LiveBroadcastStatusString = LiveBroadcastGamesRunning + " " + tick + " " + numberOfGames;
 
   if (theObj = document.getElementById("GameLiveStatus")) {
     theObj.innerHTML = LiveBroadcastStatusString;
@@ -2599,7 +2600,7 @@ function LoadGameHeaders() {
         gameDemoLength[ii] = PlyNumber;
       }
       if (gameDemoMaxPly[ii] === undefined) { gameDemoMaxPly[ii] = 0; }
-      if (gameDemoMaxPly[ii] <= gameDemoLength[ii]) { gameResult[ii] = '*'; }
+      if ((gameDemoMaxPly[ii] <= gameDemoLength[ii]) && (gameDemoLength[ii] > 0)) { gameResult[ii] = '*'; }
     }
   }
   return;
