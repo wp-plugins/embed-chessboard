@@ -122,7 +122,11 @@ ChangeLog:
   2.82.00 - upgraded pgn4web to 2.82
   2.83.00 - upgraded pgn4web to 2.83
   2.84.00 - upgraded pgn4web to 2.84
+  x.xx.xx - prevented texturization of the pgn shortcodes
 */
+
+
+// Define shortcode class
 
 class pgnBBCode {
 
@@ -290,9 +294,23 @@ class pgnBBCode {
 }
 
 // Start this plugin once all other plugins are fully loaded
+
 add_action( 'plugins_loaded', create_function( '', 'global $pgnBBCode; $pgnBBCode = new pgnBBCode();' ) );
 
+
+// Make sure text within the new shortcodes is not texturized
+
+function embedchessboard_no_texurize( $shortcodes ) {
+	$shortcodes[] = 'pgn';
+	$shortcodes[] = 'pgn4web';
+	return $shortcodes;
+}
+
+add_filter( 'no_texturize_shortcodes', 'embedchessboard_no_texturize' );
+
+
 // create custom plugin settings menu
+
 add_action( 'admin_menu', 'embedchessboard_create_menu' );
 
 function embedchessboard_create_menu() {
