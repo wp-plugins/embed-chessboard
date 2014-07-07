@@ -300,7 +300,7 @@ add_action( 'plugins_loaded', create_function( '', 'global $pgnBBCode; $pgnBBCod
 
 // Make sure text within the new shortcodes is not texturized
 
-function embedchessboard_no_texurize( $shortcodes ) {
+function embedchessboard_no_texturize( $shortcodes ) {
 	$shortcodes[] = 'pgn';
 	$shortcodes[] = 'pgn4web';
 	return $shortcodes;
