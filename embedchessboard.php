@@ -122,7 +122,7 @@ ChangeLog:
   2.82.00 - upgraded pgn4web to 2.82
   2.83.00 - upgraded pgn4web to 2.83
   2.84.00 - upgraded pgn4web to 2.84
-  x.xx.xx - prevented texturization of the pgn shortcodes
+  x.yy.zz - prevented texturization of the pgn shortcodes, checked compatibility with wordpress.org 4.0 and upgraded pgn4web to x.yy
 */
 
 
