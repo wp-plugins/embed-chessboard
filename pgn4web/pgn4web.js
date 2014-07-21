@@ -7,12 +7,11 @@
 
 "use strict";
 
-var pgn4web_version = '2.84';
+var pgn4web_version = '2.85';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
-var pgn4web_project_email; // preassigned in pgn4web-server-config.js
-if (typeof(pgn4web_project_email) == "undefined") { pgn4web_project_email = "pgn4web@casaschi.net"; }
+var pgn4web_project_email = "pgn4web@casaschi.net";
 
 var helpWin;
 function displayHelp(section) {
@@ -1478,7 +1477,7 @@ function HighlightLastMove() {
     if ((showThisMove >= StartPly) && Moves[showThisMove]) {
       text = printMoveText(showThisMove, CurrentVar, (CurrentVar !== 0), true, false);
     } else if (showThisMove === StartPly - 1) {
-      text = '<SPAN CLASS="' + (CurrentVar > 0 ? 'variation' : 'move') + ' notranslate">' +
+      text = '<SPAN CLASS="move notranslate">' +
         (Math.floor((showThisMove+1)/2) + 1) + (((showThisMove+1) % 2) ? "..." : ".") +
         '</SPAN>';
     } else { text = ''; }
@@ -1950,7 +1949,7 @@ function checkLiveBroadcastStatus() {
     LiveBroadcastGamesRunning = lbgr;
     theTitle = LiveBroadcastEnded ? "live broadcast ended" : LiveBroadcastPaused ? "live broadcast paused" : lbgr + " live game" + (lbgr > 1 ? "s" : "") + " out of " + numberOfGames;
   }
-  theHTML = LiveBroadcastEnded ? "&dagger;" : LiveBroadcastPaused ? "+" : "=";
+  theHTML = LiveBroadcastEnded ? "#" : LiveBroadcastPaused ? "+" : "=";
   theHTML = (LiveBroadcastTicker % 4 === 0 ? theHTML : "&nbsp;") + (LiveBroadcastTicker % 2 === 1 ? theHTML : "&nbsp;") + (LiveBroadcastTicker % 4 === 2 ? theHTML : "&nbsp;");
   theHTML = LiveBroadcastGamesRunning + "<span style='display:inline-block; min-width:3em; text-align:center;'>" + theHTML + "</span>" + numberOfGames;
   theHTML = "<span onclick='" + (LiveBroadcastPaused ? "restartLiveBroadcast();" : "refreshPgnSource();") + " this.blur();'>" + theHTML + "</span>";
@@ -3682,10 +3681,14 @@ function clickedBbtn(t,e) {
 
 var basicNAGs = /^[\?!+#\s]+(\s|$)/;
 function strippedMoveComment(plyNum, varId, addHtmlTags) {
-  if (typeof(addHtmlTags) == "undefined") { addHtmlTags = false; }
-  if (typeof(varId) == "undefined") { varId = CurrentVar; }
+  if (typeof(addHtmlTags) == "undefined") {
+    addHtmlTags = false;
+    if (typeof(varId) == "undefined") {
+      varId = CurrentVar;
+    }
+  }
   if (!MoveCommentsVar[varId][plyNum]) { return ""; }
-  return fixCommentForDisplay(MoveCommentsVar[varId][plyNum]).replace(pgn4webVariationRegExpGlobal, function (m) { return variationTextFromTag(m, addHtmlTags); }).replace(/\[%[^\]]*\]\s*/g,'').replace(basicNAGs, '').replace(/^\s+$/,'');
+  return fixCommentForDisplay(MoveCommentsVar[varId][plyNum]).replace(pgn4webVariationRegExpGlobal, function (m) { return variationTextFromTag(m, addHtmlTags); }).replace(/\[%[^\]]*\]\s*/g,'').replace(plyNum === StartPlyVar[varId] ? '' : basicNAGs, '').replace(/^\s+$/,'');
 }
 
 function basicNAGsMoveComment(plyNum, varId) {
