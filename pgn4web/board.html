@@ -572,21 +572,24 @@ function cleanPgnInput(pgnInput) {
 var newPgnId = gup("pgnId");
 var newPgnIdData;
 if (newPgnId !== "") {
-  if (parent && (parent !== window) && parent.document.getElementById(newPgnId)) {
-    var theParentObject = parent.document.getElementById(newPgnId);
-    if (theParentObject.tagName.toLowerCase() == "textarea") {
-      newPgnIdData = theParentObject.value;
-    } else { // backward compatibility with pgn4web older than 1.77 when the <span> technique was used for pgnText
-      newPgnIdData = theParentObject.innerHTML;
-      // fixes issue with some browser removing \n from innerHTML
-      if (newPgnIdData.indexOf('\n') < 0) { newPgnIdData = newPgnIdData.replace(/((\[[^\[\]]*\]\s*)+)/g, "\n$1\n"); }
-      // fixes issue with some browser replacing quotes with &quot;
-      if (newPgnIdData.indexOf('"') < 0) { newPgnIdData = newPgnIdData.replace(/(&quot;)/g, '"'); }
+  try {
+    if (parent && (parent !== window) && parent.document.getElementById(newPgnId)) {
+      var theParentObject = parent.document.getElementById(newPgnId);
+      if (theParentObject.tagName.toLowerCase() == "textarea") {
+        newPgnIdData = theParentObject.value;
+      } else { // backward compatibility with pgn4web older than 1.77 when the <span> technique was used for pgnText
+        newPgnIdData = theParentObject.innerHTML;
+        // fixes issue with some browser removing \n from innerHTML
+        if (newPgnIdData.indexOf('\n') < 0) { newPgnIdData = newPgnIdData.replace(/((\[[^\[\]]*\]\s*)+)/g, "\n$1\n"); }
+        // fixes issue with some browser replacing quotes with &quot;
+        if (newPgnIdData.indexOf('"') < 0) { newPgnIdData = newPgnIdData.replace(/(&quot;)/g, '"'); }
+      }
+      document.getElementById('pgnText').value = newPgnIdData = cleanPgnInput(newPgnIdData);
+    } else {
+      myAlert("error: data not found for pgnId=" + newPgnId, true);
     }
-    document.getElementById('pgnText').value = newPgnIdData = cleanPgnInput(newPgnIdData);
-  }
-  if ( !parent || (parent === window) || !parent.document.getElementById(newPgnId) || !newPgnIdData ) {
-    myAlert("error: failed to get data from supplied pgnId=" + newPgnId + " (check parent is in the same domain).", true);
+  } catch(e) {
+    myAlert("error: data error for pgnId=" + newPgnId, true);
   }
 }
 
@@ -1382,8 +1385,15 @@ boardShortcut("G5", "toggle auto-scroll moves text to current move", function(t,
 // H5
 boardShortcut("H5", "scroll moves text to current move", function(t,e){ autoScrollToCurrentMove('headerMoves'); });
 
+// customShortcutKey_Shift_1 defined by fide-lookup.js
+// customShortcutKey_Shift_2 defined by fide-lookup.js
+
+function customShortcutKey_Shift_5() {
+  if (movesDisplay == "puzzle") { Init(currentGame); }
+}
+
 var boardGeneratorWin=null;
-function customShortcutKey_Shift_0() {
+function customShortcutKey_Shift_6() {
   if ((newPgnEncoded === "") && (newPgnText === "")) { return; }
   if (!window.location.href.match(/board\.html/)) { return; }
   if (boardGeneratorWin && !boardGeneratorWin.closed) { boardGeneratorWin.close(); }
@@ -1391,12 +1401,9 @@ function customShortcutKey_Shift_0() {
   if (boardGeneratorWin && window.focus) { boardGeneratorWin.focus(); }
 }
 
-// customShortcutKey_Shift_1 defined by fide-lookup.js
-// customShortcutKey_Shift_2 defined by fide-lookup.js
-
-function customShortcutKey_Shift_5() {
-  if (movesDisplay == "puzzle") { Init(currentGame); }
-}
+// customShortcutKey_Shift_8 defined by engine.js
+// customShortcutKey_Shift_9 defined by engine.js
+// customShortcutKey_Shift_0 defined by engine.js
 
 </script>
 

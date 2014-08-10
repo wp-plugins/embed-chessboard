@@ -7,7 +7,7 @@
 
 "use strict";
 
-var pgn4web_version = '2.85';
+var pgn4web_version = '2.86';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -485,11 +485,11 @@ var debugShortcutSquare = "A8";
 
 boardShortcut("A8", "pgn4web v" + pgn4web_version + " debug info", function(t,e){ displayDebugInfo(); }, true);
 
-boardShortcut("B8", "show this position FEN string", function(t,e){ displayFenData(); }, true);
+boardShortcut("B8", "show current position FEN string", function(t,e){ displayFenData(); }, true);
 
-boardShortcut("C8", "show this game PGN source data", function(t,e){ if (e.shiftKey) { savePgnData(true); } else { displayPgnData(true); } }, true);
+boardShortcut("C8", "show current game PGN source data", function(t,e){ if (e.shiftKey) { savePgnData(true); } else { displayPgnData(true); } }, true);
 
-boardShortcut("D8", "show full PGN source data", function(t,e){ if (e.shiftKey) { savePgnData(); } else { displayPgnData(); } }, true);
+boardShortcut("D8", "show all games PGN source data", function(t,e){ if (e.shiftKey) { savePgnData(); } else { displayPgnData(); } }, true);
 
 boardShortcut("E8", "search help", function(t,e){ displayHelp("search_tool"); }, true);
 
@@ -632,8 +632,8 @@ setB1C1F1G1boardShortcuts();
 
 function setB1C1F1G1boardShortcuts() {
   if (commentsIntoMoveText && GameHasComments) {
-    if (boardIsDefault("B1")) { boardShortcut("B1", "go to previous comment or variation", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly - 10); } else { MoveToPrevComment(); } }, true); }
-    if (boardIsDefault("G1")) { boardShortcut("G1", "go to next comment or variation", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly + 10); } else { MoveToNextComment(); } }, true); }
+    if (boardIsDefault("B1")) { boardShortcut("B1", "find previous comment or variation", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly - 10); } else { MoveToPrevComment(); } }, true); }
+    if (boardIsDefault("G1")) { boardShortcut("G1", "find next comment or variation", function(t,e){ if (e.shiftKey) { GoToMove(CurrentPly + 10); } else { MoveToNextComment(); } }, true); }
   } else {
     if (boardIsDefault("B1")) { boardShortcut("B1", "move 10 half-moves backward", function(t,e){ GoToMove(CurrentPly - 10); }, true); }
     if (boardIsDefault("G1")) { boardShortcut("G1", "move 10 half-moves forward", function(t,e){ GoToMove(CurrentPly + 10); }, true); }
@@ -2041,14 +2041,6 @@ function loadPgnFromTextarea(textareaId) {
 }
 
 function createBoard() {
-
-  var theObj = document.getElementById("GameBoard");
-  if (theObj) {
-    theObj.innerHTML = '<DIV STYLE="font-size: small; font-family: sans-serif; ' +
-      'padding: 10px; text-align: center;">' +
-      '...loading PGN data<br />please wait...</DIV>';
-  }
-
   if (pgnUrl) {
     loadPgnFromPgnUrl(pgnUrl);
   } else if ( document.getElementById("pgnText") ) {
@@ -2999,14 +2991,6 @@ function ParsePGNGameString(gameString) {
       case ')':
         closeVar();
         break;
-
-      case '&': // nullmove "<>" became "&lt;&gt;"
-        if (ss.substr(start, 8) == "&lt;&gt;") {
-          ss = ss.slice(0, start) + "     -- " + ss.slice(start + 8);
-          start += 4;
-          break;
-        }
-        // dont add "break;"
 
       default:
 
