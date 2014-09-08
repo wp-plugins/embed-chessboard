@@ -14,23 +14,40 @@
 
 <style type="text/css">
 
-html,
-body {
+html {
+  height: 100%;
+  width: 100%;
   margin: 0px;
   padding: 0px;
-}
-
-body {
-  font-family: sans-serif;
-  color: black;
-  background: white;
-  padding: 1.75em;
-  text-align: justify;
+  overflow-x: hidden;
   overflow-y: scroll;
 }
 
-a {
+body {
+  position: absolute;
+  min-height: 100%;
+  min-width: 100%;
+  font-size: 16px;
+  font-family: sans-serif;
   color: black;
+  background: white;
+  margin: 0;
+  padding: 0;
+  text-align: justify;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: none;
+  -ms-text-size-adjust: 100%;
+  -o-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.everythingButFooter {
+  padding: 32px;
+  padding-bottom: 80px; /* 80 = 2 * 32 everythingButFooter.padding + 16 footer.lineHeight */
+}
+
+a {
+  color: inherit;
   text-decoration: none;
 }
 
@@ -40,9 +57,9 @@ a:hover {
 
 a.heading, a.headingSelected {
   margin: 30px;
-  line-height: 1.5em;
+  line-height: 30px;
+  font-size: 20px;
   font-weight: bold;
-  font-size: 125%;
 }
 
 a.heading {
@@ -68,6 +85,31 @@ a.headingSelected:hover {
   padding-top: 10px;
   padding-bottom: 2px;
 }
+
+.footer {
+  position: absolute;
+  bottom: 32px;
+  width: 100%;
+  font-size: 13px;
+  line-height: 16px;
+  color: #C0C0C0;
+  text-align: right;
+  clear: both;
+}
+
+.footerLeft {
+  float: left;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.footerRight {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-right: 32px;
+}
+
 
 </style>
 
@@ -98,10 +140,11 @@ function print_help_row (one, two) {
   document.write("<tr><td style='text-align:left; vertical-align:top; padding-left:40px; white-space:nowrap;'>" + one + "</td><td style='text-align:left; vertical-align:top; padding-left:20px'>" + two + "</td></tr>");
 }
 
-function updateVersion() {
+function updateFooter() {
+  var theObj;
   if (opener && (typeof(opener.pgn4web_version) != "undefined")) {
-    var theObj = document.getElementById("versionInfo");
-    if (theObj) { theObj.innerHTML = '<p></p>This is <a href="http://pgn4web.casaschi.net" target="_blank">pgn4web</a> v' + opener.pgn4web_version; }
+    if (theObj = document.getElementById("footerVersion")) { theObj.innerHTML = opener.pgn4web_version; }
+    if (theObj = document.getElementById("footerRight")) { theObj.innerHTML = opener.location.href; }
   }
 }
 
@@ -111,10 +154,6 @@ if (opener && (typeof(opener.IsRotated) != "undefined")) {
 }
 
 var colorAtTheBottom = isRotated ? "Black" : "White";
-var shortcutSquareKeyEnable = isRotated ? "A2" : "H7";
-var shortcutSquareSearchPopup = isRotated ? "G4" : "B5";
-var shortcutSquareSearchRepeat = isRotated ? "F4" : "C5";
-var shortcutSquareSearchRepeatBackward = isRotated ? "H4" : "A5";
 var rowNumbers = isRotated ? "87654321" : "12345678";
 var colLetters = isRotated ? "HGFEDCBA" : "ABCDEFGH";
 
@@ -125,24 +164,26 @@ if (opener && (typeof(opener.touchEventEnabled) != "undefined")) {
 
 var touchGestures_helpIntro, touchGestures_helpActions, touchGestures_helpText;
 if (touchGesturesSupported) {
-  touchGestures_helpIntro = "The user can interact with the pgn4web chessboard using touch gestures across the chessboard:";
+  touchGestures_helpIntro = "The user can interact with the chessboard using touch gestures:";
   if (opener && (typeof(opener.touchGestures_helpActions) != "undefined")) {
     touchGestures_helpActions = opener.touchGestures_helpActions;
   } else {
-    touchGestures_helpActions = [ "top-down swipe", "bottom-up swipe", "left-right swipe", "right-left swipe" ];
+    touchGestures_helpActions = [ "touch gestures info not available from the opener window" ];
   }
   if (opener && (typeof(opener.touchGestures_helpText) != "undefined")) {
     touchGestures_helpText = opener.touchGestures_helpText;
   } else {
-    touchGestures_helpText = [ "load next game, cycling through", "load previous game, cyclig through", "start autoplay; if autoplay already active: go to variation end or to game end", "stop autoplay; if autoplay not active: go to variation start, then to parent variation, then to game start; if at last move of live broadcast: replay up to 6 previous half-moves, then autoplay forward" ];
+    touchGestures_helpText = [ "" ];
   }
 } else {
-  touchGestures_helpIntro = "Touch gestures not available.<p></p>When enabled on supported touchscreen devices, touch gestures can be used to interact with the chessboard using swipe gestures across the chessboard.";
+  touchGestures_helpIntro = "Touch gestures not available.<p></p>When enabled on supported touchscreen devices, touch gestures can be used to interact with the chessboard using swipe gestures.";
   touchGestures_helpActions = [];
   touchGestures_helpText = [];
 }
 
 </script>
+
+<div id="everythingButFooter" class="everythingButFooter">
 
 <h1 style="margin-top:0px; padding-top:0px; text-align:right;">
 <span style="float:left; color:black;">
@@ -166,19 +207,19 @@ for (var s in sections) {
 
 <div id="user_interface_section" class="section">
 
-The user can interact with the pgn4web chessboard <a href="javascript:void(0);" onclick="showSection('shortcut_keys');">using the keyboard</a>, <a href="javascript:void(0);" onclick="showSection('shortcut_squares');">clicking chessboard squares</a> (hovering the mouse on each square displays an help summary) or <a href="javascript:void(0);" onclick="showSection('touch_gestures');">using touch gestures</a>.
+The user can interact with the chessboard <a href="javascript:void(0);" onclick="showSection('shortcut_keys');">using the keyboard</a>, <a href="javascript:void(0);" onclick="showSection('shortcut_squares');">clicking chessboard squares</a> (hovering the mouse on each square displays an help summary) or <a href="javascript:void(0);" onclick="showSection('touch_gestures');">using touch gestures</a>.
 <p></p>
 A <a href="javascript:void(0);" onclick="showSection('search_tool')">search tool</a> allows searching within the PGN games.
 <p></p>
-Errors alert messages are logged, such as failures to load PGN games, incorrect PGN games or incorrect FEN strings. When an error is encountered, the top left chessboard square will flash to signal the exception. The error alert log can be reviewed clicking on the same top left chessboard square.
+Errors alert messages are logged, such as failures to load PGN games, incorrect PGN games or incorrect FEN strings. When an error is encountered, a chessboard square will flash to signal the exception. The error alert log can be reviewed clicking on the flashing chessboard square.
 <p></p>
-See <a href="http://code.google.com/p/pgn4web/wiki/Index?tm=6" target="_blank">the pgn4web wiki</a> for more information. Please note, the wiki information always refers to the latest version of pgn4web.
+See <a href="https://code.google.com/p/pgn4web/wiki/Index?tm=6" target="_blank">the pgn4web wiki</a> for more information. Please note, the wiki information always refers to <a href="http://pgn4web.casaschi.net" target="_blank">the latest version of pgn4web</a>.
 </div>
 
 
 <div id="shortcut_keys_section" class="section">
 
-The user can interact with the pgn4web chessboard using the keyboard. See <a href="http://code.google.com/p/pgn4web/wiki/EndUser_Interface" target="_blank">the pgn4web wiki</a> for more information. Most commonly used shortcut keys:
+The user can interact with the chessboard using the keyboard. See <a href="https://code.google.com/p/pgn4web/wiki/EndUser_Interface" target="_blank">the pgn4web wiki</a> for more information. Most commonly used shortcut keys:
 
 <script type="text/javascript">
 "use strict";
@@ -248,9 +289,9 @@ print_help_row("&nbsp;", "");
 document.write("</table>");
 
 if (opener && (typeof(opener.shortcutKeysEnabled) != "undefined")) {
-  document.write('Shortcut keys currently ' + (opener.shortcutKeysEnabled ? "enabled, disable" : "disabled, enable") + ' in the chessboard with shift+escape or clicking square ' + shortcutSquareKeyEnable + ' (assuming ' + colorAtTheBottom + ' on bottom).\n');
+  document.write('Shortcut keys currently ' + (opener.shortcutKeysEnabled ? "enabled, disable" : "disabled, enable") + ' with shift+escape or with the associated <a href="javascript:void(0);" onclick="showSection(\'shortcut_squares\');">shortcut square</a>.\n');
 } else {
-  document.write('Shortcut keys info not available from the opener window, please check about shortcut keys in the chessboard with shift+escape or clicking square ' + shortcutSquareKeyEnable + ' (assuming ' + colorAtTheBottom + ' on bottom).\n');
+  document.write('Shortcut keys info not available from the opener window, please check about shortcut keys with shift+escape or with the associated <a href="javascript:void(0);" onclick="showSection(\'shortcut_squares\');">shortcut square</a>.\n');
 }
 
 </script>
@@ -260,7 +301,7 @@ if (opener && (typeof(opener.shortcutKeysEnabled) != "undefined")) {
 
 <div id="shortcut_squares_section" class="section">
 
-The user can interact with the pgn4web chessboard clicking chessboard squares:
+The user can interact with the chessboard clicking chessboard squares:
 <p></p>
 
 <script type="text/javascript">
@@ -291,15 +332,30 @@ if (opener && (typeof(opener.boardTitle) != "undefined")) {
 </div>
 
 
-<div id="search_tool_section" class="section">
+<div id="touch_gestures_section" class="section">
 
 <script type="text/javascript">
 "use strict";
-document.write('Access the search tool either directly with the search form (if available on the web page) or via the popup search box invoked with the ' + shortcutSquareSearchPopup + ' shortcut square (assuming ' + colorAtTheBottom + ' on bottom) and/or the \'s\' shortcut key. The ' + shortcutSquareSearchRepeat + ' shortcut square (assuming ' + colorAtTheBottom + ' on bottom) and/or the \'enter\' shortcut key repeat the last search. The ' + shortcutSquareSearchRepeatBackward + ' shortcut square (assuming ' + colorAtTheBottom + ' on bottom) and/or the \'shift-enter\' shortcut key repeat the last search backward.');
+document.write(touchGestures_helpIntro);
+if (touchGestures_helpActions.length > 0) {
+  document.write("<table style='padding:0px;' border='0'>");
+  print_help_row("&nbsp;", "");
+  for (var ii = 0; ii < touchGestures_helpActions.length; ii++) {
+    print_help_row(touchGestures_helpActions[ii], touchGestures_helpText[ii]);
+  }
+  document.write("</table>");
+}
 </script>
 
+</div>
+
+
+<div id="search_tool_section" class="section">
+
+Access the search tool either directly with the search form (if available on the web page) or via the popup search box invoked with the 's' shortcut key and/or the associated <a href="javascript:void(0);" onclick="showSection('shortcut_squares');">shortcut squares</a>.
+
 <p></p>
-For full details about the search tool (implemented as regular expression match of the text of the PGN game), please refer to <a href="http://code.google.com/p/pgn4web/wiki/EndUser_SearchTool" target="_blank">the pgn4web wiki</a>; please find below a sample list of useful search patterns:
+For full details about the search tool (implemented as regular expression match of the text of the PGN game), please refer to <a href="https://code.google.com/p/pgn4web/wiki/EndUser_SearchTool" target="_blank">the pgn4web wiki</a>; please find below a sample list of useful search patterns:
 <p></p>
 <script type="text/javascript">
 "use strict";
@@ -310,8 +366,8 @@ print_help_row("\(White|Black\)\\s*\"Somebody", "search for player <i>Somebody</
 print_help_row("White\\s*\"Somebody.*Black\\s*\"Other", "search for <i>Somebody</i> vs <i>Other</i> games");
 print_help_row("Site\\s*\"Somewhere.*Result\\s*\"\(1-0|0-1\)", "search for games at the <i>Somewhere</i> site ending with a win");
 print_help_row("Result\\s*\"\(?!1-0\)", "search for games not ending with a White win");
-print_help_row("[^0-9]1.\\s*e4\\s*e6", "search for games with moves <i>1. e4 e6</i>");
-print_help_row("[^0-9]1.\\s*e4\\s*e5\(?!\\s*2.\\s*Nf3\)", "search for games with moves <i>1. e4 e5</i> without <i>2. Nf3</i>");
+print_help_row("\\b1\\.\\s*e4\\s*e6", "search for games with moves <i>1. e4 e6</i>");
+print_help_row("\\b1\\.\\s*e4\\s*e5\(?!\\s*2\\.\\s*Nf3\)", "search for games with moves <i>1. e4 e5</i> without <i>2. Nf3</i>");
 document.write("</table>");
 
 </script>
@@ -321,7 +377,7 @@ document.write("</table>");
 
 <div id="informant_symbols_section" class="section">
 
-pgn4web supports chess annotations symbols as defined by <a href="http://www.chessinformant.rs" targte="_blank">the Chess Informant publishing company</a>:
+Chess annotations symbols as defined by <a href="http://www.chessinformant.rs" targte="_blank">the Chess Informant publishing company</a>:
 
 <script type="text/javascript">var NAG = new Array();</script>
 <script type="text/javascript">
@@ -424,30 +480,17 @@ The chess informant symbols font is used with permission from <a href="http://ww
 Some functionality of specific applications of pgn4web or specific demo pages depends on third party javascript libraries, each stored in a separate subfolder with the associated credits and license information.
 <p></p>
 Remaining pgn4web code is copyright (C) 2009-2014 <a href="mailto:pgn4web@casaschi.net">Paolo Casaschi</a> and licensed under the terms of <a href="license-gpl-2.0.txt" target="_blank">the GNU General Public License version 2</a> as published by <a href="http://www.fsf.org" target="_blank">the Free Software Foundation</a>; either <a href="license-gpl-2.0.txt" target="_blank">version 2 of the License</a>, or (at your option) any later version.
-<span id="versionInfo"></span>
 </div>
 
+</div> <!-- everythingButFooter -->
 
-<div id="touch_gestures_section" class="section">
-
-<script type="text/javascript">
-"use strict";
-document.write(touchGestures_helpIntro);
-document.write("<table style='padding:0px;' border='0'>");
-print_help_row("&nbsp;", "");
-for (var ii = 0; ii < touchGestures_helpActions.length; ii++) {
-  print_help_row(touchGestures_helpActions[ii], touchGestures_helpText[ii]);
-}
-document.write("</table>");
-</script>
-
-</div>
+<div id="footer" class="footer"><div id="footerLeft" class="footerLeft"><a href="http://pgn4web.casaschi.net" target="_blank">pgn4web</a>&nbsp;<span id="footerVersion">help</span></div><div id="footerRight" class="footerRight"></div></div>
 
 
 <script type="text/javascript">
 "use strict";
+updateFooter();
 showSection(location.search.substr(1));
-updateVersion();
 </script>
 
 </body>
