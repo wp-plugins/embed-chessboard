@@ -7,7 +7,7 @@
 
 "use strict";
 
-var pgn4web_version = '2.87';
+var pgn4web_version = '2.88';
 
 var pgn4web_project_url = "http://pgn4web.casaschi.net";
 var pgn4web_project_author = "Paolo Casaschi";
@@ -1701,7 +1701,7 @@ function updatePgnFromHttpRequest(this_http_request, this_http_request_id) {
         myAlert('error: unmodified PGN URL when not in live mode');
       }
 
-// patch Opera's failure reporting 304 status (up to Opera v12)
+// patch Opera's bug: failure reporting 304 status (up to Opera v12)
     } else if (window.opera && (!this_http_request.responseText) && (this_http_request.status === 0)) {
       this_http_request.abort();
       res = LOAD_PGN_UNMODIFIED;
