@@ -36,18 +36,16 @@ Features:
 - fully customizable display: each item (board, button bar, game selection
   menu, PGN header info, game text, game comment and more) can be displayed
   (or hidden) at pleasure in your html file
-- support different bitmaps for chess pieces (even custom bitmaps) and
+- supports different bitmaps for chess pieces (even custom bitmaps) and
   different chessboard sizes
 - uses figurine fonts for chess moves and chess informant style symbols for
   comments and annotations
 - provides a very simple board generator web tool helping you adding chess
   games to your website or blog without any html/javascript coding (see
   http://pgn4web-board-generator.casaschi.net
-- integrated with popular blog platforms (such as blogger and wordpress),
-  portal platforms (such as joomla, drupal and wikimedia), forum platforms
-  (such as phpBB, simplemachines and vbulletin) and hosting services (such
-  as google sites)
-- integrated with HTML5 video and YouTube video
+- integrates with popular web platforms and services such as blogger, drupal,
+  google sites, joomla, mediawiki, phpBB, wordpress.org and many others.
+- integrates with HTML5 video and YouTube video
 - supports Chess960 (a.k.a. Fischer random chess) games
 
 Limitations:
@@ -56,7 +54,7 @@ Limitations:
 
 Bugs:
 - no major issue at the moment of writing, please check the project
-  issues tracker at https://code.google.com/p/pgn4web/issues/list
+  issues tracker at https://sourceforge.net/p/pgn4web/tickets/
 
 User feedback:
 Please email the pgn4web project (pgn4web@casaschi.net) your feedback,
@@ -388,7 +386,7 @@ with Google Chrome should work properly.
 Note about Internet Explorer v7 and above: under some circumstances you might
 experience problems when testing HTML pages from your local computer while
 developing your site. If this happens to you, read notes at
-https://code.google.com/p/pgn4web/issues/detail?id=23
+https://sourceforge.net/p/pgn4web/tickets/23/
 
 
 PGN STANDARD SUPPORT
