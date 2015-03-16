@@ -3,7 +3,7 @@
 /*
 Plugin Name: Embed Chessboard
 Plugin URI: http://wordpress.org/extend/plugins/embed-chessboard/
-Description: Embeds a javascript chessboard in wordpress articles for replaying chess games. Use plugin options to blend the chessboard with the site template; use tag parameters to customize each chessboard. Insert chess games in PGN format into your wordpress article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. For more info on plugin options and tag parameters please <a href="https://sourceforge.net/p/pgn4web/wiki/User_Notes_wordpress/">read the tutorial</a>.
+Description: Embeds a javascript chessboard in wordpress articles for replaying chess games. Use plugin options to blend the chessboard with the site template; use tag parameters to customize each chessboard. Insert chess games in PGN format into your wordpress article using the syntax: <code>[pgn parameter=value ...] e4 e6 d4 d5 [/pgn]</code>. For more info on plugin options and tag parameters please <a href="http://pgn4web-project.casaschi.net/wiki/User_Notes_wordpress/">read the tutorial</a>.
 Version: 2.90.00
 Author: Paolo Casaschi
 Author URI: http://pgn4web.casaschi.net
@@ -417,7 +417,7 @@ function embedchessboard_settings_page() {
 <div class="wrap">
 <h2><?php _e("Embed Chessboard Plugin Settings", "embedchess"); ?></h2>
 <p style="font-size:smaller; line-height:normal;">
-<a href="https://sourceforge.net/p/pgn4web/wiki/User_Notes_wordpress/" target="_blank"><?php _e("read the tutorial", "embedchess");?></a> <?php _e("for more details about this plugin", "embedchess"); ?>
+<a href="http://pgn4web-project.casaschi.net/wiki/User_Notes_wordpress/" target="_blank"><?php _e("read the tutorial", "embedchess");?></a> <?php _e("for more details about this plugin", "embedchess"); ?>
 </p>
 <p style="font-size:smaller; line-height:normal;">
 <?php _e("leave blank values to reset to defaults", "embedchess"); ?>
