@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: 2.9
 Stable tag: 2.92.00
 Tags: chess, chessboard, pgn, pgn4web
-Tested up to: 4.2
+Tested up to: 4.3
 
 Allows for the insertion of a chessboard displaying chess games within wordpress articles.
 
