@@ -4,7 +4,7 @@ Donate link: http://pgn4web.casaschi.net
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: 2.9
-Stable tag: 2.92.00
+Stable tag: 2.93.00
 Tags: chess, chessboard, pgn, pgn4web
 Tested up to: 4.3
 
